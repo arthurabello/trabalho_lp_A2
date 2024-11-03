@@ -30,7 +30,7 @@ class Game:
         run(): Runs the main game loop, processing events, updating game state, and rendering the display.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         """
         Initializes the game settings, including screen dimensions, board setup, and basic game state.
@@ -50,7 +50,7 @@ class Game:
         self.current_size = [self.initial_width, self.initial_height]
         self.resizing = False
         
-    def handle_events(self):
+    def handle_events(self) -> None:
 
         """
         Manages user interactions, such as closing the game, clicking on the board, resizing the window, and toggling fullscreen.
@@ -78,7 +78,7 @@ class Game:
                 if event.key == pygame.K_f:
                     self.toggle_fullscreen()
     
-    def toggle_fullscreen(self):
+    def toggle_fullscreen(self) -> None:
 
         """
         Toggles the display mode between fullscreen and resizable windowed mode.
@@ -94,7 +94,7 @@ class Game:
         else:
             self.screen = pygame.display.set_mode(self.current_size, pygame.RESIZABLE)
     
-    def update(self):
+    def update(self) -> None:
 
         """
         Updates the game state, especially during window resizing.
@@ -106,7 +106,7 @@ class Game:
             self.screen = pygame.display.set_mode(self.current_size, pygame.RESIZABLE)
             self.resizing = False
     
-    def render(self):
+    def render(self) -> None:
 
         """
         Renders the game components on the screen.
@@ -118,7 +118,7 @@ class Game:
         self.board.draw(self.screen, self.board.selected_square)
         pygame.display.flip()
     
-    def run(self):
+    def run(self) -> None:
 
         """
         Executes the main game loop, which continuously processes events, updates the game state, and renders the screen.

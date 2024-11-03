@@ -1,7 +1,7 @@
 """
 This module defines the graph structure for the board, managing connectivity between squares and reachable positions.
 """
-
+from typing import Dict, Tuple, Set
 from collections import defaultdict
 import heapq
 
@@ -22,13 +22,12 @@ class BoardGraph:
         get_reachable_positions(start_pos, movement_points): Calculates reachable positions from a starting position, considering movement points.
     """
 
-    def __init__(self, m, n):
+    def __init__(self, m: int, n: int) -> None:
+        """Initializes the graph with the board dimensions and creates connections between squares.
 
-        """
-        Initializes the graph with the board dimensions and creates connections between squares.
-        
-        m -> umber of rows on the board.
-        n ->  number of columns on the board.
+        Args:
+            m (int): number of rows on the board.
+            n (int): number of columns on the board.
         """
 
         self.m = m  
@@ -36,10 +35,15 @@ class BoardGraph:
         self.graph = defaultdict(dict)
         self._build_graph()
     
-    def _is_valid_position(self, row, col):
+    def _is_valid_position(self, row: int, col: int) -> bool:
+        """Checks if a position is within the board boundaries.
 
-        """
-        Checks if a position is within the board boundaries.
+        Args:
+            row (int): Row index of the position.
+            col (int): Column index of the position.
+
+        Returns:
+            bool: Returns True if the position is within boundaries, otherwise False.
         """
 
         return 0 <= row < self.m and 0 <= col < self.n
@@ -67,16 +71,22 @@ class BoardGraph:
                         weight = 1 
                         self.graph[current_node][(new_row, new_col)] = weight
     
-    def get_neighbors(self, position):
+    def get_neighbors(self, position: Tuple[int, int]) -> Dict[Tuple[int,int], int]:
 
         """
         Returns the neighbors of a position on the board.
+        
+        Args:
+            position (Tuple[int, int]): Position on the board (row, column).
+
+        Returns:
+            Dict[Tuple[int, int], int]: Dictionary with neighbors and edge weights for each.
         """
 
         return self.graph[position]
        
 
-    def dijksboard_algorithm(self, start_pos):
+    def dijksboard_algorithm(self, start_pos: Tuple[int, int]) -> Dict[Tuple[int, int], int]:
 
         """
         Calculates all reachable positions on the board starting from a given position, without a predefined limit on movement points
@@ -111,6 +121,12 @@ class BoardGraph:
 
         The result is a dictionary of all positions on the board with their minimum movement cost from the starting position.
         This allows the player to see which squares are accessible within their computed movement range.
+        
+        Args:
+            start_pos (Tuple[int, int]): Starting position (row, column) from where the cost is calculated.
+
+        Returns:
+            Dict[Tuple[int, int], int]: Dictionary with each position and its minimum movement cost from the starting position.
         """
 
         distances = {pos: float('infinity') for pos in self.graph}
@@ -140,10 +156,17 @@ class BoardGraph:
 
         return reachable
 
-    def get_reachable_positions(self, start_pos, movement_points):
+    def get_reachable_positions(self, start_pos: Tuple[int, int], movement_points: int) -> Set[Tuple[int, int]]:
 
         """
-        ablublublé
+        Calculates reachable positions from a starting position, considering movement points.
+
+        Args:
+            start_pos (Tuple[int, int]): Starting position on the board.
+            movement_points (int): Movement points available to reach positions.
+
+        Returns:
+            Set[Tuple[int, int]]: Set of reachable positions from the starting position.
         """
 
         reachable_with_costs = self.dijksboard_algorithm(start_pos)
