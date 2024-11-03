@@ -33,7 +33,7 @@ class Game:
     def __init__(self) -> None:
 
         """
-        Initializes the game settings, including screen dimensions, board setup, and basic game state.
+        Initializes the game settings
         """
 
         pygame.init()
