@@ -42,9 +42,14 @@ class Board:
             initial_width (int): Initial width of the game window
             initial_height (int): Initial height of the game window
         """
-
+        
         self.m = m
         self.n = n
+        if m <= 0 or n <= 0:
+            raise ValueError("Board dimensions must be positive integers in board/init")
+        if initial_width <= 0 or initial_height <= 0:
+            raise ValueError("Initial window dimensions must be positive in board/init")
+        
         self.initial_width = initial_width
         self.initial_height = initial_height
         self.selected_square = None
@@ -65,11 +70,21 @@ class Board:
         """
 
         x, y = mouse_pos
+        if not isinstance(mouse_pos, tuple) or len(mouse_pos) != 2:
+            raise ValueError("Invalid mouse position format in board/get_square_from_click")
+        
         width, height = screen.get_size()
+        if x < 0 or x >= width or y < 0 or y >= height:
+            return None #clicked outside the broad
+        
         square_width = width // self.n
         square_height = height // self.m
+
         column = x // square_width
         row = y // square_height
+        if row >= self.m or column >= self.n:
+            return None 
+        
         return row, column
 
     def select_square(self, square, movement_points) -> None:
@@ -82,7 +97,18 @@ class Board:
             movement_points (int): Number of movement points available for calculating reachable positions
         """
 
+        if movement_points < 0:
+            raise ValueError("Negative movement points in board/select_square")
+
         self.selected_square = square
+        if square is not None:
+            if not isinstance(square, tuple) or len(square) != 2:
+                raise ValueError("Invalid square format")
+            
+            row, col = square
+            if not (0 <= row < self.m and 0 <= col < self.n):
+                raise ValueError("Square position out of bounds in board/select_square") #validating square position
+            
         if square:
             self.reachable_positions = self.graph.get_reachable_positions(square, movement_points)
         else:
@@ -98,7 +124,13 @@ class Board:
             selected_square (tuple, optional): The currently selected square to highlight. Defaults to None.
         """
 
+        if not screen:
+            raise ValueError("Invalid screen surface in board/draw") #Houston we have a problem
+            
         width, height = screen.get_size()
+        if width <= 0 or height <= 0:
+            raise ValueError("Invalid screen dimensions in board/draw")
+
         square_width = width // self.n
         square_height = height // self.m
 
