@@ -67,7 +67,7 @@ class Game:
                 if event.button == 1:
                     mouse_position = pygame.mouse.get_pos()
                     square = self.board.get_square_from_click(mouse_position, self.screen)
-                    self.board.select_square(square, movement_points=1)  #change movement points depending on the unit
+                    self.board.select_square(square, movement_points=5)  #change movement points depending on the unit
                     print(f"Selected square: row {square[0]}, column {square[1]}")
 
             elif event.type == pygame.VIDEORESIZE:
