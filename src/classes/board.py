@@ -31,7 +31,7 @@ class Board:
     COLOR_RED = (255, 0, 0)
     COLOR_HIGHLIGHT = (255, 255, 0, 180)
 
-    def __init__(self, m, n, initial_width, initial_height):
+    def __init__(self, m, n, initial_width, initial_height) -> None:
 
         """
         Initializes the board with dimensions and sets up the board graph for connectivity management.
@@ -51,7 +51,7 @@ class Board:
         self.graph = BoardGraph(m, n)
         self.reachable_positions = set()
 
-    def get_square_from_click(self, mouse_pos, screen):
+    def get_square_from_click(self, mouse_pos, screen) -> None:
         
         """
         Determines the board square corresponding to a mouse click based on screen dimensions.
@@ -72,7 +72,7 @@ class Board:
         row = y // square_height
         return row, column
 
-    def select_square(self, square, movement_points):
+    def select_square(self, square, movement_points) -> None:
 
         """
         Selects a square and calculates all reachable positions based on the movement points available.
@@ -88,7 +88,7 @@ class Board:
         else:
             self.reachable_positions = set()
 
-    def draw(self, screen, selected_square=None):
+    def draw(self, screen, selected_square=None) -> None:
 
         """
         Draws the board on the screen, highlighting reachable positions and the selected square.
