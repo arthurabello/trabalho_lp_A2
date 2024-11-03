@@ -1,6 +1,7 @@
 """
 This module defines the graph structure for the board, managing connectivity between squares and reachable positions.
 """
+
 from typing import Dict, Tuple, Set
 from collections import defaultdict
 import heapq
@@ -23,6 +24,7 @@ class BoardGraph:
     """
 
     def __init__(self, m: int, n: int) -> None:
+
         """Initializes the graph with the board dimensions and creates connections between squares.
 
         Args:
@@ -31,11 +33,17 @@ class BoardGraph:
         """
 
         self.m = m  
-        self.n = n  
+        self.n = n
+        if not isinstance(m, int) or not isinstance(n, int):
+            raise TypeError("Board dimensions must be integers in graph/init")
+        if m <= 0 or n <= 0:
+            raise ValueError("Board dimensions must be positive in graph/init")
+        
         self.graph = defaultdict(dict)
         self._build_graph()
     
     def _is_valid_position(self, row: int, col: int) -> bool:
+
         """Checks if a position is within the board boundaries.
 
         Args:
@@ -83,8 +91,15 @@ class BoardGraph:
             Dict[Tuple[int, int], int]: Dictionary with neighbors and edge weights for each.
         """
 
+        if not isinstance(position, tuple) or len(position) != 2:
+            raise ValueError("Invalid position format in graph/get_neighbors")
+        
+        row, col = position
+        if not self._is_valid_position(row, col):
+            raise ValueError("Position out of bounds in graph/get_neighbors")
+            
         return self.graph[position]
-       
+        
 
     def dijksboard_algorithm(self, start_pos: Tuple[int, int]) -> Dict[Tuple[int, int], int]:
 
@@ -129,6 +144,13 @@ class BoardGraph:
             Dict[Tuple[int, int], int]: Dictionary with each position and its minimum movement cost from the starting position.
         """
 
+        if not isinstance(start_pos, tuple) or len(start_pos) != 2:
+            raise ValueError("Invalid start position format in graph/dijksboard_algorithm")
+
+        row, col = start_pos
+        if not self._is_valid_position(row, col):
+            raise ValueError("Start position out of bounds in graph/dijksboard_algorithm")
+        
         distances = {pos: float('infinity') for pos in self.graph}
         distances[start_pos] = 0
 
@@ -169,6 +191,19 @@ class BoardGraph:
             Set[Tuple[int, int]]: Set of reachable positions from the starting position.
         """
 
+        if not isinstance(start_pos, tuple) or len(start_pos) != 2:
+            raise ValueError("Invalid start position format")
+        
+        row, col = start_pos
+        if not self._is_valid_position(row, col):
+            raise ValueError("Start position out of bounds")
+        
+        if not isinstance(movement_points, (int, float)):
+            raise TypeError("Movement points must be a natural number in graph/get_reachable_positions")
+        
+        if movement_points < 0:
+            raise ValueError("Movement points cannot be negative in graph/get_reachable_positions")
+        
         reachable_with_costs = self.dijksboard_algorithm(start_pos)
             
         reachable_positions = {
