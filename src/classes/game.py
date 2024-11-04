@@ -9,14 +9,14 @@ from .warrior import Warrior
 
 class Game:
     def __init__(self):
-        pygame.init()
+        
         try:
             pygame.init()
             if pygame.get_error():
                 raise RuntimeError("Failed to initialize Pygame in game/init")
                 
         except Exception as e:
-            raise RuntimeError(f"Failed to initialize game in game/init (agora fudeu): {str(e)}")
+            raise RuntimeError(f"Failed to initialize game in game/init: {str(e)}")
         
         self.m = 10
         self.n = 21
