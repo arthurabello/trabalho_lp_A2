@@ -390,3 +390,20 @@ class Game:
         except Exception as e:
             self.screen = pygame.display.set_mode(self.current_size, pygame.RESIZABLE)
             raise RuntimeError(f"Failed to update display: {str(e)}")
+        
+    def _draw_victory_message(self):
+        if not self.game_over or self.winner is None:
+            return
+            
+        message = f"Player {self.winner} Won!"
+        text_surface = self.font.render(message, True, (255, 215, 0))  
+        text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2))
+        
+        background_surface = pygame.Surface((text_rect.width + 40, text_rect.height + 40))
+        background_surface.fill((0, 0, 0))
+        background_surface.set_alpha(128)  #adjustable transparency
+        
+        background_rect = background_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2))
+        
+        self.screen.blit(background_surface, background_rect)
+        self.screen.blit(text_surface, text_rect)
