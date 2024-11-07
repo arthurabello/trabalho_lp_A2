@@ -4,8 +4,7 @@ This module represents the main game structure, responsible for initializing, ha
 
 import pygame
 from .board import Board
-from .king import King
-from .warrior import Warrior
+from .characters import King, Warrior
 
 class Game:
     def __init__(self):
