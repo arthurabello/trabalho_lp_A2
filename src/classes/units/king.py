@@ -35,6 +35,9 @@ class King(BaseUnit):
             movement_range=1,
             unit_char='K'
         )
+        self.attack_points = 10
+        self.defense_points = 5
+        self.remaining_units = 100
         
         self.attack_points = 10
         self.defense_points = 5
