@@ -3,6 +3,7 @@ This module represents the main game structure, responsible for initializing, ha
 """
 
 import pygame
+import os
 from .board import Board
 from .units.king import King
 from .units.warrior import Warrior
@@ -23,11 +24,11 @@ class Game:
         if self.m <= 0 or self.n <= 0:
             raise ValueError("Invalid board dimensions in game/init")
         
-        self.screen_width = self.n * 40 + 200 # +200 for status screen
-        self.screen_height = self.m * 40
+        self.screen_width = self.n * 50 + 200 # +200 for status screen
+        self.screen_height = self.m * 50
 
-        self.board_width = self.n * 40
-        self.board_height = self.m * 40
+        self.board_width = self.n * 50
+        self.board_height = self.m * 50
 
         try:
             self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 
@@ -78,7 +79,8 @@ class Game:
             pygame.font.init()
 
         self.font = pygame.font.Font(None, 74)  #victory message
-        self.small_font = pygame.font.Font(None, 36)  #UI elements
+        self.small_font = pygame.font.Font(None, 36) #UI elements
+        self.mini_font = pygame.font.Font(None, 24)  #status elements
         self._draw_board()
     
     def _reset_movement_points(self):
@@ -108,6 +110,8 @@ class Game:
         Position the warriors in a rectangular shape
         """
 
+        image_warriors = os.path.join('..','assets','sprites','warrior.png')
+
         warriors = []
         if player == 1:
             start_col = 2
@@ -117,7 +121,7 @@ class Game:
         for row in range(2):
             for col in range(5):
                 position = (row + 1, start_col + col)
-                warrior = Warrior(position, player)
+                warrior = Warrior(position, player, image_warriors)
                 warriors.append(warrior)
                 
         return warriors
@@ -195,22 +199,25 @@ class Game:
         """Update status surface"""
         
         self.status_surface.fill((50, 50, 50))
+
+        status_text = self.mini_font.render(f"Status", True, (255, 255, 255))
+        self.status_surface.blit(status_text, (10, 10))
     
         if self.selected_unit:
             # Renders name and status of select unit
-            name_text = self.small_font.render(f"Tipo: {self.selected_unit.__class__.__name__}", True, (255, 255, 255))
-            remaining_units_text = self.small_font.render(f"Unidades Restantes: {self.selected_unit.remaining_units}", True, (255, 255, 255))
-            attack_text = self.small_font.render(f"Ataque: {self.selected_unit.attack_points}", True, (255, 255, 255))
-            defense_text = self.small_font.render(f"Defesa: {self.selected_unit.defense_points}", True, (255, 255, 255))
-            
-            self.status_surface.blit(name_text, (10, 10))
-            self.status_surface.blit(remaining_units_text, (10, 50))
-            self.status_surface.blit(attack_text, (10, 90))
+            name_text = self.mini_font.render(f"Unit: {self.selected_unit.__class__.__name__}", True, (255, 255, 255))
+            remaining_units_text = self.mini_font.render(f"Remaining Units: {self.selected_unit.remaining_units}", True, (255, 255, 255))
+            attack_text = self.mini_font.render(f"Attack: {self.selected_unit.attack_points}", True, (255, 255, 255))
+            defense_text = self.mini_font.render(f"Defense: {self.selected_unit.defense_points}", True, (255, 255, 255))
+                
+            self.status_surface.blit(name_text, (10, 40))
+            self.status_surface.blit(remaining_units_text, (10, 70))
+            self.status_surface.blit(attack_text, (10, 100))
             self.status_surface.blit(defense_text, (10, 130))
         else:
 
-            no_unit_text = self.small_font.render("Selecione uma unidade", True, (255, 255, 255))
-            self.status_surface.blit(no_unit_text, (10, 10))
+            no_unit_text = self.mini_font.render("Selecione uma unidade", True, (255, 255, 255))
+            self.status_surface.blit(no_unit_text, (10, 40))
 
     def handle_events(self):
         for event in pygame.event.get():
