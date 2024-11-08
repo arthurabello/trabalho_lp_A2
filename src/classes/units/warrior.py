@@ -36,6 +36,10 @@ class Warrior(BaseUnit):
             unit_char='W'
         )
         
+        self.attack_points = 10
+        self.defense_points = 5
+        self.remaining_units = 256
+
         self.attack_bonus = 1
         
         self.primary_color = (Colors.PLAYER1_SECONDARY if player == 1 
