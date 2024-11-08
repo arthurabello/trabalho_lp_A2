@@ -13,6 +13,9 @@ class BaseUnit(ABC):
     
     Attributes:
         position (tuple): Current position (row, col) on the board
+        attack_points (int): The attack strength of the piece.
+        defense_points (int): The defense strength of the piece, reducing incoming damage.
+        remaining_units (int): Current units of the piece, representing its remaining units in the game.
         player (int): Player number (1 or 2) who owns this unit
         movement_range (int): Number of squares the unit can move
         unit_char (str): Character to display on the unit ('K', 'W', etc.)
