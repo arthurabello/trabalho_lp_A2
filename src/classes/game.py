@@ -23,11 +23,14 @@ class Game:
         if self.m <= 0 or self.n <= 0:
             raise ValueError("Invalid board dimensions in game/init")
         
-        self.initial_width = self.n * 40
-        self.initial_height = self.m * 40
+        self.screen_width = self.n * 40 + 200 # +200 for status screen
+        self.screen_height = self.m * 40
+
+        self.board_width = self.n * 40
+        self.board_height = self.m * 40
 
         try:
-            self.screen = pygame.display.set_mode((self.initial_width, self.initial_height), 
+            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 
                                                 pygame.RESIZABLE)
             if not self.screen:
                 raise RuntimeError("Failed to create game window in game/init")
@@ -40,15 +43,20 @@ class Game:
             pygame.quit()
             raise RuntimeError(f"Failed to initialize display in game/init: {str(e)}")
 
-        self.screen = pygame.display.set_mode((self.initial_width, self.initial_height), 
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 
                                             pygame.RESIZABLE)
-        self.background = pygame.Surface(self.screen.get_size())
         
-        pygame.display.set_caption("The Art of Violence")
-        self.board = Board(self.m, self.n, self.initial_width, self.initial_height)
+        self.background = pygame.Surface(self.screen.get_size())
+        pygame.display.set_caption("Warbound")
+        
+        self.board = Board(self.m, self.n, self.board_width, self.board_height)
+        self.board_surface = pygame.Surface((self.board_width, self.board_height))
+        
+        self.status_surface = pygame.Surface((200, self.screen_height))
+
         self.running = True
         self.fullscreen = False
-        self.current_size = [self.initial_width, self.initial_height]
+        self.current_size = [self.screen_width, self.screen_height]
         self.resizing = False
         
         self.king1 = King((0, self.n // 4), player=1)
@@ -148,7 +156,7 @@ class Game:
         """
 
         self.background.fill((0, 0, 0))
-        self.board.draw(self.background, self.board.selected_square)
+        self.board.draw(self.board_surface, self.board.selected_square)
 
     def _draw_movement_points(self):
 
@@ -183,6 +191,27 @@ class Game:
         if self.selected_unit:
             self.screen.blit(mp_surface, (padding * 2, screen_height - (line_height * 2) - padding))
         
+    def _update_status_surface(self):
+        """Update status surface"""
+        
+        self.status_surface.fill((50, 50, 50))
+    
+        if self.selected_unit:
+            # Renders name and status of select unit
+            name_text = self.small_font.render(f"Tipo: {self.selected_unit.__class__.__name__}", True, (255, 255, 255))
+            remaining_units_text = self.small_font.render(f"Unidades Restantes: {self.selected_unit.remaining_units}", True, (255, 255, 255))
+            attack_text = self.small_font.render(f"Ataque: {self.selected_unit.attack_points}", True, (255, 255, 255))
+            defense_text = self.small_font.render(f"Defesa: {self.selected_unit.defense_points}", True, (255, 255, 255))
+            
+            self.status_surface.blit(name_text, (10, 10))
+            self.status_surface.blit(remaining_units_text, (10, 50))
+            self.status_surface.blit(attack_text, (10, 90))
+            self.status_surface.blit(defense_text, (10, 130))
+        else:
+
+            no_unit_text = self.small_font.render("Selecione uma unidade", True, (255, 255, 255))
+            self.status_surface.blit(no_unit_text, (10, 10))
+
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -191,7 +220,7 @@ class Game:
             elif not self.game_over:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_position = pygame.mouse.get_pos()
-                    clicked_square = self.board.get_square_from_click(mouse_position, self.screen)
+                    clicked_square = self.board.get_square_from_click(mouse_position, self.board_surface)
                     
                     if clicked_square is None:
                         continue
@@ -314,8 +343,8 @@ class Game:
             temp_surface = pygame.Surface(self.scaled_size)
             temp_surface.fill((0, 0, 0))
             
-            scale_x = self.scaled_size[0] / self.initial_width
-            scale_y = self.scaled_size[1] / self.initial_height
+            scale_x = self.scaled_size[0] / self.screen_width
+            scale_y = self.scaled_size[1] / self.screen_height
             
             scaled_background = pygame.transform.scale(self.background, self.scaled_size)
             temp_surface.blit(scaled_background, (0, 0))
@@ -337,13 +366,17 @@ class Game:
             
         else:
             self.screen.blit(self.background, (0, 0))
-            self.king1.draw(self.screen, self.board)
-            self.king2.draw(self.screen, self.board)
+            self.screen.blit(self.board_surface, (0,0))
+            self.king1.draw(self.board_surface, self.board)
+            self.king2.draw(self.board_surface, self.board)
             
             for warrior in self.warriors1 + self.warriors2:
-                warrior.draw(self.screen, self.board)
+                warrior.draw(self.board_surface, self.board)
             
             self._draw_movement_points()
+
+            self._update_status_surface()
+            self.screen.blit(self.status_surface, (self.board_width, 0))
             
             if self.game_over:
                 self._draw_victory_message()
