@@ -36,6 +36,10 @@ class King(BaseUnit):
             unit_char='K'
         )
         
+        self.attack_points = 10
+        self.defense_points = 5
+        self.remaining_units = 100
+
         self.special_ability_used = False
         
         self.primary_color = (Colors.PLAYER1_PRIMARY if player == 1 
