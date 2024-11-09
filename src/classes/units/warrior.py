@@ -19,7 +19,7 @@ class Warrior(BaseUnit):
         attack_bonus (int): Additional attack strength for this warrior
     """
     
-    def __init__(self, initial_position, player, image_path=None):
+    def __init__(self, initial_position, player, image_path=None, formation="Standard"):
 
         """
         Initialize a new Warrior unit.
@@ -35,15 +35,34 @@ class Warrior(BaseUnit):
             player=player,
             movement_range=3,
             unit_char='W',
-            image_path=image_path
+            image_path=image_path,
+            formation=formation
         )
-        
-        self.attack_points = 10
-        self.defense_points = 5
+
+        self.formations = {
+            "Standard": {
+                "attack_modifier": 1.0,
+                "defense_modifier": 1.0,
+            },
+            "Defensive": {
+                "attack_modifier": 0.9,
+                "defense_modifier": 1.8,
+            },
+            "Aggressive": {
+                "attack_modifier": 1.5,
+                "defense_modifier": 0.6,
+            }
+        }
+
+        self.base_attack = 10
+        self.base_defense = 5
+
+        # current stats (will be modified by formations)
+        self.attack_points = self.base_attack
+        self.defense_points = self.base_defense
+
         self.remaining_units = 256
 
-        self.attack_bonus = 1
-        
         self.primary_color = (Colors.PLAYER1_SECONDARY if player == 1 
                             else Colors.PLAYER2_SECONDARY)
     
