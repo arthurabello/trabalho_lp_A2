@@ -19,7 +19,7 @@ class Warrior(BaseUnit):
         attack_bonus (int): Additional attack strength for this warrior
     """
     
-    def __init__(self, initial_position, player):
+    def __init__(self, initial_position, player, image_path=None):
 
         """
         Initialize a new Warrior unit.
@@ -27,13 +27,15 @@ class Warrior(BaseUnit):
         Args:
             initial_position (tuple): Starting position (row, col)
             player (int): Player number (1 or 2)
+            image_path (str): Optional path to the warrior sprite image
         """
 
         super().__init__(
             initial_position=initial_position,
             player=player,
             movement_range=3,
-            unit_char='W'
+            unit_char='W',
+            image_path=image_path
         )
         
         self.attack_points = 10

@@ -13,11 +13,13 @@ class BaseUnit(ABC):
     
     Attributes:
         position (tuple): Current position (row, col) on the board
-        attack_points (int): The attack strength of the piece.
-        defense_points (int): The defense strength of the piece, reducing incoming damage.
-        remaining_units (int): Current units of the piece, representing its remaining units in the game.
+        attack_points (int): The attack strength of the piece
+        defense_points (int): The defense strength of the piece, reducing incoming damage
+        remaining_units (int): Current units of the piece, representing its remaining units in the game
+        formation (str): Current formation of the unit
         player (int): Player number (1 or 2) who owns this unit
         movement_range (int): Number of squares the unit can move
+        image_path (str): path for the image sprite
         unit_char (str): Character to display on the unit ('K', 'W', etc.)
         size (tuple): Size of the unit graphic (width, height)
         is_alive (bool): Whether the unit is still alive
@@ -25,7 +27,7 @@ class BaseUnit(ABC):
         secondary_color (tuple): Secondary color based on player
     """
     
-    def __init__(self, initial_position, player, movement_range, unit_char):
+    def __init__(self, initial_position, player, movement_range, unit_char, image_path=None):
 
         """
         Initialize a new unit with basic attributes and systems.
@@ -35,6 +37,7 @@ class BaseUnit(ABC):
             player (int): Player number (1 or 2)
             movement_range (int): Number of squares the unit can move
             unit_char (str): Character to display on the unit
+            formatior (str): Current formation of the unit
             
         Raises:
             ValueError: If position format is invalid or player number is not 1 or 2
@@ -54,6 +57,12 @@ class BaseUnit(ABC):
             raise ValueError("Unit character must be a single character in units/base_unit")
 
         self.position = initial_position
+        self.attack_points = 0
+        self.defense_points = 0
+        self.remaining_units = 0
+        self.image_path = image_path
+        if self.image_path:
+            self.sprite = pygame.image.load(self.image_path).convert_alpha()
         self.player = player
         self.movement_range = movement_range
         self.unit_char = unit_char
@@ -197,11 +206,16 @@ class BaseUnit(ABC):
             x = self.position[1] * square_width + margin
             y = self.position[0] * square_height + margin
 
-            pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
-            pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
-            text_surface = self.font.render(self.unit_char, True, Colors.TEXT)
-            text_rect = text_surface.get_rect(center=(x + unit_width/2, y + unit_height/2))
-            screen.blit(text_surface, text_rect)
+            if self.image_path:
+                resized_sprite = pygame.transform.scale(self.sprite, (unit_width, unit_height))
+                screen.blit(resized_sprite, (x, y))
+
+            else:
+                pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
+                pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
+                text_surface = self.font.render(self.unit_char, True, Colors.TEXT)
+                text_rect = text_surface.get_rect(center=(x + unit_width/2, y + unit_height/2))
+                screen.blit(text_surface, text_rect)
 
         except Exception as e:
             raise RuntimeError(f"Failed to draw unit in units/base_unit: {str(e)}")
