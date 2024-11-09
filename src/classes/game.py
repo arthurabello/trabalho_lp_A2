@@ -193,7 +193,7 @@ class Game:
             self.screen.blit(mp_surface, (padding * 2, screen_height - (line_height * 2) - padding))
         
     def _update_status_surface(self):
-        """Update status surface"""
+        """Update the status surface with information of units and formations"""
         
         self.status_surface.fill((50, 50, 50))
 
@@ -205,13 +205,17 @@ class Game:
             remaining_units_text = self.mini_font.render(f"Remaining Units: {self.selected_unit.remaining_units}", True, (255, 255, 255))
             attack_text = self.mini_font.render(f"Attack: {self.selected_unit.attack_points}", True, (255, 255, 255))
             defense_text = self.mini_font.render(f"Defense: {self.selected_unit.defense_points}", True, (255, 255, 255))
+            formation_text = self.mini_font.render(f"Formation: {self.selected_unit.formation}", True, (255, 255, 255))
+            change_formation_text = self.mini_font.render(f"Press 'G' to change formation", True, (255,255,255))
                 
             self.status_surface.blit(name_text, (10, 40))
             self.status_surface.blit(remaining_units_text, (10, 70))
             self.status_surface.blit(attack_text, (10, 100))
             self.status_surface.blit(defense_text, (10, 130))
+            self.status_surface.blit(formation_text, (10,160))
+            self.status_surface.blit(change_formation_text, (10, 190))
         else:
-            no_unit_text = self.mini_font.render("Selecione uma unidade", True, (255, 255, 255))
+            no_unit_text = self.mini_font.render("Select a Unit", True, (255, 255, 255))
             self.status_surface.blit(no_unit_text, (10, 40))
 
     def _handle_general_movement(self, clicked_unit):
@@ -369,6 +373,8 @@ class Game:
             self.toggle_fullscreen()
         elif event.key == pygame.K_SPACE:
             self._end_turn()
+        elif event.key == pygame.K_g: 
+            self.toggle_formation()
 
     def _end_turn(self):
 
@@ -413,6 +419,15 @@ class Game:
                     
                 elif event.type == pygame.VIDEORESIZE:
                     self._handle_resize(event)
+    
+    def toggle_formation(self):
+        """Switches to the next formation of the selected unit."""
+        if self.selected_unit:
+            formations = list(self.selected_unit.formations.keys())
+            current_index = formations.index(self.selected_unit.formation)
+            next_index = (current_index + 1) % len(formations)
+            next_formation = formations[next_index]
+            self.selected_unit.change_formation(next_formation)
 
     def toggle_fullscreen(self):
 
