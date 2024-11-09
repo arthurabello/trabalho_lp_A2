@@ -3,6 +3,7 @@ Warrior unit implementation. Warriors are the main combat units with
 greater mobility than Kings but less strategic importance.
 """
 
+import os
 from .base_unit import BaseUnit
 from .constants import Colors
 
@@ -19,7 +20,7 @@ class Warrior(BaseUnit):
         attack_bonus (int): Additional attack strength for this warrior
     """
     
-    def __init__(self, initial_position, player, image_path=None, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard"):
 
         """
         Initialize a new Warrior unit.
@@ -27,7 +28,6 @@ class Warrior(BaseUnit):
         Args:
             initial_position (tuple): Starting position (row, col)
             player (int): Player number (1 or 2)
-            image_path (str): Optional path to the warrior sprite image
         """
 
         super().__init__(
@@ -35,7 +35,6 @@ class Warrior(BaseUnit):
             player=player,
             movement_range=3,
             unit_char='W',
-            image_path=image_path,
             formation=formation
         )
 
@@ -54,6 +53,13 @@ class Warrior(BaseUnit):
             }
         }
 
+        sprite_dir = os.path.join('..', 'assets', 'sprites')
+        self.formation_sprites = {
+            "Standard": self._load_sprite(os.path.join(sprite_dir, 'warrior.png')),
+            "Defensive": self._load_sprite(os.path.join(sprite_dir, 'warrior_defense.png')),
+            "Aggressive": self._load_sprite(os.path.join(sprite_dir, 'warrior_attack.png'))
+        }
+
         self.base_attack = 10
         self.base_defense = 5
 
@@ -65,7 +71,16 @@ class Warrior(BaseUnit):
 
         self.primary_color = (Colors.PLAYER1_SECONDARY if player == 1 
                             else Colors.PLAYER2_SECONDARY)
+        
+        self._update_sprite()
     
+    def _update_sprite(self):
+        """Update the current sprite based on the unit's formation"""
+        if self.formation in self.formation_sprites:
+            self.sprite = self.formation_sprites[self.formation]
+        else:
+            self.sprite = self.formation_sprites.get("Standard")
+
     def can_move_to(self, position, board, all_units):
 
         """

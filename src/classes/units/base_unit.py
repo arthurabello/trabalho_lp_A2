@@ -3,6 +3,7 @@ This module contains the abstract base class for all units in the game.
 """
 
 import pygame
+import os
 from abc import ABC, abstractmethod
 from .constants import Colors, Paths, UnitDefaults
 
@@ -19,7 +20,6 @@ class BaseUnit(ABC):
         formation (str): Current formation of the unit
         player (int): Player number (1 or 2) who owns this unit
         movement_range (int): Number of squares the unit can move
-        image_path (str): path for the image sprite
         unit_char (str): Character to display on the unit ('K', 'W', etc.)
         size (tuple): Size of the unit graphic (width, height)
         is_alive (bool): Whether the unit is still alive
@@ -27,7 +27,7 @@ class BaseUnit(ABC):
         secondary_color (tuple): Secondary color based on player
     """
     
-    def __init__(self, initial_position, player, movement_range, unit_char, image_path=None, formation="Standard"):
+    def __init__(self, initial_position, player, movement_range, unit_char, formation="Standard"):
 
         """
         Initialize a new unit with basic attributes and systems.
@@ -60,7 +60,6 @@ class BaseUnit(ABC):
         self.attack_points = 0
         self.defense_points = 0
         self.remaining_units = 0
-        self.image_path = image_path
         self.formation = formation
         self.formations = {
             "normal": {
@@ -68,9 +67,6 @@ class BaseUnit(ABC):
                 "deffense_modifier": 1.0, 
             }
         }
-
-        if self.image_path:
-            self.sprite = pygame.image.load(self.image_path).convert_alpha()
 
         self.player = player
         self.movement_range = movement_range
@@ -155,6 +151,34 @@ class BaseUnit(ABC):
                 def set_volume(self, vol): pass
             self.move_sound = DummySound()
             self.attack_sound = DummySound()
+
+    def _load_sprite(self, sprite_path):
+        """
+        Load a sprite from a given path.
+
+        Args:
+            sprite_path (str): Path to the sprite image
+        
+        Returns:
+            pygame.Surface: Loaded and converted sprite image
+        """
+        try:
+            if os.path.exists(sprite_path):
+                return pygame.image.load(sprite_path).convert_alpha()
+            else:
+                print(f"Warning: Sprite not found at {sprite_path}")
+                return None
+        except Exception as e:
+            print(f"Error loading sprite {sprite_path}: {str(e)}")
+            return None
+    
+    @abstractmethod
+    def _update_sprite(self):
+        """
+        Update the current sprite based on formation.
+        Should be implemented by derived classes.
+        """
+        pass
     
     def move(self, new_position):
 
@@ -226,6 +250,8 @@ class BaseUnit(ABC):
             self.attack_points = int(self.base_attack * modifiers['attack_modifier'])
             self.defense_points = int(self.base_defense * modifiers['defense_modifier'])
 
+            self._update_sprite()
+
 
     def draw(self, screen, board):
         """Updated draw method to include the general's flag"""
@@ -251,7 +277,7 @@ class BaseUnit(ABC):
             x = self.position[1] * square_width + margin
             y = self.position[0] * square_height + margin
 
-            if self.image_path:
+            if self.sprite:
                 resized_sprite = pygame.transform.scale(self.sprite, (unit_width, unit_height))
                 screen.blit(resized_sprite, (x, y))
             else:
@@ -266,6 +292,7 @@ class BaseUnit(ABC):
         except Exception as e:
             raise RuntimeError(f"Failed to draw unit in units/base_unit: {str(e)}")
 
+    @abstractmethod
     def can_move_to(self, position, board, *args, **kwargs):
 
         """
@@ -280,5 +307,4 @@ class BaseUnit(ABC):
         Returns:
             bool: True if the move is valid, False otherwise
         """
-        
         pass
