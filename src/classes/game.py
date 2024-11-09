@@ -5,7 +5,6 @@ This module represents the main game structure, responsible for initializing, ha
 import pygame
 import os
 from .board import Board
-from .units.king import King
 from .units.warrior import Warrior
 
 class Game:
@@ -60,11 +59,11 @@ class Game:
         self.current_size = [self.screen_width, self.screen_height]
         self.resizing = False
         
-        self.king1 = King((0, self.n // 4), player=1)
-        self.king2 = King((0, 3 * self.n // 4), player=2)
-        
         self.warriors1 = self._create_warriors(1)
         self.warriors2 = self._create_warriors(2)
+
+        self.warriors1[0].has_general = True 
+        self.warriors2[0].has_general = True  
         
         self.selected_unit = None
         self.current_player = 1
@@ -100,9 +99,9 @@ class Game:
         """
 
         if player == 1:
-            return [self.king1] + self.warriors1
+            return self.warriors1
         else:
-            return [self.king2] + self.warriors2
+            return self.warriors2
 
     def _create_warriors(self, player):
 
@@ -132,9 +131,7 @@ class Game:
         Returns a list of all units in the game
         """
 
-        return ([self.king1, self.king2] + 
-                self.warriors1 + 
-                self.warriors2)
+        return self.warriors1 + self.warriors2
     
     def _get_unit_at_position(self, position):
 
@@ -204,7 +201,6 @@ class Game:
         self.status_surface.blit(status_text, (10, 10))
     
         if self.selected_unit:
-            # Renders name and status of select unit
             name_text = self.mini_font.render(f"Unit: {self.selected_unit.__class__.__name__}", True, (255, 255, 255))
             remaining_units_text = self.mini_font.render(f"Remaining Units: {self.selected_unit.remaining_units}", True, (255, 255, 255))
             attack_text = self.mini_font.render(f"Attack: {self.selected_unit.attack_points}", True, (255, 255, 255))
@@ -215,82 +211,209 @@ class Game:
             self.status_surface.blit(attack_text, (10, 100))
             self.status_surface.blit(defense_text, (10, 130))
         else:
-
             no_unit_text = self.mini_font.render("Selecione uma unidade", True, (255, 255, 255))
             self.status_surface.blit(no_unit_text, (10, 40))
 
+    def _handle_general_movement(self, clicked_unit):
+
+        """
+        Handle movement of the general between units
+        
+        Args:
+            clicked_unit (BaseUnit): The unit that was clicked
+        
+        Returns:
+            bool: True if general movement was handled, False otherwise
+        """
+
+        if (self.selected_unit and 
+            self.selected_unit.has_general and 
+            self._can_general_move(self.selected_unit, clicked_unit)):
+            
+            self.selected_unit.has_general = False
+            clicked_unit.has_general = True
+            self.selected_unit = None
+            self.board.select_square(None, 0)
+            return True
+        return False
+
+    def _handle_unit_selection(self, clicked_unit, clicked_square):
+
+        """
+        Handle the selection of a unit
+        
+        Args:
+            clicked_unit (BaseUnit): The unit that was clicked
+            clicked_square (tuple): The board position that was clicked
+        """
+
+        if clicked_unit and clicked_unit.player == self.current_player:
+            if not self._handle_general_movement(clicked_unit):
+                self.selected_unit = clicked_unit
+                self.board.select_square(clicked_square, 
+                                       self.movement_points[clicked_unit])
+            self._draw_board()
+
+    def _handle_unit_movement(self, clicked_square):
+
+        """
+        Handle movement and combat of selected unit
+        
+        Args:
+            clicked_square (tuple): The target position
+        """
+
+        if not self.selected_unit or clicked_square not in self.board.reachable_positions:
+            return
+
+        row1, col1 = self.selected_unit.position
+        row2, col2 = clicked_square
+        movement_cost = max(abs(row1 - row2), abs(col1 - col2))
+        
+        if self.movement_points[self.selected_unit] >= movement_cost:
+            self._execute_movement(clicked_square, movement_cost)
+
+    def _execute_movement(self, target_square, movement_cost):
+
+        """
+        Execute the actual movement and potential combat
+        
+        Args:
+            target_square (tuple): The target position
+            movement_cost (int): Cost of the movement
+        """
+
+        target_unit = self._get_unit_at_position(target_square)
+        
+        if target_unit and target_unit.player != self.current_player:
+            self._handle_combat(target_unit)
+            self.selected_unit.move(target_square)
+            self.movement_points[self.selected_unit] -= movement_cost
+            
+        elif not target_unit:
+            self.selected_unit.move(target_square)
+            self.movement_points[self.selected_unit] -= movement_cost
+        
+        self._update_unit_selection(target_square)
+
+    def _handle_combat(self, target_unit):
+
+        """
+        Handle combat between units
+        
+        Args:
+            target_unit (BaseUnit): The unit being attacked
+        """
+
+        self.selected_unit.attack(target_unit)
+        
+        if target_unit.has_general:
+            self.game_over = True
+            self.winner = self.current_player
+
+    def _update_unit_selection(self, new_position):
+
+        """
+        Update unit selection state after movement
+        
+        Args:
+            new_position (tuple): The new position of the unit
+        """
+
+        if self.movement_points[self.selected_unit] <= 0:
+            self.board.select_square(None, 0)
+            self.selected_unit = None
+        else:
+            self.board.select_square(new_position, 
+                                   self.movement_points[self.selected_unit])
+        self._draw_board()
+
+    def _handle_mouse_click(self, event, mouse_position):
+
+        """
+        Handle mouse click events
+        
+        Args:
+            event (pygame.Event): The mouse event
+            mouse_position (tuple): Position of the mouse click
+        """
+
+        clicked_square = self.board.get_square_from_click(mouse_position, 
+                                                        self.board_surface)
+        if clicked_square is None:
+            return
+
+        if event.button == 1: 
+            clicked_unit = self._get_unit_at_position(clicked_square)
+            
+            if clicked_unit and clicked_unit.player == self.current_player:
+                self._handle_unit_selection(clicked_unit, clicked_square)
+            else:
+                self._handle_unit_movement(clicked_square)
+                
+        elif event.button == 3:  
+            self.selected_unit = None
+            self.board.select_square(None, 0)
+            self._draw_board()
+
+    def _handle_key_press(self, event):
+
+        """
+        Handle keyboard events
+        
+        Args:
+            event (pygame.Event): The keyboard event
+        """
+
+        if event.key == pygame.K_f:
+            self.toggle_fullscreen()
+        elif event.key == pygame.K_SPACE:
+            self._end_turn()
+
+    def _end_turn(self):
+
+        """
+        Handle the end of a player's turn
+        """
+
+        self.current_player = 3 - self.current_player  
+        self.selected_unit = None
+        self.board.select_square(None, 0)
+        self._reset_movement_points()
+        self._draw_board()
+
+    def _handle_resize(self, event):
+
+        """
+        Handle window resize events
+        
+        Args:
+            event (pygame.Event): The resize event
+        """
+
+        self.resizing = True
+        self.current_size = [event.w, event.h]
+
     def handle_events(self):
+
+        """
+        Handles some events, including quitting, mouse clicks, and key presses.
+        """
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
 
             elif not self.game_over:
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_position = pygame.mouse.get_pos()
-                    clicked_square = self.board.get_square_from_click(mouse_position, self.board_surface)
+                    self._handle_mouse_click(event, pygame.mouse.get_pos())
                     
-                    if clicked_square is None:
-                        continue
-
-                    if event.button == 1:  
-                        clicked_unit = self._get_unit_at_position(clicked_square)
-                        
-                        if clicked_unit and clicked_unit.player == self.current_player:
-                            self.selected_unit = clicked_unit
-                            self.board.select_square(clicked_square, self.movement_points[clicked_unit])
-                            self._draw_board()
-                            
-                        elif self.selected_unit and clicked_square in self.board.reachable_positions:
-                            row1, col1 = self.selected_unit.position
-                            row2, col2 = clicked_square
-                            movement_cost = max(abs(row1 - row2), abs(col1 - col2))
-                            
-                            if self.movement_points[self.selected_unit] >= movement_cost:
-                                target_unit = self._get_unit_at_position(clicked_square)
-                                
-                                if target_unit and target_unit.player != self.current_player:
-                                    self.selected_unit.attack(target_unit)
-
-                                    if isinstance(target_unit, King):
-                                        self.game_over = True
-                                        self.winner = self.current_player
-
-                                    self.selected_unit.move(clicked_square)
-                                    self.movement_points[self.selected_unit] -= movement_cost
-
-                                elif not target_unit:
-                                    self.selected_unit.move(clicked_square)
-                                    self.movement_points[self.selected_unit] -= movement_cost
-                                
-                                if self.movement_points[self.selected_unit] <= 0:
-                                    self.board.select_square(None, 0)
-                                    self.selected_unit = None
-
-                                else:
-                                    self.board.select_square(clicked_square, 
-                                                          self.movement_points[self.selected_unit])
-                                self._draw_board()
-                    
-                    elif event.button == 3:  
-                        self.selected_unit = None
-                        self.board.select_square(None, 0)
-                        self._draw_board()
-
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_f:
-                        self.toggle_fullscreen()
+                    self._handle_key_press(event)
+                    
+                elif event.type == pygame.VIDEORESIZE:
+                    self._handle_resize(event)
 
-                    elif event.key == pygame.K_SPACE:  
-                        self.current_player = 3 - self.current_player
-                        self.selected_unit = None
-                        self.board.select_square(None, 0)
-                        self._reset_movement_points()
-                        self._draw_board()
-
-            elif event.type == pygame.VIDEORESIZE:
-                self.resizing = True
-                self.current_size = [event.w, event.h]
-    
     def toggle_fullscreen(self):
 
         """
@@ -337,6 +460,50 @@ class Game:
             self.fullscreen = False
             self.screen = pygame.display.set_mode(self.current_size, pygame.RESIZABLE)
     
+    def _can_general_move(self, from_unit, to_unit):
+
+        """
+        Check if the general can move between units
+        
+        Args:
+            from_unit (BaseUnit): Unit the general is currently in
+            to_unit (BaseUnit): Un:
+            it the general wants to move to
+            
+        Returns:
+            bool: True if movement is valid
+        """
+
+        if not from_unit.has_general or not to_unit.is_alive:
+            return False
+            
+        if to_unit.player != self.current_player:
+            return False
+            
+        row1, col1 = from_unit.position
+        row2, col2 = to_unit.position
+        return abs(row1 - row2) <= 1 and abs(col1 - col2) <= 1
+    
+    def _get_all_units(self):
+        return self.warriors1 + self.warriors2
+
+    def _check_game_over(self):
+
+        """
+        Checks if a general has been killed
+        """
+
+        for player_units in [self.warriors1, self.warriors2]:
+            has_general = False
+            for unit in player_units:
+                if unit.is_alive and unit.has_general:
+                    has_general = True
+                    break
+            if not has_general:
+                self.game_over = True
+                self.winner = 2 if player_units == self.warriors1 else 1
+                break
+
     def render(self):
 
         """
@@ -358,9 +525,6 @@ class Game:
             
             scaled_board = Board(self.m, self.n, self.scaled_size[0], self.scaled_size[1])
             
-            self.king1.draw(temp_surface, scaled_board)
-            self.king2.draw(temp_surface, scaled_board)
-            
             for warrior in self.warriors1 + self.warriors2:
                 warrior.draw(temp_surface, scaled_board)
             
@@ -374,9 +538,7 @@ class Game:
         else:
             self.screen.blit(self.background, (0, 0))
             self.screen.blit(self.board_surface, (0,0))
-            self.king1.draw(self.board_surface, self.board)
-            self.king2.draw(self.board_surface, self.board)
-            
+
             for warrior in self.warriors1 + self.warriors2:
                 warrior.draw(self.board_surface, self.board)
             
