@@ -27,7 +27,7 @@ class BaseUnit(ABC):
         secondary_color (tuple): Secondary color based on player
     """
     
-    def __init__(self, initial_position, player, movement_range, unit_char, image_path=None):
+    def __init__(self, initial_position, player, movement_range, unit_char, image_path=None, formation="Standard"):
 
         """
         Initialize a new unit with basic attributes and systems.
@@ -61,6 +61,14 @@ class BaseUnit(ABC):
         self.defense_points = 0
         self.remaining_units = 0
         self.image_path = image_path
+        self.formation = formation
+        self.formations = {
+            "normal": {
+                "attack_modifier": 1.0,
+                "deffense_modifier": 1.0, 
+            }
+        }
+
         if self.image_path:
             self.sprite = pygame.image.load(self.image_path).convert_alpha()
 
@@ -203,6 +211,21 @@ class BaseUnit(ABC):
         row, col = self.position
         target_row, target_col = target_position
         return abs(row - target_row) <= self.movement_range and abs(col - target_col) <= self.movement_range
+    
+    def change_formation(self, formation_name):
+        """
+        Change the unit's formation and apply corresponding modifiers.
+        
+        Args:
+            formation_name (str): Name of the formation to switch to
+        """
+        if formation_name in self.formations:
+            self.formation = formation_name
+            modifiers = self.formations[formation_name]
+            
+            self.attack_points = int(self.base_attack * modifiers['attack_modifier'])
+            self.defense_points = int(self.base_defense * modifiers['defense_modifier'])
+
 
     def draw(self, screen, board):
         """Updated draw method to include the general's flag"""
