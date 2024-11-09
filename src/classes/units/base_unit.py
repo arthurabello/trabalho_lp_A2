@@ -63,14 +63,48 @@ class BaseUnit(ABC):
         self.image_path = image_path
         if self.image_path:
             self.sprite = pygame.image.load(self.image_path).convert_alpha()
+
         self.player = player
         self.movement_range = movement_range
         self.unit_char = unit_char
         self.size = (0, 0)
         self.is_alive = True
         self._init_colors()
+        self.has_general = False 
         self._init_systems()
+        
     
+    def _draw_general_flag(self, screen, x, y, unit_width, unit_height):
+        """
+        Draws a flag on top of the unit if it contains the general.
+        
+        Args:
+            screen (pygame.Surface): Game screen to draw on
+            x (int): X coordinate of the unit
+            y (int): Y coordinate of the unit
+            unit_width (int): Width of the unit
+            unit_height (int): Height of the unit
+        """
+        if not self.has_general:
+            return
+            
+        flag_height = unit_height * 0.3
+        flag_width = unit_width * 0.4
+        pole_width = flag_width * 0.1  
+        
+        flag_x = x + (unit_width - flag_width) / 2
+        flag_y = y - flag_height
+        pygame.draw.rect(screen, Colors.BORDER, 
+                        (flag_x, flag_y, pole_width, flag_height))
+        
+        flag_color = Colors.PLAYER1_PRIMARY if self.player == 1 else Colors.PLAYER2_PRIMARY
+        flag_points = [
+            (flag_x + pole_width, flag_y),  
+            (flag_x + flag_width, flag_y + flag_height * 0.3),  
+            (flag_x + pole_width, flag_y + flag_height * 0.6),  
+        ]
+        pygame.draw.polygon(screen, flag_color, flag_points)
+
     def _init_colors(self):
 
         """
@@ -171,19 +205,7 @@ class BaseUnit(ABC):
         return abs(row - target_row) <= self.movement_range and abs(col - target_col) <= self.movement_range
 
     def draw(self, screen, board):
-
-        """
-        Draw the unit on the screen.
-        
-        Args:
-            screen (pygame.Surface): Game screen to draw on
-            board (Board): Game board instance for size calculations
-            
-        Raises:
-            ValueError: If screen or board is invalid
-            RuntimeError: If drawing fails
-        """
-
+        """Updated draw method to include the general's flag"""
         if not self.is_alive:
             return
 
@@ -209,13 +231,14 @@ class BaseUnit(ABC):
             if self.image_path:
                 resized_sprite = pygame.transform.scale(self.sprite, (unit_width, unit_height))
                 screen.blit(resized_sprite, (x, y))
-
             else:
                 pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
                 pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
                 text_surface = self.font.render(self.unit_char, True, Colors.TEXT)
                 text_rect = text_surface.get_rect(center=(x + unit_width/2, y + unit_height/2))
                 screen.blit(text_surface, text_rect)
+
+            self._draw_general_flag(screen, x, y, unit_width, unit_height)
 
         except Exception as e:
             raise RuntimeError(f"Failed to draw unit in units/base_unit: {str(e)}")
