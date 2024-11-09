@@ -3,7 +3,6 @@ This module represents the main game structure, responsible for initializing, ha
 """
 
 import pygame
-import os
 from .board import Board
 from .units.warrior import Warrior
 
@@ -23,7 +22,7 @@ class Game:
         if self.m <= 0 or self.n <= 0:
             raise ValueError("Invalid board dimensions in game/init")
         
-        self.screen_width = self.n * 50 + 200 # +200 for status screen
+        self.screen_width = self.n * 50 + 300 # +300 for status screen
         self.screen_height = self.m * 50
 
         self.board_width = self.n * 50
@@ -52,7 +51,7 @@ class Game:
         self.board = Board(self.m, self.n, self.board_width, self.board_height)
         self.board_surface = pygame.Surface((self.board_width, self.board_height))
         
-        self.status_surface = pygame.Surface((200, self.screen_height))
+        self.status_surface = pygame.Surface((300, self.screen_height))
 
         self.running = True
         self.fullscreen = False
@@ -109,8 +108,6 @@ class Game:
         Position the warriors in a rectangular shape
         """
 
-        image_warriors = os.path.join('..','assets','sprites','warrior.png')
-
         warriors = []
         if player == 1:
             start_col = 2
@@ -120,7 +117,7 @@ class Game:
         for row in range(2):
             for col in range(5):
                 position = (row + 1, start_col + col)
-                warrior = Warrior(position, player, image_warriors)
+                warrior = Warrior(position, player)
                 warriors.append(warrior)
                 
         return warriors
