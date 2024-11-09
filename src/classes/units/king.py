@@ -19,7 +19,7 @@ class King(BaseUnit):
         special_ability_used (bool): Tracks if the king has used its special ability
     """
     
-    def __init__(self, initial_position, player):
+    def __init__(self, initial_position, player, image_path=None):
 
         """
         Initialize a new King unit.
@@ -27,18 +27,16 @@ class King(BaseUnit):
         Args:
             initial_position (tuple): Starting position (row, col)
             player (int): Player number (1 or 2)
+            image_path (str): Optional path to the king sprite image
         """
 
         super().__init__(
             initial_position=initial_position,
             player=player,
             movement_range=1,
-            unit_char='K'
+            unit_char='K',
+            image_path=image_path
         )
-        self.attack_points = 10
-        self.defense_points = 5
-        self.remaining_units = 100
-        
         self.attack_points = 10
         self.defense_points = 5
         self.remaining_units = 100
