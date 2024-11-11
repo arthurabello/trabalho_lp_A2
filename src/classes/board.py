@@ -57,7 +57,7 @@ class Board:
         self.reachable_positions = set()
 
     def get_square_from_click(self, mouse_pos, screen) -> None:
-        
+
         """
         Determines the board square corresponding to a mouse click based on screen dimensions.
 
@@ -75,13 +75,20 @@ class Board:
         
         width, height = screen.get_size()
         if x < 0 or x >= width or y < 0 or y >= height:
-            return None #clicked outside the broad
+            return None  # clicked outside the board
         
-        square_width = width // self.n
-        square_height = height // self.m
+        square_width = self.initial_width // self.n
+        square_height = self.initial_height // self.m
 
-        column = x // square_width
-        row = y // square_height
+        scale_x = width / self.initial_width
+        scale_y = height / self.initial_height
+
+        scaled_x = x / scale_x
+        scaled_y = y / scale_y
+
+        column = int(scaled_x // square_width)
+        row = int(scaled_y // square_height)
+        
         if row >= self.m or column >= self.n:
             return None 
         
@@ -114,19 +121,19 @@ class Board:
         else:
             self.reachable_positions = set()
 
-    def draw(self, screen, selected_square=None) -> None:
+    def draw(self, screen, selected_square=None):
 
         """
-        Draws the board on the screen, highlighting reachable positions and the selected square.
-
+        Draws the board, with highlights for reachable and selected squares.
+        
         Args:
-            screen (pygame.Surface): The game screen surface
-            selected_square (tuple, optional): The currently selected square to highlight. Defaults to None.
+            screen (pygame.Surface): Surface to draw the board on
+            selected_square (tuple or None): Currently selected square coordinates
         """
-
+        
         if not screen:
-            raise ValueError("Invalid screen surface in board/draw") #Houston we have a problem
-            
+            raise ValueError("Invalid screen surface in board/draw")
+                
         width, height = screen.get_size()
         if width <= 0 or height <= 0:
             raise ValueError("Invalid screen dimensions in board/draw")
@@ -138,7 +145,8 @@ class Board:
             for column in range(self.n):
                 color = self.COLOR_LIGHT_GREEN if (row + column) % 2 == 0 else self.COLOR_DARK_GREEN
 
-                pygame.draw.rect(screen, color,(column * square_width, row * square_height, square_width, square_height))
+                pygame.draw.rect(screen, color,
+                            (column * square_width, row * square_height, square_width, square_height))
 
                 if (row, column) in self.reachable_positions:
                     highlight_surface = pygame.Surface((square_width, square_height), pygame.SRCALPHA)
@@ -146,4 +154,5 @@ class Board:
                     screen.blit(highlight_surface, (column * square_width, row * square_height))
 
                 if selected_square and (row, column) == selected_square:
-                    pygame.draw.rect(screen, self.COLOR_RED, (column * square_width, row * square_height, square_width, square_height), 3)
+                    pygame.draw.rect(screen, self.COLOR_RED, 
+                                (column * square_width, row * square_height, square_width, square_height), 3)

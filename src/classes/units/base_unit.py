@@ -153,6 +153,7 @@ class BaseUnit(ABC):
             self.attack_sound = DummySound()
 
     def _load_sprite(self, sprite_path):
+
         """
         Load a sprite from a given path.
 
@@ -162,6 +163,7 @@ class BaseUnit(ABC):
         Returns:
             pygame.Surface: Loaded and converted sprite image
         """
+
         try:
             if os.path.exists(sprite_path):
                 return pygame.image.load(sprite_path).convert_alpha()
@@ -174,10 +176,12 @@ class BaseUnit(ABC):
     
     @abstractmethod
     def _update_sprite(self):
+
         """
         Update the current sprite based on formation.
         Should be implemented by derived classes.
         """
+
         pass
     
     def move(self, new_position):
@@ -237,12 +241,14 @@ class BaseUnit(ABC):
         return abs(row - target_row) <= self.movement_range and abs(col - target_col) <= self.movement_range
     
     def change_formation(self, formation_name):
+
         """
         Change the unit's formation and apply corresponding modifiers.
         
         Args:
             formation_name (str): Name of the formation to switch to
         """
+
         if formation_name in self.formations:
             self.formation = formation_name
             modifiers = self.formations[formation_name]
@@ -254,20 +260,26 @@ class BaseUnit(ABC):
 
 
     def draw(self, screen, board):
-        """Updated draw method to include the general's flag"""
+
+        """
+        Draw the unit on the screen.
+        """
+
         if not self.is_alive:
             return
 
-        if not screen or not board:
-            raise ValueError("Invalid screen or board object in units/base_unit")
-
         try:
             width, height = screen.get_size()
+            print(f"Screen dimensions: {width}x{height}") 
+            
             if width <= 0 or height <= 0:
                 raise ValueError("Invalid screen dimensions in units/base_unit")
 
             square_width = width // board.n
             square_height = height // board.m
+            
+            print(f"Square dimensions: {square_width}x{square_height}")  
+            
             self.size = (square_width, square_height)
 
             margin = square_width * (1 - UnitDefaults.UNIT_SCALE) / 2
@@ -276,20 +288,27 @@ class BaseUnit(ABC):
             
             x = self.position[1] * square_width + margin
             y = self.position[0] * square_height + margin
+            
+            print(f"Drawing unit at: {x},{y} with size {unit_width}x{unit_height}") 
 
-            if self.sprite:
-                resized_sprite = pygame.transform.scale(self.sprite, (unit_width, unit_height))
-                screen.blit(resized_sprite, (x, y))
-            else:
-                pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
-                pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
-                text_surface = self.font.render(self.unit_char, True, Colors.TEXT)
-                text_rect = text_surface.get_rect(center=(x + unit_width/2, y + unit_height/2))
-                screen.blit(text_surface, text_rect)
+            pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
+            pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
+
+            if hasattr(self, 'sprite') and self.sprite is not None:
+                try:
+                    resized_sprite = pygame.transform.scale(self.sprite, (unit_width, unit_height))
+                    screen.blit(resized_sprite, (x, y))
+                except Exception as e:
+                    print(f"Failed to draw sprite: {e}") 
+
+            text_surface = self.font.render(self.unit_char, True, Colors.TEXT)
+            text_rect = text_surface.get_rect(center=(x + unit_width/2, y + unit_height/2))
+            screen.blit(text_surface, text_rect)
 
             self._draw_general_flag(screen, x, y, unit_width, unit_height)
 
         except Exception as e:
+            print(f"Error in draw method: {str(e)}") 
             raise RuntimeError(f"Failed to draw unit in units/base_unit: {str(e)}")
 
     @abstractmethod
