@@ -4,7 +4,9 @@ greater mobility than Kings but less strategic importance.
 """
 
 import os
+import pygame
 from .base_unit import BaseUnit
+from .base_unit import UnitDefaults
 from .constants import Colors
 
 class Warrior(BaseUnit):
@@ -60,6 +62,9 @@ class Warrior(BaseUnit):
             "Aggressive": self._load_sprite(os.path.join(sprite_dir, 'warrior_attack.png'))
         }
 
+        print(f"Loading sprites from: {sprite_dir}")
+        print(f"Sprites loaded: {[bool(sprite) for sprite in self.formation_sprites.values()]}")
+
         self.base_attack = 10
         self.base_defense = 5
 
@@ -73,9 +78,42 @@ class Warrior(BaseUnit):
                             else Colors.PLAYER2_SECONDARY)
         
         self._update_sprite()
+
+    def draw(self, screen, board):
+        """Override draw method to ensure visibility even without sprites"""
+        if not self.is_alive:
+            return
+
+        width, height = screen.get_size()
+        square_width = width // board.n
+        square_height = height // board.m
+        
+        margin = square_width * (1 - UnitDefaults.UNIT_SCALE) / 2
+        unit_width = square_width * UnitDefaults.UNIT_SCALE
+        unit_height = square_height * UnitDefaults.UNIT_SCALE
+        
+        x = self.position[1] * square_width + margin
+        y = self.position[0] * square_height + margin
+
+        if not hasattr(self, 'sprite') or self.sprite is None:
+            pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
+            pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
+            
+            text_surface = self.font.render('W', True, Colors.TEXT)
+            text_rect = text_surface.get_rect(center=(x + unit_width/2, y + unit_height/2))
+            screen.blit(text_surface, text_rect)
+        else:
+            resized_sprite = pygame.transform.scale(self.sprite, (unit_width, unit_height))
+            screen.blit(resized_sprite, (x, y))
+
+        self._draw_general_flag(screen, x, y, unit_width, unit_height)
     
     def _update_sprite(self):
-        """Update the current sprite based on the unit's formation"""
+
+        """
+        Updates the sprite based on the current formation.
+        """
+
         if self.formation in self.formation_sprites:
             self.sprite = self.formation_sprites[self.formation]
         else:
