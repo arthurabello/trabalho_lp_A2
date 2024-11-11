@@ -8,7 +8,6 @@ from .units.warrior import Warrior
 
 class Game:
     def __init__(self):
-        
         try:
             pygame.init()
             if pygame.get_error():
@@ -22,15 +21,20 @@ class Game:
         if self.m <= 0 or self.n <= 0:
             raise ValueError("Invalid board dimensions in game/init")
         
-        self.screen_width = self.n * 50 + 300 # +300 for status screen
-        self.screen_height = self.m * 50
-
+        display_info = pygame.display.Info()
+        self.max_screen_width = display_info.current_w
+        self.max_screen_height = display_info.current_h
+        self.windowed_width = self.n * 50 + 300  #+300 for status screen
+        self.windowed_height = self.m * 50
+        
+        self.is_fullscreen = False
+        self.screen_width = self.windowed_width
+        self.screen_height = self.windowed_height
         self.board_width = self.n * 50
         self.board_height = self.m * 50
 
         try:
-            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 
-                                                pygame.RESIZABLE)
+            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
             if not self.screen:
                 raise RuntimeError("Failed to create game window in game/init")
                 
@@ -42,21 +46,15 @@ class Game:
             pygame.quit()
             raise RuntimeError(f"Failed to initialize display in game/init: {str(e)}")
 
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 
-                                            pygame.RESIZABLE)
-        
-        self.background = pygame.Surface(self.screen.get_size())
         pygame.display.set_caption("Warbound")
         
         self.board = Board(self.m, self.n, self.board_width, self.board_height)
         self.board_surface = pygame.Surface((self.board_width, self.board_height))
+        self.selected_square = None
         
         self.status_surface = pygame.Surface((300, self.screen_height))
 
         self.running = True
-        self.fullscreen = False
-        self.current_size = [self.screen_width, self.screen_height]
-        self.resizing = False
         
         self.warriors1 = self._create_warriors(1)
         self.warriors2 = self._create_warriors(2)
@@ -80,6 +78,42 @@ class Game:
         self.small_font = pygame.font.Font(None, 36) #UI elements
         self.mini_font = pygame.font.Font(None, 24)  #status elements
         self._draw_board()
+
+    def toggle_fullscreen(self):
+
+        """
+        Toggle between fullscreen and windowed mode
+        """
+
+        self.is_fullscreen = not self.is_fullscreen
+        
+        if self.is_fullscreen:
+            self.screen_width = self.max_screen_width
+            self.screen_height = self.max_screen_height
+            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.FULLSCREEN)
+        else:
+            self.screen_width = self.windowed_width
+            self.screen_height = self.windowed_height
+            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        
+        self.background = pygame.Surface(self.screen.get_size())
+        
+        if self.is_fullscreen:
+            game_area_width = self.screen_width - 300  
+            width_scale = game_area_width / (self.n * 50)
+            height_scale = self.screen_height / (self.m * 50)
+            scale = min(width_scale, height_scale)
+            
+            self.board_width = int(self.n * 50 * scale)
+            self.board_height = int(self.m * 50 * scale)
+        else:
+            self.board_width = self.n * 50
+            self.board_height = self.m * 50
+        
+        self.board_surface = pygame.Surface((self.board_width, self.board_height))
+        self.status_surface = pygame.Surface((300, self.screen_height))
+        self.board = Board(self.m, self.n, self.board_width, self.board_height)
+
     
     def _reset_movement_points(self):
 
@@ -190,8 +224,11 @@ class Game:
             self.screen.blit(mp_surface, (padding * 2, screen_height - (line_height * 2) - padding))
         
     def _update_status_surface(self):
-        """Update the status surface with information of units and formations"""
-        
+
+        """
+        Updates the status surface
+        """
+
         self.status_surface.fill((50, 50, 50))
 
         status_text = self.mini_font.render(f"Status", True, (255, 255, 255))
@@ -330,7 +367,6 @@ class Game:
         self._draw_board()
 
     def _handle_mouse_click(self, event, mouse_position):
-
         """
         Handle mouse click events
         
@@ -338,8 +374,13 @@ class Game:
             event (pygame.Event): The mouse event
             mouse_position (tuple): Position of the mouse click
         """
+        mouse_x, mouse_y = mouse_position
+        
+        if self.is_fullscreen:
+            board_y_offset = (self.screen_height - self.board_height) // 2
+            mouse_y -= board_y_offset
 
-        clicked_square = self.board.get_square_from_click(mouse_position, 
+        clicked_square = self.board.get_square_from_click((mouse_x, mouse_y), 
                                                         self.board_surface)
         if clicked_square is None:
             return
@@ -360,15 +401,13 @@ class Game:
     def _handle_key_press(self, event):
 
         """
-        Handle keyboard events
+        Handle keyboard events, with only essential keys.
         
         Args:
             event (pygame.Event): The keyboard event
         """
-
-        if event.key == pygame.K_f:
-            self.toggle_fullscreen()
-        elif event.key == pygame.K_SPACE:
+        
+        if event.key == pygame.K_SPACE:
             self._end_turn()
         elif event.key == pygame.K_g: 
             self.toggle_formation()
@@ -385,40 +424,31 @@ class Game:
         self._reset_movement_points()
         self._draw_board()
 
-    def _handle_resize(self, event):
-
-        """
-        Handle window resize events
-        
-        Args:
-            event (pygame.Event): The resize event
-        """
-
-        self.resizing = True
-        self.current_size = [event.w, event.h]
-
     def handle_events(self):
-
         """
         Handles some events, including quitting, mouse clicks, and key presses.
         """
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-
+            elif event.type == pygame.WINDOWMAXIMIZED:
+                self.toggle_fullscreen()
+            elif event.type == pygame.WINDOWRESTORED:
+                if self.is_fullscreen:
+                    self.toggle_fullscreen()
             elif not self.game_over:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self._handle_mouse_click(event, pygame.mouse.get_pos())
-                    
                 elif event.type == pygame.KEYDOWN:
                     self._handle_key_press(event)
-                    
-                elif event.type == pygame.VIDEORESIZE:
-                    self._handle_resize(event)
+
     
     def toggle_formation(self):
-        """Switches to the next formation of the selected unit."""
+
+        """
+        Changes the formation of a given unit
+        """
+
         if self.selected_unit:
             formations = list(self.selected_unit.formations.keys())
             current_index = formations.index(self.selected_unit.formation)
@@ -426,51 +456,6 @@ class Game:
             next_formation = formations[next_index]
             self.selected_unit.change_formation(next_formation)
 
-    def toggle_fullscreen(self):
-
-        """
-        Toggles between fullscreen and windowed mode while maintaining aspect ratio.
-        Handles screen scaling to prevent distortion.
-        """
-
-        try:
-            screen_info = pygame.display.Info()
-            
-            if self.fullscreen:
-                self.screen = pygame.display.set_mode(self.current_size, pygame.RESIZABLE)
-            else:
-                monitor_width = screen_info.current_w
-                monitor_height = screen_info.current_h
-                
-                game_aspect_ratio = self.n / self.m  
-                monitor_aspect_ratio = monitor_width / monitor_height
-                
-                if monitor_aspect_ratio > game_aspect_ratio:
-                    new_height = monitor_height
-                    new_width = int(new_height * game_aspect_ratio)
-                else:
-                    new_width = monitor_width
-                    new_height = int(new_width / game_aspect_ratio)
-                
-                self.screen = pygame.display.set_mode((monitor_width, monitor_height), pygame.FULLSCREEN)
-                
-                self.scaled_size = (new_width, new_height)
-                self.screen_offset = (
-                    (monitor_width - new_width) // 2,
-                    (monitor_height - new_height) // 2
-                )
-                
-            self.fullscreen = not self.fullscreen
-            if not self.fullscreen:
-                self.current_size = list(self.screen.get_size())
-            
-            self.background = pygame.Surface(self.screen.get_size())
-            self._draw_board()
-            
-        except Exception as e:
-            print(f"Failed to toggle fullscreen: {str(e)}")
-            self.fullscreen = False
-            self.screen = pygame.display.set_mode(self.current_size, pygame.RESIZABLE)
     
     def _can_general_move(self, from_unit, to_unit):
 
@@ -497,7 +482,40 @@ class Game:
         return abs(row1 - row2) <= 1 and abs(col1 - col2) <= 1
     
     def _get_all_units(self):
+
+        """
+        uga buga
+        """
+
         return self.warriors1 + self.warriors2
+    
+    def render(self):
+
+        """
+        Renders the game screen with fullscreen support.
+        """
+
+        self.screen.fill((0, 0, 0))
+        self.board_surface.fill((0, 0, 0))
+        self.board.draw(self.board_surface, self.selected_square)
+
+        for warrior in self.warriors1 + self.warriors2:
+            if warrior.is_alive:
+                warrior.draw(self.board_surface, self.board)
+
+        board_x = 0
+        board_y = (self.screen_height - self.board_height) // 2 if self.is_fullscreen else 0
+        self.screen.blit(self.board_surface, (board_x, board_y))
+        
+        self._draw_movement_points()
+        self._update_status_surface()
+        status_x = self.board_width
+        self.screen.blit(self.status_surface, (status_x, 0))
+        
+        if self.game_over:
+            self._draw_victory_message()
+        
+        pygame.display.flip()
 
     def _check_game_over(self):
 
@@ -516,53 +534,6 @@ class Game:
                 self.winner = 2 if player_units == self.warriors1 else 1
                 break
 
-    def render(self):
-
-        """
-        Renders the game screen, handling both windowed and fullscreen modes.
-        In fullscreen mode, maintains aspect ratio and centers the game board.
-        """
-
-        self.screen.fill((0, 0, 0))
-        
-        if self.fullscreen:
-            temp_surface = pygame.Surface(self.scaled_size)
-            temp_surface.fill((0, 0, 0))
-            
-            scale_x = self.scaled_size[0] / self.screen_width
-            scale_y = self.scaled_size[1] / self.screen_height
-            
-            scaled_background = pygame.transform.scale(self.background, self.scaled_size)
-            temp_surface.blit(scaled_background, (0, 0))
-            
-            scaled_board = Board(self.m, self.n, self.scaled_size[0], self.scaled_size[1])
-            
-            for warrior in self.warriors1 + self.warriors2:
-                warrior.draw(temp_surface, scaled_board)
-            
-            self._draw_movement_points()
-            
-            if self.game_over:
-                self._draw_victory_message()
-            
-            self.screen.blit(temp_surface, self.screen_offset)
-            
-        else:
-            self.screen.blit(self.background, (0, 0))
-            self.screen.blit(self.board_surface, (0,0))
-
-            for warrior in self.warriors1 + self.warriors2:
-                warrior.draw(self.board_surface, self.board)
-            
-            self._draw_movement_points()
-
-            self._update_status_surface()
-            self.screen.blit(self.status_surface, (self.board_width, 0))
-            
-            if self.game_over:
-                self._draw_victory_message()
-        
-        pygame.display.flip()
     
     def run(self):
 
@@ -584,26 +555,14 @@ class Game:
     def update(self):
 
         """
-        Updates the game state, primarily handling window resizing events.
-        Should be called every frame in the game loop.
+        uga uga buga ugaga lbubleub
         """
 
-        try:
-            if self.resizing:
-                self.screen = pygame.display.set_mode(self.current_size, pygame.RESIZABLE)
-                if not self.screen:
-                    raise RuntimeError("Failed to resize window")
-                    
-                self.background = pygame.Surface(self.screen.get_size())
-                if not self.background:
-                    raise RuntimeError("Failed to create new background surface")
-                    
-                self._draw_board()
-                self.resizing = False
+        try:        
+            self._draw_board()
                     
         except Exception as e:
-            self.screen = pygame.display.set_mode(self.current_size, pygame.RESIZABLE)
-            raise RuntimeError(f"Failed to update display: {str(e)}")
+            raise RuntimeError(f"Fudeu com F maiúsculo menor kkj: {str(e)}")
         
     def _draw_victory_message(self):
         if not self.game_over or self.winner is None:
