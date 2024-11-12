@@ -62,9 +62,6 @@ class Warrior(BaseUnit):
             "Aggressive": self._load_sprite(os.path.join(sprite_dir, 'warrior_attack.png'))
         }
 
-        print(f"Loading sprites from: {sprite_dir}")
-        print(f"Sprites loaded: {[bool(sprite) for sprite in self.formation_sprites.values()]}")
-
         self.base_attack = 10
         self.base_defense = 5
 

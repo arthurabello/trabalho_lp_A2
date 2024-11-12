@@ -19,21 +19,24 @@ class BoardGraph:
     Methods:
         _is_valid_position(row, col): Checks if a position is within the board boundaries.
         _build_graph(): Builds the board graph by linking each position to its neighbors.
+        _calculate_edge_weight(pos1, pos2): Calculates the edge weight between two positions based on the terrain
         get_neighbors(position): Returns the neighbors of a position on the board.
         get_reachable_positions(start_pos, movement_points): Calculates reachable positions from a starting position, considering movement points.
     """
 
-    def __init__(self, m: int, n: int) -> None:
+    def __init__(self, m: int, n: int, terrain: Dict) -> None:
 
         """Initializes the graph with the board dimensions and creates connections between squares.
 
         Args:
             m (int): number of rows on the board.
             n (int): number of columns on the board.
+            terrain (dict): dict that represents each position to its respective terrain
         """
 
         self.m = m  
         self.n = n
+        self.terrain = terrain
         if not isinstance(m, int) or not isinstance(n, int):
             raise TypeError("Board dimensions must be integers in graph/init")
         if m <= 0 or n <= 0:
@@ -63,9 +66,9 @@ class BoardGraph:
         """
 
         directions = [
-            (-1, -1), (-1, 0), (-1, 1),
+                     (-1, 0),
             (0, -1),           (0, 1),   
-            (1, -1),  (1, 0),  (1, 1)    
+                     (1, 0),      
         ]
     
         for row in range(self.m):
@@ -76,9 +79,25 @@ class BoardGraph:
                     new_row, new_col = row + dx, col + dy
                     
                     if self._is_valid_position(new_row, new_col):
-                        weight = 1 
-                        self.graph[current_node][(new_row, new_col)] = weight
+                        neighbor = (new_row, new_col)
+                        weight = self._calculate_edge_weight(current_node, neighbor)    
+                        self.graph[current_node][neighbor] = weight
     
+    def _calculate_edge_weight(self, pos1: Tuple[int, int], pos2: Tuple[int, int]):
+        """
+        Calculates the edge weight between two positions based on the terrain
+        """
+        terrain1 = self.terrain[pos1]
+        terrain2 = self.terrain[pos2]
+    
+        if terrain1 != "mountain" and terrain2 == "mountain":
+            return 2
+        
+        elif terrain1 == "mountain" and terrain2 != "mountain":
+            return 1
+        else:
+            return 1
+
     def get_neighbors(self, position: Tuple[int, int]) -> Dict[Tuple[int,int], int]:
 
         """
