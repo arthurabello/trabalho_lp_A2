@@ -29,6 +29,7 @@ class Board:
     COLOR_LIGHT_GREEN = (144, 238, 144)
     COLOR_DARK_GREEN = (0, 100, 0)
     COLOR_RED = (255, 0, 0)
+    COLOR_GRAY = (139, 137, 137)
     COLOR_HIGHLIGHT = (255, 255, 0, 180)
 
     def __init__(self, m, n, initial_width, initial_height) -> None:
@@ -53,7 +54,8 @@ class Board:
         self.initial_width = initial_width
         self.initial_height = initial_height
         self.selected_square = None
-        self.graph = BoardGraph(m, n)
+        self.terrain = self.initialize_terrain()
+        self.graph = BoardGraph(m, n, self.terrain)
         self.reachable_positions = set()
 
     def get_square_from_click(self, mouse_pos, screen) -> None:
@@ -121,6 +123,21 @@ class Board:
         else:
             self.reachable_positions = set()
 
+    def initialize_terrain(self):
+        """
+        Initializes the terrain map. By default, it creates some mountains at specific positions.
+        """
+        terrain = {}
+        for row in range(self.m):
+            for col in range(self.n):
+                terrain[(row,col)] = "plains"
+
+                # mountains 
+                if ((row + col) % 6 == 0 or (row - col) % 5 == 2) and row % 2 == 0:
+                    terrain[(row, col)] = "mountain"
+        
+        return terrain
+
     def draw(self, screen, selected_square=None):
 
         """
@@ -143,7 +160,11 @@ class Board:
 
         for row in range(self.m):
             for column in range(self.n):
-                color = self.COLOR_LIGHT_GREEN if (row + column) % 2 == 0 else self.COLOR_DARK_GREEN
+
+                if self.terrain[(row, column)] == "mountain":
+                    color = self.COLOR_GRAY
+                else:
+                    color = self.COLOR_LIGHT_GREEN if (row + column) % 2 == 0 else self.COLOR_DARK_GREEN
 
                 pygame.draw.rect(screen, color,
                             (column * square_width, row * square_height, square_width, square_height))
