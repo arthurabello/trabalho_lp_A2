@@ -220,7 +220,7 @@ class BaseUnit(ABC):
         except Exception as e:
             print(f"Failed to play attack sound in units/base_unit: {str(e)}")
 
-        chance_of_success = 0.5
+        chance_of_success = self.attack_points / (self.attack_points + target.defense_points)
             
         if random.random() < chance_of_success:
             target.is_alive = False
