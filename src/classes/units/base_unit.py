@@ -4,6 +4,7 @@ This module contains the abstract base class for all units in the game.
 
 import pygame
 import os
+import random
 from abc import ABC, abstractmethod
 from .constants import Colors, Paths, UnitDefaults
 
@@ -218,8 +219,13 @@ class BaseUnit(ABC):
             self.attack_sound.play()
         except Exception as e:
             print(f"Failed to play attack sound in units/base_unit: {str(e)}")
+
+        chance_of_success = self.attack_points / (self.attack_points + target.defense_points)
             
-        target.is_alive = False
+        if random.random() < chance_of_success:
+            target.is_alive = False
+        else:
+            self.is_alive = False
 
     def can_attack(self, target_position):
 
