@@ -345,9 +345,12 @@ class Game:
 
         self.selected_unit.attack(target_unit)
         
-        if target_unit.has_general:
+        if target_unit.has_general and not target_unit.is_alive:
             self.game_over = True
             self.winner = self.current_player
+        elif self.selected_unit.has_general and not self.selected_unit.is_alive:
+            self.game_over = True
+            self.winner = self.not_current_player
 
     def _update_unit_selection(self, new_position):
 
@@ -418,7 +421,8 @@ class Game:
         Handle the end of a player's turn
         """
 
-        self.current_player = 3 - self.current_player  
+        self.not_current_player = self.current_player
+        self.current_player = 3 - self.current_player
         self.selected_unit = None
         self.board.select_square(None, 0)
         self._reset_movement_points()
