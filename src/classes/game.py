@@ -241,6 +241,7 @@ class Game:
             defense_text = self.mini_font.render(f"Defense: {self.selected_unit.defense_points}", True, (255, 255, 255))
             formation_text = self.mini_font.render(f"Formation: {self.selected_unit.formation}", True, (255, 255, 255))
             change_formation_text = self.mini_font.render(f"Press 'G' to change formation", True, (255,255,255))
+            action_text = self.mini_font.render(f"Action: {self.selected_unit.action} (Press 'F' to change)", True, (255, 255, 255))
                 
             self.status_surface.blit(name_text, (10, 40))
             self.status_surface.blit(remaining_units_text, (10, 70))
@@ -248,6 +249,7 @@ class Game:
             self.status_surface.blit(defense_text, (10, 130))
             self.status_surface.blit(formation_text, (10,160))
             self.status_surface.blit(change_formation_text, (10, 190))
+            self.status_surface.blit(action_text, (10, 220))
         else:
             no_unit_text = self.mini_font.render("Select a Unit", True, (255, 255, 255))
             self.status_surface.blit(no_unit_text, (10, 40))
@@ -308,7 +310,7 @@ class Game:
         row2, col2 = clicked_square
         movement_cost = max(abs(row1 - row2), abs(col1 - col2))
         
-        if self.movement_points[self.selected_unit] >= movement_cost:
+        if self.selected_unit.action == "Move" and self.movement_points[self.selected_unit] >= movement_cost:
             self._execute_movement(clicked_square, movement_cost)
 
     def _execute_movement(self, target_square, movement_cost):
@@ -414,6 +416,8 @@ class Game:
             self._end_turn()
         elif event.key == pygame.K_g: 
             self.toggle_formation()
+        elif event.key == pygame.K_f:
+            self.toggle_action()
 
     def _end_turn(self):
 
@@ -459,6 +463,15 @@ class Game:
             next_index = (current_index + 1) % len(formations)
             next_formation = formations[next_index]
             self.selected_unit.change_formation(next_formation)
+
+    def toggle_action(self):
+
+        """
+        Changes the action of a given unit
+        """
+        if self.selected_unit:
+            current_index = self.selected_unit.actions.index(self.selected_unit.action)
+            self.selected_unit.change_action(self.selected_unit.actions[1-current_index])
 
     
     def _can_general_move(self, from_unit, to_unit):
