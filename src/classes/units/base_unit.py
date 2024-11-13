@@ -68,6 +68,8 @@ class BaseUnit(ABC):
                 "deffense_modifier": 1.0, 
             }
         }
+        self.action = "Move"
+        self.actions = ["Move", "Attack"]
 
         self.player = player
         self.movement_range = movement_range
@@ -263,6 +265,18 @@ class BaseUnit(ABC):
             self.defense_points = int(self.base_defense * modifiers['defense_modifier'])
 
             self._update_sprite()
+
+
+    def change_action(self, action_name):
+
+        """
+        Change the unit's action
+
+        Args:
+            action_name (str): Name of the formation to switch to
+        """
+        if action_name in self.actions:
+            self.action = action_name
 
 
     def draw(self, screen, board):
