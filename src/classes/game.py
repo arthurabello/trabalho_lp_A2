@@ -305,9 +305,7 @@ class Game:
         if not self.selected_unit or clicked_square not in self.board.reachable_positions:
             return
 
-        row1, col1 = self.selected_unit.position
-        row2, col2 = clicked_square
-        movement_cost = self.board.graph._calculate_edge_weight((row1, col1), (row2, col2))
+        movement_cost = self.board.movement_costs[clicked_square]
         
         if self.selected_unit.action == "Move" and self.movement_points[self.selected_unit] >= movement_cost:
             self._execute_movement(clicked_square, movement_cost)
@@ -459,15 +457,15 @@ class Game:
     def toggle_formation(self):
 
         """
-        Changes the formation of a given unit
+        Changes the formation of a given unit if movement points > 0
         """
-
         if self.selected_unit:
-            formations = list(self.selected_unit.formations.keys())
-            current_index = formations.index(self.selected_unit.formation)
-            next_index = (current_index + 1) % len(formations)
-            next_formation = formations[next_index]
-            self.selected_unit.change_formation(next_formation)
+            if self.movement_points[self.selected_unit] > 0:
+                formations = list(self.selected_unit.formations.keys())
+                current_index = formations.index(self.selected_unit.formation)
+                next_index = (current_index + 1) % len(formations)
+                next_formation = formations[next_index]
+                self.selected_unit.change_formation(next_formation)
 
     def toggle_action(self):
 
