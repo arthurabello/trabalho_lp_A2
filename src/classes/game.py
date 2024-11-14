@@ -113,7 +113,6 @@ class Game:
         self.board_surface = pygame.Surface((self.board_width, self.board_height))
         self.status_surface = pygame.Surface((300, self.screen_height))
         self.board = Board(self.m, self.n, self.board_width, self.board_height)
-
     
     def _reset_movement_points(self):
 
@@ -312,7 +311,7 @@ class Game:
         
         if self.selected_unit.action == "Move" and self.movement_points[self.selected_unit] >= movement_cost:
             self._execute_movement(clicked_square, movement_cost)
-
+    
     def _execute_movement(self, target_square, movement_cost):
 
         """
@@ -327,8 +326,9 @@ class Game:
         
         if target_unit and target_unit.player != self.current_player:
             self._handle_combat(target_unit)
-            self.selected_unit.move(target_square)
-            self.movement_points[self.selected_unit] -= movement_cost
+            if self.selected_unit.is_alive:
+                self.selected_unit.move(target_square)
+                self.movement_points[self.selected_unit] = 0
             
         elif not target_unit:
             self.selected_unit.move(target_square)
@@ -363,7 +363,12 @@ class Game:
             new_position (tuple): The new position of the unit
         """
 
-        if self.movement_points[self.selected_unit] <= 0:
+        # Checks if the unit is still alive before updating the selection
+        if not self.selected_unit.is_alive:
+            self.board.select_square(None, 0)
+            self.selected_unit = None
+
+        elif self.movement_points[self.selected_unit] <= 0:
             self.board.select_square(None, 0)
             self.selected_unit = None
         else:
