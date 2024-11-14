@@ -582,7 +582,7 @@ class Game:
             self._draw_board()
                     
         except Exception as e:
-            raise RuntimeError(f"Fudeu com F maiúsculo menor kkj: {str(e)}")
+            raise RuntimeError(f"Failed to draw the board: {str(e)}")
         
     def _draw_victory_message(self):
         if not self.game_over or self.winner is None:
