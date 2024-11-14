@@ -58,6 +58,12 @@ class Board:
         self.graph = BoardGraph(m, n, self.terrain)
         self.reachable_positions = set()
 
+        self.sprites = {
+            "plains": pygame.image.load("../assets/sprites/terrains/plains.png"),
+            "mountain": pygame.image.load("../assets/sprites/terrains/mountain.png"),
+            "forest": pygame.image.load("../assets/sprites/terrains/forest.png")
+        }
+
     def get_square_from_click(self, mouse_pos, screen) -> None:
 
         """
@@ -136,6 +142,9 @@ class Board:
                 # mountains 
                 if ((row + col) % 6 == 0 or (row - col) % 5 == 2) and row % 2 == 0:
                     terrain[(row, col)] = "mountain"
+                
+                if ((row + col) % 15 == 0):
+                    terrain[(row, col)] = "forest"
         
         return terrain
 
@@ -162,13 +171,21 @@ class Board:
         for row in range(self.m):
             for column in range(self.n):
 
-                if self.terrain[(row, column)] == "mountain":
-                    color = self.COLOR_GRAY
-                else:
-                    color = self.COLOR_LIGHT_GREEN if (row + column) % 2 == 0 else self.COLOR_DARK_GREEN
+                # First plains, then the rest
+                plains_sprite = self.sprites["plains"]
+                plains_sprite_scaled = pygame.transform.scale(plains_sprite, (square_width, square_height))
+                screen.blit(plains_sprite_scaled, (column * square_width, row * square_height))
 
-                pygame.draw.rect(screen, color,
-                            (column * square_width, row * square_height, square_width, square_height))
+                if self.terrain[(row, column)] == "mountain":
+                    mountain_sprite = self.sprites["mountain"]
+                    mountain_sprite_scaled = pygame.transform.scale(mountain_sprite, (square_width, square_height))
+                    screen.blit(mountain_sprite_scaled, (column * square_width, row * square_height))
+                
+                if self.terrain[(row, column)] == "forest":
+                    forest_sprite = self.sprites["forest"]
+                    forest_sprite_scaled = pygame.transform.scale(forest_sprite, (square_width, square_height))
+                    screen.blit(forest_sprite_scaled, (column * square_width, row * square_height))
+
 
                 if (row, column) in self.reachable_positions:
                     highlight_surface = pygame.Surface((square_width, square_height), pygame.SRCALPHA)
