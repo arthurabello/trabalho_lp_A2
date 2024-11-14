@@ -16,7 +16,7 @@ class Game:
         except Exception as e:
             raise RuntimeError(f"Failed to initialize game in game/init: {str(e)}")
         
-        self.m = 10
+        self.m = 14
         self.n = 21
         if self.m <= 0 or self.n <= 0:
             raise ValueError("Invalid board dimensions in game/init")
@@ -307,7 +307,7 @@ class Game:
 
         row1, col1 = self.selected_unit.position
         row2, col2 = clicked_square
-        movement_cost = max(abs(row1 - row2), abs(col1 - col2))
+        movement_cost = self.board.graph._calculate_edge_weight((row1, col1), (row2, col2))
         
         if self.selected_unit.action == "Move" and self.movement_points[self.selected_unit] >= movement_cost:
             self._execute_movement(clicked_square, movement_cost)

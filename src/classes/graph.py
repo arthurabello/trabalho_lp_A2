@@ -90,13 +90,19 @@ class BoardGraph:
         terrain1 = self.terrain[pos1]
         terrain2 = self.terrain[pos2]
     
-        if terrain1 != "mountain" and terrain2 == "mountain":
-            return 2
-        
-        elif terrain1 == "mountain" and terrain2 != "mountain":
-            return 1
-        else:
-            return 1
+        weight_map = {
+            ('plains', 'plains'): 1,
+            ('plains', 'mountain'): 2,
+            ('mountain', 'plains'): 1,
+            ('plains', 'forest'): 2,
+            ('forest', 'plains'): 1,
+            ('mountain', 'mountain'): 2,
+            ('forest', 'mountain'): 2,
+            ('mountain', 'forest'): 2,
+            ('forest', 'forest'): 2,
+        }
+
+        return weight_map.get((terrain1, terrain2))
 
     def get_neighbors(self, position: Tuple[int, int]) -> Dict[Tuple[int,int], int]:
 
