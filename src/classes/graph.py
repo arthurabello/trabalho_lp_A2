@@ -203,7 +203,7 @@ class BoardGraph:
 
         return reachable
 
-    def get_reachable_positions(self, start_pos: Tuple[int, int], movement_points: int) -> Set[Tuple[int, int]]:
+    def get_reachable_positions(self, start_pos: Tuple[int, int], movement_points: int) -> Tuple[Set[Tuple[int, int]], Dict[Tuple[int, int], int]]:
 
         """
         Calculates reachable positions from a starting position, considering movement points.
@@ -213,7 +213,9 @@ class BoardGraph:
             movement_points (int): Movement points available to reach positions.
 
         Returns:
-            Set[Tuple[int, int]]: Set of reachable positions from the starting position.
+            Tuple containing:
+                Set[Tuple[int, int]]: Set of reachable positions from the starting position
+                Dict[Tuple[int, int], int]: Dictionary mapping each reachable position to its minimum movement cost
         """
 
         if not isinstance(start_pos, tuple) or len(start_pos) != 2:
@@ -235,5 +237,10 @@ class BoardGraph:
             pos for pos, cost in reachable_with_costs.items() 
             if cost <= movement_points
         }
-            
-        return reachable_positions
+
+        movement_costs = {
+            pos: cost for pos, cost in reachable_with_costs.items()
+            if cost <= movement_points
+        }
+
+        return reachable_positions, movement_costs
