@@ -110,11 +110,25 @@ class Warrior(BaseUnit):
         """
         Updates the sprite based on the current formation.
         """
-
         if self.formation in self.formation_sprites:
             self.sprite = self.formation_sprites[self.formation]
         else:
             self.sprite = self.formation_sprites.get("Standard")
+        
+        self.sprite = self.sprite.convert_alpha()
+        colored_sprite = self.sprite.copy()
+
+        if self.player == 1:
+            overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
+            overlay.fill((255, 0, 0, 60))  
+            colored_sprite.blit(overlay, (0,0))
+        else:
+            overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
+            overlay.fill((0, 0, 255, 60))
+            colored_sprite.blit(overlay, (0,0))
+        
+        self.sprite = colored_sprite
+
 
     def can_move_to(self, position, board, all_units):
 
