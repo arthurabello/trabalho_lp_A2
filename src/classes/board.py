@@ -119,9 +119,10 @@ class Board:
                 raise ValueError("Square position out of bounds in board/select_square") #validating square position
             
         if square:
-            self.reachable_positions = self.graph.get_reachable_positions(square, movement_points)
+            self.reachable_positions, self.movement_costs = self.graph.get_reachable_positions(square, movement_points)
         else:
             self.reachable_positions = set()
+            self.movement_costs = {}
 
     def initialize_terrain(self):
         """
