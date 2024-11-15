@@ -163,23 +163,3 @@ class Warrior(BaseUnit):
                 return False
 
         return True
-    
-    # def attack(self, target):
-
-    #     """
-    #     Enhanced attack method for Warriors.
-    #     Warriors get an attack bonus when attacking.
-        
-    #     Args:
-    #         target: The unit being attacked
-    #     """
-
-    #     if not self.is_alive or not target.is_alive or target.player == self.player:
-    #         return
-            
-    #     try:
-    #         self.attack_sound.play()
-    #     except Exception as e:
-    #         print(f"Failed to play warrior attack sound in units/warrior: {str(e)}")
-            
-    #     target.is_alive = False
