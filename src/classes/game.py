@@ -5,6 +5,7 @@ This module represents the main game structure, responsible for initializing, ha
 import pygame
 from .board import Board
 from .units.warrior import Warrior
+from .menu import Menu
 
 class Game:
     def __init__(self):
@@ -78,13 +79,10 @@ class Game:
         self.small_font = pygame.font.Font(None, 36) #UI elements
         self.mini_font = pygame.font.Font(None, 24)  #status elements
         self._draw_board()
+        self.menu = Menu(self.screen)
+        self.state = "menu"
 
     def toggle_fullscreen(self):
-
-        """
-        Toggle between fullscreen and windowed mode
-        """
-
         self.is_fullscreen = not self.is_fullscreen
         
         if self.is_fullscreen:
@@ -94,7 +92,7 @@ class Game:
         else:
             self.screen_width = self.windowed_width
             self.screen_height = self.windowed_height
-            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
         
         self.background = pygame.Surface(self.screen.get_size())
         
@@ -436,22 +434,27 @@ class Game:
         self._draw_board()
 
     def handle_events(self):
-        """
-        Handles some events, including quitting, mouse clicks, and key presses.
-        """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type == pygame.WINDOWMAXIMIZED:
-                self.toggle_fullscreen()
-            elif event.type == pygame.WINDOWRESTORED:
-                if self.is_fullscreen:
+            elif event.type == pygame.VIDEORESIZE:
+                if not self.is_fullscreen:
+                    self.screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                    if self.state == "menu":
+                        self.menu.handle_resize()
+                    else:
+                        self.toggle_fullscreen()  # Handle game screen resize
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:  # F11 for fullscreen toggle
                     self.toggle_fullscreen()
-            elif not self.game_over:
+                    if self.state == "menu":
+                        self.menu.handle_resize()
+                elif self.state == "game" and not self.game_over:
+                    self._handle_key_press(event)
+            elif self.state == "game" and not self.game_over:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self._handle_mouse_click(event, pygame.mouse.get_pos())
-                elif event.type == pygame.KEYDOWN:
-                    self._handle_key_press(event)
+
 
     
     def toggle_formation(self):
@@ -553,19 +556,33 @@ class Game:
                 self.game_over = True
                 self.winner = 2 if player_units == self.warriors1 else 1
                 break
+            
 
-    
     def run(self):
-
-        """
-        Main game loop that handles the game execution.
-        """
-
         try:
             while self.running:
-                self.handle_events()
-                self.update()
-                self.render()
+                if self.state == "menu":
+                    self.menu.draw()
+                    new_state = self.menu.handle_events()
+                    
+                    if new_state == "quit":
+                        self.running = False
+                    elif new_state == "game":
+                        self.state = "game"
+                        # Apply menu settings
+                        if not self.menu.sound_enabled:
+                            for warrior in self.warriors1 + self.warriors2:
+                                warrior.move_sound.set_volume(0)
+                                warrior.attack_sound.set_volume(0)
+                        else:
+                            for warrior in self.warriors1 + self.warriors2:
+                                warrior.move_sound.set_volume(self.menu.sound_volume)
+                                warrior.attack_sound.set_volume(self.menu.sound_volume)
+                
+                elif self.state == "game":
+                    self.handle_events()
+                    self.update()
+                    self.render()
 
         except Exception as e:
             print(f"Game crashed: {str(e)}")
