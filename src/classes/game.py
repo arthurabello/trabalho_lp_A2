@@ -6,6 +6,7 @@ import pygame
 from .board import Board
 from .units.warrior import Warrior
 from .menu.menu import Menu
+from .units.archer import Archer
 
 class Game:
     def __init__(self):
@@ -57,11 +58,11 @@ class Game:
 
         self.running = True
         
-        self.warriors1 = self._create_warriors(1)
-        self.warriors2 = self._create_warriors(2)
+        self.units1 = self._create_units(1)
+        self.units2 = self._create_units(2)
 
-        self.warriors1[0].has_general = True 
-        self.warriors2[0].has_general = True  
+        self.units1[0].has_general = True  
+        self.units2[0].has_general = True
         
         self.selected_unit = None
         self.current_player = 1
@@ -129,29 +130,37 @@ class Game:
         """
 
         if player == 1:
-            return self.warriors1
+            return self.units1
         else:
-            return self.warriors2
+            return self.units2
 
-    def _create_warriors(self, player):
-
+    def _create_units(self, player):
         """
-        Position the warriors in a rectangular shape
+        Creates warriors and archers in a symmetric formation for the given player
         """
-
-        warriors = []
+        units = []
+        board_center = self.n // 2
+        
         if player == 1:
-            start_col = 2
+            warrior_col_start = 2 
+            archer_col_start = 2
         else:
-            start_col = self.n - 7
-            
-        for row in range(2):
+            warrior_col_start = self.n - 7 
+            archer_col_start = self.n - 7
+        
+        for row in range(4):
             for col in range(5):
-                position = (row + 1, start_col + col)
+                position = (row + 1, warrior_col_start + col)
                 warrior = Warrior(position, player)
-                warriors.append(warrior)
-                
-        return warriors
+                units.append(warrior)
+        
+        for row in range(4):
+            for col in range(5):
+                position = (row + 5, archer_col_start + col) 
+                archer = Archer(position, player, "Standard")
+                units.append(archer)
+                        
+        return units
     
     def _get_all_units(self):
 
@@ -159,7 +168,7 @@ class Game:
         Returns a list of all units in the game
         """
 
-        return self.warriors1 + self.warriors2
+        return self.units1 + self.units2
     
     def _get_unit_at_position(self, position):
 
@@ -300,14 +309,26 @@ class Game:
             clicked_square (tuple): The target position
         """
 
-        if not self.selected_unit or clicked_square not in self.board.reachable_positions:
+        if not self.selected_unit:
+            return
+
+        target_unit = self._get_unit_at_position(clicked_square)
+        
+        if isinstance(self.selected_unit, Archer) and self.selected_unit.action == "Attack":
+            if self.selected_unit.can_attack(clicked_square) and target_unit and target_unit.player != self.current_player:
+                self._handle_combat(target_unit)
+                self.movement_points[self.selected_unit] = 0
+                self._update_unit_selection(self.selected_unit.position)
+                return
+
+        if clicked_square not in self.board.reachable_positions:
             return
 
         movement_cost = self.board.movement_costs[clicked_square]
         
         if self.selected_unit.action == "Move" and self.movement_points[self.selected_unit] >= movement_cost:
             self._execute_movement(clicked_square, movement_cost)
-    
+        
     def _execute_movement(self, target_square, movement_cost):
 
         """
@@ -319,6 +340,11 @@ class Game:
         """
 
         target_unit = self._get_unit_at_position(target_square)
+
+        if isinstance(self.selected_unit, Archer) and target_unit and target_unit.player != self.current_player:
+            self._handle_combat(target_unit)
+            self.movement_points[self.selected_unit] = 0
+            return
         
         if target_unit and target_unit.player != self.current_player:
             self._handle_combat(target_unit)
@@ -359,7 +385,6 @@ class Game:
             new_position (tuple): The new position of the unit
         """
 
-        # Checks if the unit is still alive before updating the selection
         if not self.selected_unit.is_alive:
             self.board.select_square(None, 0)
             self.selected_unit = None
@@ -373,6 +398,7 @@ class Game:
         self._draw_board()
 
     def _handle_mouse_click(self, event, mouse_position):
+
         """
         Handle mouse click events
         
@@ -380,14 +406,14 @@ class Game:
             event (pygame.Event): The mouse event
             mouse_position (tuple): Position of the mouse click
         """
+
         mouse_x, mouse_y = mouse_position
         
         if self.is_fullscreen:
             board_y_offset = (self.screen_height - self.board_height) // 2
             mouse_y -= board_y_offset
 
-        clicked_square = self.board.get_square_from_click((mouse_x, mouse_y), 
-                                                        self.board_surface)
+        clicked_square = self.board.get_square_from_click((mouse_x, mouse_y), self.board_surface)
         if clicked_square is None:
             return
 
@@ -434,6 +460,11 @@ class Game:
         self._draw_board()
 
     def handle_events(self):
+        
+        """
+        Handle main events
+        """
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -443,9 +474,9 @@ class Game:
                     if self.state == "menu":
                         self.menu.handle_resize()
                     else:
-                        self.toggle_fullscreen()  # Handle game screen resize
+                        self.toggle_fullscreen()  
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_F11:  # F11 for fullscreen toggle
+                if event.key == pygame.K_F11:  
                     self.toggle_fullscreen()
                     if self.state == "menu":
                         self.menu.handle_resize()
@@ -507,10 +538,10 @@ class Game:
     def _get_all_units(self):
 
         """
-        uga buga
+        Gets all units in the game
         """
 
-        return self.warriors1 + self.warriors2
+        return self.units1 + self.units2
     
     def render(self):
 
@@ -522,9 +553,9 @@ class Game:
         self.board_surface.fill((0, 0, 0))
         self.board.draw(self.board_surface, self.selected_square)
 
-        for warrior in self.warriors1 + self.warriors2:
-            if warrior.is_alive:
-                warrior.draw(self.board_surface, self.board)
+        for unit in self.units1 + self.units2:
+            if unit.is_alive:
+                unit.draw(self.board_surface, self.board)
 
         board_x = 0
         board_y = (self.screen_height - self.board_height) // 2 if self.is_fullscreen else 0
@@ -546,7 +577,7 @@ class Game:
         Checks if a general has been killed
         """
 
-        for player_units in [self.warriors1, self.warriors2]:
+        for player_units in [self.units1, self.units2]:
             has_general = False
             for unit in player_units:
                 if unit.is_alive and unit.has_general:
@@ -554,11 +585,16 @@ class Game:
                     break
             if not has_general:
                 self.game_over = True
-                self.winner = 2 if player_units == self.warriors1 else 1
+                self.winner = 2 if player_units == self.units1 else 1
                 break
             
 
     def run(self):
+        
+        """
+        R u n s.
+        """
+
         try:
             while self.running:
                 if self.state == "menu":
@@ -569,15 +605,14 @@ class Game:
                         self.running = False
                     elif new_state == "game":
                         self.state = "game"
-                        # Apply menu settings
                         if not self.menu.sound_enabled:
-                            for warrior in self.warriors1 + self.warriors2:
-                                warrior.move_sound.set_volume(0)
-                                warrior.attack_sound.set_volume(0)
+                            for unit in self._get_all_units():
+                                unit.move_sound.set_volume(0)
+                                unit.attack_sound.set_volume(0)
                         else:
-                            for warrior in self.warriors1 + self.warriors2:
-                                warrior.move_sound.set_volume(self.menu.sound_volume)
-                                warrior.attack_sound.set_volume(self.menu.sound_volume)
+                            for unit in self._get_all_units():
+                                unit.move_sound.set_volume(self.menu.sound_volume)
+                                unit.attack_sound.set_volume(self.menu.sound_volume)
                 
                 elif self.state == "game":
                     self.handle_events()
@@ -602,6 +637,11 @@ class Game:
             raise RuntimeError(f"Failed to draw the board: {str(e)}")
         
     def _draw_victory_message(self):
+
+        """
+        Draws the victory message
+        """
+
         if not self.game_over or self.winner is None:
             return
             
