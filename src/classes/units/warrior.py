@@ -35,10 +35,10 @@ class Warrior(BaseUnit):
         super().__init__(
             initial_position=initial_position,
             player=player,
-            movement_range=3,
+            movement_range=2,
             formation=formation
         )
-
+        self.attack_range=1
         self.formations = {
             "Standard": {
                 "attack_modifier": 1.0,
@@ -170,3 +170,47 @@ class Warrior(BaseUnit):
                 return False
 
         return True
+
+    def can_attack(self, target_position, board, all_units):
+
+        """
+        Check if warrior can attack a position, either directly or by moving first
+        Returns (bool, position_to_move_to) where position_to_move_to is None if already adjacent
+        """
+
+        if not self.is_alive:
+            return False, None
+
+        row, col = self.position
+        target_row, target_col = target_position
+
+        if abs(row - target_row) + abs(col - target_col) <= self.attack_range:
+            return True, None
+
+        reachable_positions = board.graph.get_reachable_positions(self.position, self.movement_range)[0]
+        
+        best_position = None
+        min_distance = float('inf')
+
+        for pos in reachable_positions:
+            pos_row, pos_col = pos
+            
+            if abs(pos_row - target_row) + abs(pos_col - target_col) <= self.attack_range:
+                occupied = any(unit.is_alive and unit.position == pos for unit in all_units if unit != self)
+                if not occupied:
+                    distance = abs(row - pos_row) + abs(col - pos_col)
+                    if distance < min_distance:
+                        min_distance = distance
+                        best_position = pos
+
+        return best_position is not None, best_position
+
+    def move_and_attack(self, target_unit, move_to_position):
+
+        """
+        Execute move-and-attack action
+        """
+        
+        if move_to_position:
+            self.move(move_to_position)
+        self.attack(target_unit)

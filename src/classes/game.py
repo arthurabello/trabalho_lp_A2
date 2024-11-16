@@ -301,14 +301,6 @@ class Game:
             self._draw_board()
 
     def _handle_unit_movement(self, clicked_square):
-
-        """
-        Handle movement and combat of selected unit
-        
-        Args:
-            clicked_square (tuple): The target position
-        """
-
         if not self.selected_unit:
             return
 
@@ -321,14 +313,25 @@ class Game:
                 self._update_unit_selection(self.selected_unit.position)
                 return
 
-        if clicked_square not in self.board.reachable_positions:
-            return
+        if isinstance(self.selected_unit, Warrior) and target_unit and target_unit.player != self.current_player:
+            can_attack, move_position = self.selected_unit.can_attack(clicked_square, self.board, self._get_all_units())
+            if can_attack:
+                if move_position:
+                    movement_cost = self.board.movement_costs[move_position]
+                    if self.movement_points[self.selected_unit] >= movement_cost:
+                        self.selected_unit.move_and_attack(target_unit, move_position)
+                        self.movement_points[self.selected_unit] = 0
+                else:
+                    self.selected_unit.attack(target_unit)
+                    self.movement_points[self.selected_unit] = 0
+                self._update_unit_selection(self.selected_unit.position)
+                return
 
-        movement_cost = self.board.movement_costs[clicked_square]
-        
-        if self.selected_unit.action == "Move" and self.movement_points[self.selected_unit] >= movement_cost:
-            self._execute_movement(clicked_square, movement_cost)
-        
+        if clicked_square in self.board.reachable_positions:
+            movement_cost = self.board.movement_costs[clicked_square]
+            if self.selected_unit.action == "Move" and self.movement_points[self.selected_unit] >= movement_cost:
+                self._execute_movement(clicked_square, movement_cost)
+            
     def _execute_movement(self, target_square, movement_cost):
 
         """
