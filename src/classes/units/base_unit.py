@@ -21,14 +21,13 @@ class BaseUnit(ABC):
         formation (str): Current formation of the unit
         player (int): Player number (1 or 2) who owns this unit
         movement_range (int): Number of squares the unit can move
-        unit_char (str): Character to display on the unit ('K', 'W', etc.)
         size (tuple): Size of the unit graphic (width, height)
         is_alive (bool): Whether the unit is still alive
         primary_color (tuple): Main color of the unit based on player
         secondary_color (tuple): Secondary color based on player
     """
     
-    def __init__(self, initial_position, player, movement_range, unit_char, formation="Standard"):
+    def __init__(self, initial_position, player, movement_range, formation="Standard"):
 
         """
         Initialize a new unit with basic attributes and systems.
@@ -37,7 +36,6 @@ class BaseUnit(ABC):
             initial_position (tuple): Starting position as (row, col)
             player (int): Player number (1 or 2)
             movement_range (int): Number of squares the unit can move
-            unit_char (str): Character to display on the unit
             formatior (str): Current formation of the unit
             
         Raises:
@@ -53,9 +51,6 @@ class BaseUnit(ABC):
         
         if movement_range < 0:
             raise ValueError("Movement range cannot be negative in units/base_unit")
-        
-        if not isinstance(unit_char, str) or len(unit_char) != 1:
-            raise ValueError("Unit character must be a single character in units/base_unit")
 
         self.position = initial_position
         self.attack_points = 0
@@ -73,7 +68,6 @@ class BaseUnit(ABC):
 
         self.player = player
         self.movement_range = movement_range
-        self.unit_char = unit_char
         self.size = (0, 0)
         self.is_alive = True
         self._init_colors()
@@ -82,6 +76,7 @@ class BaseUnit(ABC):
         
     
     def _draw_general_flag(self, screen, x, y, unit_width, unit_height):
+
         """
         Draws a flag on top of the unit if it contains the general.
         
@@ -92,6 +87,7 @@ class BaseUnit(ABC):
             unit_width (int): Width of the unit
             unit_height (int): Height of the unit
         """
+        
         if not self.has_general:
             return
             
@@ -321,9 +317,6 @@ class BaseUnit(ABC):
                 except Exception as e:
                     print(f"Failed to draw sprite: {e}") 
 
-            text_surface = self.font.render(self.unit_char, True, Colors.TEXT)
-            text_rect = text_surface.get_rect(center=(x + unit_width/2, y + unit_height/2))
-            screen.blit(text_surface, text_rect)
 
             self._draw_general_flag(screen, x, y, unit_width, unit_height)
 
