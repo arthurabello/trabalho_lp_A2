@@ -23,11 +23,14 @@ class Paths:
     """
     Paths to assets used for rendering units.
     """
-
+    
     ASSETS_DIR = os.path.join('..', 'assets')
+    SPRITES_DIR = os.path.join(ASSETS_DIR, 'sprites')
     SOUNDS_DIR = os.path.join(ASSETS_DIR, 'sounds')
     MOVE_SOUND = os.path.join(SOUNDS_DIR, 'movement.wav')
     ATTACK_SOUND = os.path.join(SOUNDS_DIR, 'attack.wav')
+    ATTACKABLE_SQUARE = os.path.join(SPRITES_DIR, 'attackable_square.png')
+    DANGEROUS_SQUARE = os.path.join(SPRITES_DIR, 'dangerous_square.png')
 
 class UnitDefaults:
 
