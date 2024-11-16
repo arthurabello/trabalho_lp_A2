@@ -77,7 +77,11 @@ class Warrior(BaseUnit):
         self._update_sprite()
 
     def draw(self, screen, board):
-        """Override draw method to ensure visibility even without sprites"""
+        
+        """
+        Draw the unit on the screen
+        """
+
         if not self.is_alive:
             return
 
@@ -108,8 +112,9 @@ class Warrior(BaseUnit):
     def _update_sprite(self):
 
         """
-        Updates the sprite based on the current formation.
+        Updates the sprite based on the current formation and player number
         """
+
         if self.formation in self.formation_sprites:
             self.sprite = self.formation_sprites[self.formation]
         else:
@@ -117,6 +122,9 @@ class Warrior(BaseUnit):
         
         self.sprite = self.sprite.convert_alpha()
         colored_sprite = self.sprite.copy()
+
+        if self.player == 2:
+            colored_sprite = pygame.transform.flip(colored_sprite, True, False) #magia obscura
 
         if self.player == 1:
             overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
