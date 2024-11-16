@@ -36,7 +36,6 @@ class Warrior(BaseUnit):
             initial_position=initial_position,
             player=player,
             movement_range=3,
-            unit_char='W',
             formation=formation
         )
 
