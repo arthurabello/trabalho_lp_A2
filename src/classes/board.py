@@ -4,6 +4,7 @@ This module represents the game board, responsible for managing selectable squar
 
 import pygame
 from .graph import BoardGraph
+from .units.constants import Paths
 
 class Board:
     
@@ -61,8 +62,63 @@ class Board:
         self.sprites = {
             "plains": pygame.image.load("../assets/sprites/terrains/plains.png"),
             "mountain": pygame.image.load("../assets/sprites/terrains/mountain.png"),
-            "forest": pygame.image.load("../assets/sprites/terrains/forest.png")
+            "forest": pygame.image.load("../assets/sprites/terrains/forest.png"),
+            "attackable": pygame.image.load(Paths.ATTACKABLE_SQUARE).convert_alpha(),
+            "dangerous": pygame.image.load(Paths.DANGEROUS_SQUARE).convert_alpha()
         }
+        self.dangerous_squares = set()
+        self.attackable_squares = set()
+
+    def _is_valid_position(self, row: int, col: int) -> bool:
+        """
+        Checks if a position is within the board boundaries.
+        
+        Args:
+            row (int): Row index to check
+            col (int): Column index to check
+            
+        Returns:
+            bool: True if position is valid, False otherwise
+        """
+        return 0 <= row < self.m and 0 <= col < self.n
+    
+    def update_attack_overlays(self, selected_unit, all_units):
+
+        """
+        Updates the dangerous and attackable squares based on the selected unit
+        and enemy positions. Only marks squares as dangerous if they are both:
+        - Within the selected unit's movement range
+        - Within an enemy unit's attack range
+        """
+
+        self.dangerous_squares.clear()
+        self.attackable_squares.clear()
+        
+        if not selected_unit:
+            return
+                
+        enemy_units = [unit for unit in all_units if unit.is_alive and unit.player != selected_unit.player]
+        
+        all_dangerous = set()
+        for enemy in enemy_units:
+            row, col = enemy.position
+            attack_range = enemy.attack_range
+            
+            for i in range(-attack_range, attack_range + 1):
+                for j in range(-attack_range, attack_range + 1):
+                    new_row, new_col = row + i, col + j
+                    if (self._is_valid_position(new_row, new_col) and 
+                        abs(i) + abs(j) <= attack_range and
+                        (new_row, new_col) != enemy.position): 
+                        all_dangerous.add((new_row, new_col))
+        
+        self.dangerous_squares = all_dangerous.intersection(self.reachable_positions)
+    
+        for enemy in enemy_units:
+            enemy_pos = enemy.position
+            if selected_unit.can_attack(enemy_pos):
+                self.attackable_squares.add(enemy_pos)
+
 
     def get_square_from_click(self, mouse_pos, screen) -> None:
 
@@ -131,9 +187,11 @@ class Board:
             self.movement_costs = {}
 
     def initialize_terrain(self):
+
         """
         Initializes the terrain map. By default, it creates some mountains at specific positions.
         """
+        
         terrain = {}
         for row in range(self.m):
             for col in range(self.n):
@@ -164,7 +222,8 @@ class Board:
         width, height = screen.get_size()
         if width <= 0 or height <= 0:
             raise ValueError("Invalid screen dimensions in board/draw")
-
+        
+        width, height = screen.get_size()
         square_width = width // self.n
         square_height = height // self.m
 
@@ -195,3 +254,23 @@ class Board:
                 if selected_square and (row, column) == selected_square:
                     pygame.draw.rect(screen, self.COLOR_RED, 
                                 (column * square_width, row * square_height, square_width, square_height), 3)
+                    
+                square_pos = (row, column)
+
+                if square_pos in self.dangerous_squares:
+                    dangerous_sprite = pygame.transform.scale(
+                        self.sprites["dangerous"],
+                        (square_width, square_height)
+                    )
+                    dangerous_sprite.set_alpha(128)  # 50% transparency
+                    screen.blit(dangerous_sprite, 
+                              (column * square_width, row * square_height))
+                
+                if square_pos in self.attackable_squares:
+                    attackable_sprite = pygame.transform.scale(
+                        self.sprites["attackable"],
+                        (square_width, square_height)
+                    )
+                    attackable_sprite.set_alpha(128)  # 50% transparency
+                    screen.blit(attackable_sprite, 
+                              (column * square_width, row * square_height))

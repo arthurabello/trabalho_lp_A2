@@ -171,39 +171,26 @@ class Warrior(BaseUnit):
 
         return True
 
-    def can_attack(self, target_position, board, all_units):
+    def can_attack(self, target_position):
 
         """
-        Check if warrior can attack a position, either directly or by moving first
-        Returns (bool, position_to_move_to) where position_to_move_to is None if already adjacent
+        Check if this warrior can attack a position.
+        
+        Args:
+            target_position (tuple): Position to check as (row, col)
+            
+        Returns:
+            bool: True if the position is within attack range
         """
-
+        
         if not self.is_alive:
-            return False, None
-
+            return False
+            
         row, col = self.position
         target_row, target_col = target_position
-
-        if abs(row - target_row) + abs(col - target_col) <= self.attack_range:
-            return True, None
-
-        reachable_positions = board.graph.get_reachable_positions(self.position, self.movement_range)[0]
         
-        best_position = None
-        min_distance = float('inf')
-
-        for pos in reachable_positions:
-            pos_row, pos_col = pos
-            
-            if abs(pos_row - target_row) + abs(pos_col - target_col) <= self.attack_range:
-                occupied = any(unit.is_alive and unit.position == pos for unit in all_units if unit != self)
-                if not occupied:
-                    distance = abs(row - pos_row) + abs(col - pos_col)
-                    if distance < min_distance:
-                        min_distance = distance
-                        best_position = pos
-
-        return best_position is not None, best_position
+        distance = abs(row - target_row) + abs(col - target_col)
+        return distance <= self.attack_range
 
     def move_and_attack(self, target_unit, move_to_position):
 
