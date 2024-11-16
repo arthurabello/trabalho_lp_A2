@@ -284,20 +284,20 @@ class Game:
         return False
 
     def _handle_unit_selection(self, clicked_unit, clicked_square):
-
         """
         Handle the selection of a unit
-        
-        Args:
-            clicked_unit (BaseUnit): The unit that was clicked
-            clicked_square (tuple): The board position that was clicked
         """
-
         if clicked_unit and clicked_unit.player == self.current_player:
             if not self._handle_general_movement(clicked_unit):
                 self.selected_unit = clicked_unit
-                self.board.select_square(clicked_square, 
-                                       self.movement_points[clicked_unit])
+                self.board.select_square(clicked_square, self.movement_points[clicked_unit])
+
+                self.board.update_attack_overlays(clicked_unit, self._get_all_units())
+            self._draw_board()
+        else:
+            self.selected_unit = None
+            self.board.select_square(None, 0)
+            self.board.update_attack_overlays(None, self._get_all_units())
             self._draw_board()
 
     def _handle_unit_movement(self, clicked_square):
@@ -313,23 +313,28 @@ class Game:
                 self._update_unit_selection(self.selected_unit.position)
                 return
 
-        if isinstance(self.selected_unit, Warrior) and target_unit and target_unit.player != self.current_player:
-            can_attack, move_position = self.selected_unit.can_attack(clicked_square, self.board, self._get_all_units())
-            if can_attack:
-                if move_position:
-                    movement_cost = self.board.movement_costs[move_position]
-                    if self.movement_points[self.selected_unit] >= movement_cost:
-                        self.selected_unit.move_and_attack(target_unit, move_position)
-                        self.movement_points[self.selected_unit] = 0
-                else:
-                    self.selected_unit.attack(target_unit)
+        if isinstance(self.selected_unit, Warrior):
+            if target_unit and target_unit.player != self.current_player:
+                if self.selected_unit.can_attack(clicked_square):
+                    self._handle_combat(target_unit)
                     self.movement_points[self.selected_unit] = 0
-                self._update_unit_selection(self.selected_unit.position)
-                return
+                    self._update_unit_selection(self.selected_unit.position)
+                    return
+
+                elif clicked_square in self.board.reachable_positions:
+                    movement_cost = self.board.movement_costs[clicked_square]
+                    if self.movement_points[self.selected_unit] >= movement_cost:
+                        self.selected_unit.move(clicked_square)
+                        self.movement_points[self.selected_unit] -= movement_cost
+                        if self.selected_unit.can_attack(target_unit.position):
+                            self._handle_combat(target_unit)
+                            self.movement_points[self.selected_unit] = 0
+                        self._update_unit_selection(clicked_square)
+                        return
 
         if clicked_square in self.board.reachable_positions:
             movement_cost = self.board.movement_costs[clicked_square]
-            if self.selected_unit.action == "Move" and self.movement_points[self.selected_unit] >= movement_cost:
+            if self.movement_points[self.selected_unit] >= movement_cost:
                 self._execute_movement(clicked_square, movement_cost)
             
     def _execute_movement(self, target_square, movement_cost):
@@ -459,6 +464,7 @@ class Game:
         self.current_player = 3 - self.current_player
         self.selected_unit = None
         self.board.select_square(None, 0)
+        self.board.update_attack_overlays(None, self._get_all_units())
         self._reset_movement_points()
         self._draw_board()
 
