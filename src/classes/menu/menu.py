@@ -263,7 +263,7 @@ class Menu:
             pygame.draw.rect(self.screen, color, button_rect, border_radius=10)
             pygame.draw.rect(self.screen, self.COLORS['button_text'], button_rect, 2, border_radius=10)
             
-            text = self.font.render(button_name.capitalize(), True, self.COLORS['button_text'])
+            text = self.small_font.render(button_name.capitalize(), True, self.COLORS['button_text'])
             text_rect = text.get_rect(center=button_rect.center)
             self.screen.blit(text, text_rect)
         
