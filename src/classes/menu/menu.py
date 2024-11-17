@@ -112,18 +112,17 @@ class Menu:
         slider_width = 250
         slider_height = 8
         label_offset = 70  
-
         self.options_elements = {
-            "sfx_label": pygame.Rect(panel_x + 30, element_start_y, 200, 30),
+            "sfx_label": pygame.Rect(panel_x + 30, element_start_y + 0.5*element_spacing, 200, 30),
             "sound_toggle": pygame.Rect(panel_x + 30, element_start_y + label_offset, toggle_size, toggle_size),
             "sound_slider": pygame.Rect(panel_x + 30 + toggle_size + 20, 
                                     element_start_y + label_offset + (toggle_size - slider_height) // 2,
                                     slider_width, slider_height),
             
-            "music_label": pygame.Rect(panel_x + 30, element_start_y + element_spacing, 200, 30),
-            "music_toggle": pygame.Rect(panel_x + 30, element_start_y + element_spacing + label_offset, toggle_size, toggle_size),
+            "music_label": pygame.Rect(panel_x + 30, element_start_y + 2*element_spacing, 200, 30),
+            "music_toggle": pygame.Rect(panel_x + 30, element_start_y + 1.5*element_spacing + label_offset, toggle_size, toggle_size),
             "music_slider": pygame.Rect(panel_x + 30 + toggle_size + 20,
-                                    element_start_y + element_spacing + label_offset + (toggle_size - slider_height) // 2,
+                                    element_start_y + 1.5*element_spacing + label_offset + (toggle_size - slider_height) // 2,
                                     slider_width, slider_height),
             
             "back": pygame.Rect(panel_x + (options_panel_width - 150) // 2,

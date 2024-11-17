@@ -50,10 +50,6 @@ class Game:
 
         pygame.display.set_caption("Warbound")
         
-        self.board = Board(self.m, self.n, self.board_width, self.board_height)
-        self.board_surface = pygame.Surface((self.board_width, self.board_height))
-        self.selected_square = None
-        
         self.status_surface = pygame.Surface((300, self.screen_height))
 
         self.running = True
@@ -63,6 +59,10 @@ class Game:
 
         self.units1[0].has_general = True  
         self.units2[0].has_general = True
+
+        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
+        self.board_surface = pygame.Surface((self.board_width, self.board_height))
+        self.selected_square = None
         
         self.selected_unit = None
         self.current_player = 1
@@ -111,7 +111,7 @@ class Game:
         
         self.board_surface = pygame.Surface((self.board_width, self.board_height))
         self.status_surface = pygame.Surface((300, self.screen_height))
-        self.board = Board(self.m, self.n, self.board_width, self.board_height)
+        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
     
     def _reset_movement_points(self):
 
@@ -136,30 +136,41 @@ class Game:
 
     def _create_units(self, player):
         """
-        Creates warriors and archers in a symmetric formation for the given player
+        Creates warriors and archers in the specified symmetric formation for the given player
         """
         units = []
-        board_center = self.n // 2
         
         if player == 1:
-            warrior_col_start = 2 
-            archer_col_start = 2
+            warrior_start_row = 6
+            archer_start_col = 1
+            warrior_col_start = 6
+            left_archer_row_start = 1
+            right_archer_row_start = 11  
         else:
-            warrior_col_start = self.n - 7 
-            archer_col_start = self.n - 7
-        
-        for row in range(4):
+            warrior_start_row = 6 
+            archer_start_col = self.n - 4 
+            warrior_col_start = self.n - 11
+            left_archer_row_start = 11
+            right_archer_row_start = 1 
+
+        for row in range(8):
             for col in range(5):
-                position = (row + 1, warrior_col_start + col)
+                position = (warrior_start_row + row, warrior_col_start + col)
                 warrior = Warrior(position, player)
                 units.append(warrior)
-        
-        for row in range(4):
-            for col in range(5):
-                position = (row + 5, archer_col_start + col) 
+
+        for row in range(8):
+            for col in range(3):
+                position = (right_archer_row_start + row, archer_start_col + col)
                 archer = Archer(position, player, "Standard")
                 units.append(archer)
-                        
+        
+        for row in range(8):
+            for col in range(3):
+                position = (left_archer_row_start + row, archer_start_col + col)
+                archer = Archer(position, player, "Standard")
+                units.append(archer)
+        
         return units
     
     def _get_all_units(self):
