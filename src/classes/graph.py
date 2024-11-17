@@ -2,7 +2,7 @@
 This module defines the graph structure for the board, managing connectivity between squares and reachable positions.
 """
 
-from typing import Dict, Tuple, Set
+from typing import Dict, Tuple, Set, List
 from collections import defaultdict
 import heapq
 
@@ -24,7 +24,7 @@ class BoardGraph:
         get_reachable_positions(start_pos, movement_points): Calculates reachable positions from a starting position, considering movement points.
     """
 
-    def __init__(self, m: int, n: int, terrain: Dict) -> None:
+    def __init__(self, m: int, n: int, terrain: Dict, units: List) -> None:
 
         """Initializes the graph with the board dimensions and creates connections between squares.
 
@@ -37,6 +37,7 @@ class BoardGraph:
         self.m = m  
         self.n = n
         self.terrain = terrain
+        self.units = units
         if not isinstance(m, int) or not isinstance(n, int):
             raise TypeError("Board dimensions must be integers in graph/init")
         if m <= 0 or n <= 0:
@@ -87,9 +88,15 @@ class BoardGraph:
         """
         Calculates the edge weight between two positions based on the terrain
         """
+        
+        # checks if there is a unit in the path
+        for unit in self.units:
+            if unit.is_alive and unit.position == pos2:
+                return float('infinity')
+
         terrain1 = self.terrain[pos1]
         terrain2 = self.terrain[pos2]
-    
+
         weight_map = {
             ('plains', 'plains'): 1,
             ('plains', 'mountain'): 2,
@@ -103,6 +110,16 @@ class BoardGraph:
         }
 
         return weight_map.get((terrain1, terrain2))
+    
+    def update_units(self, units: list):
+        """
+        Updates the current unit positions on the board and rebuilds the graph
+        
+        Args:
+            units (list): Current list of all units
+        """
+        self.units = units
+        self._build_graph()  # Rebuild graph with new unit positions
 
     def get_neighbors(self, position: Tuple[int, int]) -> Dict[Tuple[int,int], int]:
 
@@ -203,7 +220,7 @@ class BoardGraph:
 
         return reachable
 
-    def get_reachable_positions(self, start_pos: Tuple[int, int], movement_points: int) -> Tuple[Set[Tuple[int, int]], Dict[Tuple[int, int], int]]:
+    def get_reachable_positions(self, start_pos: Tuple[int, int], movement_points: int, current_units) -> Tuple[Set[Tuple[int, int]], Dict[Tuple[int, int], int]]:
 
         """
         Calculates reachable positions from a starting position, considering movement points.
@@ -217,6 +234,8 @@ class BoardGraph:
                 Set[Tuple[int, int]]: Set of reachable positions from the starting position
                 Dict[Tuple[int, int], int]: Dictionary mapping each reachable position to its minimum movement cost
         """
+
+        self.update_units(current_units)
 
         if not isinstance(start_pos, tuple) or len(start_pos) != 2:
             raise ValueError("Invalid start position format")
