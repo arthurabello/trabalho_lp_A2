@@ -286,15 +286,12 @@ class BaseUnit(ABC):
 
         try:
             width, height = screen.get_size()
-            print(f"Screen dimensions: {width}x{height}") 
             
             if width <= 0 or height <= 0:
                 raise ValueError("Invalid screen dimensions in units/base_unit")
 
             square_width = width // board.n
             square_height = height // board.m
-            
-            print(f"Square dimensions: {square_width}x{square_height}")  
             
             self.size = (square_width, square_height)
 
@@ -304,8 +301,6 @@ class BaseUnit(ABC):
             
             x = self.position[1] * square_width + margin
             y = self.position[0] * square_height + margin
-            
-            print(f"Drawing unit at: {x},{y} with size {unit_width}x{unit_height}") 
 
             pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
             pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
