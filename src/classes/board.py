@@ -33,7 +33,7 @@ class Board:
     COLOR_GRAY = (139, 137, 137)
     COLOR_HIGHLIGHT = (255, 255, 0, 180)
 
-    def __init__(self, m, n, initial_width, initial_height) -> None:
+    def __init__(self, m, n, initial_width, initial_height, units) -> None:
 
         """
         Initializes the board with dimensions and sets up the board graph for connectivity management.
@@ -44,7 +44,28 @@ class Board:
             initial_width (int): Initial width of the game window
             initial_height (int): Initial height of the game window
         """
-        
+        self.terrain_map =   """
+                        #######x#x#.##..###x##########
+                        #.x#xx#.##x##x#x.#x##x##x.#.#.
+                        ####..xx####.#######.####x##..
+                        ###.##x######.xx####x.###x.##.
+                        #.############.x############.#
+                        ###.#.x##.#.#####x##.####xxxx#
+                        .###x.#.#######.##.##x#######x
+                        ######xx#.#x.######x###.##.xx#
+                        ######.####..#####.#..##.##x.#
+                        x###x#x#####.###x#..#####.##x.
+                        x#####x###.#########.x#x.#####
+                        .x#########x#x#.########.##x.x
+                        x###x##.###.x##x##xx#####xx###
+                        ######x#x###.#####x#####x#x###
+                        #x#.####.##x##.##.##x####.##.#
+                        xx#x##x##x#x##x#.###x#.x####.#
+                        ###..##xx.###.##x###########..
+                        #xx#x.#.##.#####.###x########.
+                        #x#####.####x.#xx##x.##.#.####
+                        #.##.########.#####..#####x##x
+                        """
         self.m = m
         self.n = n
         if m <= 0 or n <= 0:
@@ -55,8 +76,9 @@ class Board:
         self.initial_width = initial_width
         self.initial_height = initial_height
         self.selected_square = None
-        self.terrain = self.initialize_terrain()
-        self.graph = BoardGraph(m, n, self.terrain)
+        self.terrain = self.initialize_terrain(self.terrain_map)
+        self.units = units
+        self.graph = BoardGraph(m, n, self.terrain, units)
         self.reachable_positions = set()
 
         self.sprites = {
@@ -181,30 +203,33 @@ class Board:
                 raise ValueError("Square position out of bounds in board/select_square") #validating square position
             
         if square:
-            self.reachable_positions, self.movement_costs = self.graph.get_reachable_positions(square, movement_points)
+            self.reachable_positions, self.movement_costs = self.graph.get_reachable_positions(square, movement_points, self.units)
         else:
             self.reachable_positions = set()
             self.movement_costs = {}
 
-    def initialize_terrain(self):
+    def initialize_terrain(self, terrain_map):
 
         """
-        Initializes the terrain map. By default, it creates some mountains at specific positions.
+        Initializes the terrain map from a provided map string.
         """
-        
+
         terrain = {}
-        for row in range(self.m):
-            for col in range(self.n):
-                terrain[(row,col)] = "plains"
+        rows = [row.strip() for row in terrain_map.strip().split("\n")]
 
-                # mountains 
-                if ((row + col) % 6 == 0 or (row - col) % 5 == 2) and row % 2 == 0:
-                    terrain[(row, col)] = "mountain"
-                
-                if ((row + col) % 15 == 0):
-                    terrain[(row, col)] = "forest"
+        for row_index, row in enumerate(rows):
+            for col_index, cell in enumerate(row):
+                if cell == "#":
+                    terrain[(row_index, col_index)] = "plains"
+                elif cell == ".":
+                    terrain[(row_index, col_index)] = "mountain"
+                elif cell == "x":
+                    terrain[(row_index, col_index)] = "forest"
+                else:
+                    raise ValueError(f"Unexpected terrain character: {cell}")
         
         return terrain
+        
 
     def draw(self, screen, selected_square=None):
 
