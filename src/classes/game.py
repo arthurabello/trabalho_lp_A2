@@ -18,8 +18,8 @@ class Game:
         except Exception as e:
             raise RuntimeError(f"Failed to initialize game in game/init: {str(e)}")
         
-        self.m = 14
-        self.n = 21
+        self.m = 20
+        self.n = 30
         if self.m <= 0 or self.n <= 0:
             raise ValueError("Invalid board dimensions in game/init")
         
