@@ -120,6 +120,9 @@ class Archer(BaseUnit):
         self.sprite = self.sprite.convert_alpha()
         colored_sprite = self.sprite.copy()
 
+        if self.player == 2:
+            colored_sprite = pygame.transform.flip(colored_sprite, True, False)
+
         if self.player == 1:
             overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
             overlay.fill((255, 0, 0, 60))  
