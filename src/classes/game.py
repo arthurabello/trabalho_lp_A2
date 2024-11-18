@@ -160,19 +160,19 @@ class Game:
         for row in range(8):
             for col in range(5):
                 position = (warrior_start_row + row, warrior_col_start + col)
-                warrior = Warrior(position, player, self.board.terrain[(row, col)])
+                warrior = Warrior(position, player)
                 units.append(warrior)
 
         for row in range(8):
             for col in range(3):
                 position = (right_archer_row_start + row, archer_start_col + col)
-                archer = Archer(position, player, self.board.terrain[(row, col)])
+                archer = Archer(position, player)
                 units.append(archer)
         
         for row in range(8):
             for col in range(3):
                 position = (left_archer_row_start + row, archer_start_col + col)
-                archer = Archer(position, player, self.board.terrain[(row, col)])
+                archer = Archer(position, player)
                 units.append(archer)
         
         return units
