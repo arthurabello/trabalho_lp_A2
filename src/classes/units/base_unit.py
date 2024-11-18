@@ -36,7 +36,7 @@ class BaseUnit(ABC):
             initial_position (tuple): Starting position as (row, col)
             player (int): Player number (1 or 2)
             movement_range (int): Number of squares the unit can move
-            formatior (str): Current formation of the unit
+            formation (str): Current formation of the unit
             
         Raises:
             ValueError: If position format is invalid or player number is not 1 or 2
@@ -65,6 +65,8 @@ class BaseUnit(ABC):
         }
         self.action = "Move"
         self.actions = ["Move", "Attack"]
+
+        self.terrain = None
 
         self.player = player
         self.movement_range = movement_range
