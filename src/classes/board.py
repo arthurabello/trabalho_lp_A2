@@ -32,8 +32,51 @@ class Board:
     COLOR_RED = (255, 0, 0)
     COLOR_GRAY = (139, 137, 137)
     COLOR_HIGHLIGHT = (255, 255, 0, 180)
+    map1 = '''
+            #######x#x#.##..###x##########
+            #.x#xx#.##x##x#x.#x##x##x.#.#.
+            ####..xx####.#######.####x##..
+            ###.##x######.xx####x.###x.##.
+            #.############.x############.#
+            ###.#.x##.#.#####x##.####xxxx#
+            .###x.#.#######.##.##x#######x
+            ######xx#.#x.######x###.##.xx#
+            ######.####..#####.#..##.##x.#
+            x###x#x#####.###x#..#####.##x.
+            x#####x###.#########.x#x.#####
+            .x#########x#x#.########.##x.x
+            x###x##.###.x##x##xx#####xx###
+            ######x#x###.#####x#####x#x###
+            #x#.####.##x##.##.##x####.##.#
+            xx#x##x##x#x##x#.###x#.x####.#
+            ###..##xx.###.##x###########..
+            #xx#x.#.##.#####.###x########.
+            #x#####.####x.#xx##x.##.#.####
+            #.##.########.#####..#####x##x'''
+    
+    map2 = '''
+            .#.x#..##..#x###.#x####x.#####
+            .#############x#x##.######.##.
+            ####.#####x#x#######.##..#...x
+            ###.####x#####.xx##x##.#x##x##
+            #x###xx#######x####x##x#######
+            ##.#######.##########.####xxx#
+            ##.#############.#########x##x
+            x#x##.#.#####.########xxx#####
+            #######xx#.###.x#.##x#.#####.#
+            ####xx#.x####.x#.##.#####..###
+            ##.#####..x###.x##x####.x###.x
+            ######x###x######x#.##xx######
+            ###x.###x#####x.#######.#.###.
+            .#.##x###xx.#.xx.#..#####xx##.
+            x#xx#.##.##.x#xx.####.xx##.x##
+            #.############.x#############.
+            ##xx##.######x#x##.x#####x##.#
+            #.#x.#####...#..###.########x#
+            #x##x#.###x####.#########.###.
+            #xx#..###x.#x###x#x.###x###x##'''
 
-    def __init__(self, m, n, initial_width, initial_height, units) -> None:
+    def __init__(self, m, n, initial_width, initial_height, units, map_choice=None) -> None:
 
         """
         Initializes the board with dimensions and sets up the board graph for connectivity management.
@@ -44,28 +87,13 @@ class Board:
             initial_width (int): Initial width of the game window
             initial_height (int): Initial height of the game window
         """
-        self.terrain_map =   """
-                        #######x#x#.##..###x##########
-                        #.x#xx#.##x##x#x.#x##x##x.#.#.
-                        ####..xx####.#######.####x##..
-                        ###.##x######.xx####x.###x.##.
-                        #.############.x############.#
-                        ###.#.x##.#.#####x##.####xxxx#
-                        .###x.#.#######.##.##x#######x
-                        ######xx#.#x.######x###.##.xx#
-                        ######.####..#####.#..##.##x.#
-                        x###x#x#####.###x#..#####.##x.
-                        x#####x###.#########.x#x.#####
-                        .x#########x#x#.########.##x.x
-                        x###x##.###.x##x##xx#####xx###
-                        ######x#x###.#####x#####x#x###
-                        #x#.####.##x##.##.##x####.##.#
-                        xx#x##x##x#x##x#.###x#.x####.#
-                        ###..##xx.###.##x###########..
-                        #xx#x.#.##.#####.###x########.
-                        #x#####.####x.#xx##x.##.#.####
-                        #.##.########.#####..#####x##x
-                        """
+        if map_choice == 1:
+            self.terrain_map = self.map1
+        elif map_choice == 2:
+            self.terrain_map = self.map2
+        else:
+            self.terrain_map = self.map1 # by default
+            
         self.m = m
         self.n = n
         if m <= 0 or n <= 0:
@@ -212,6 +240,18 @@ class Board:
 
         """
         Initializes the terrain map from a provided map string.
+
+        Args:
+            terrain_map (str): A string representation of the terrain map where each line corresponds to a row 
+            and each character represents a type of terrain. The expected characters are:
+                - '#' for plains
+                - '.' for mountains
+                - 'x' for forests
+
+        Returns:
+            dict: A dictionary representing the terrain map, where:
+                - Keys are tuples (row_index, col_index) indicating the row and column of each cell.
+                - Values are strings representing the terrain type at each coordinate ("plains", "mountains" and "forests").
         """
 
         terrain = {}
