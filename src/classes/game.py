@@ -53,6 +53,9 @@ class Game:
         self.status_surface = pygame.Surface((300, self.screen_height))
 
         self.running = True
+
+        # initialize the board
+        # self.board = Board(self.m, self.n, self.board_width, self.board_height, [])
         
         self.units1 = self._create_units(1)
         self.units2 = self._create_units(2)
@@ -60,6 +63,7 @@ class Game:
         self.units1[0].has_general = True  
         self.units2[0].has_general = True
 
+        # update the board with units
         self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
         self.board_surface = pygame.Surface((self.board_width, self.board_height))
         self.selected_square = None
@@ -156,19 +160,19 @@ class Game:
         for row in range(8):
             for col in range(5):
                 position = (warrior_start_row + row, warrior_col_start + col)
-                warrior = Warrior(position, player)
+                warrior = Warrior(position, player, self.board.terrain[(row, col)])
                 units.append(warrior)
 
         for row in range(8):
             for col in range(3):
                 position = (right_archer_row_start + row, archer_start_col + col)
-                archer = Archer(position, player, "Standard")
+                archer = Archer(position, player, self.board.terrain[(row, col)])
                 units.append(archer)
         
         for row in range(8):
             for col in range(3):
                 position = (left_archer_row_start + row, archer_start_col + col)
-                archer = Archer(position, player, "Standard")
+                archer = Archer(position, player, self.board.terrain[(row, col)])
                 units.append(archer)
         
         return units
@@ -259,6 +263,7 @@ class Game:
             formation_text = self.mini_font.render(f"Formation: {self.selected_unit.formation}", True, (255, 255, 255))
             change_formation_text = self.mini_font.render(f"Press 'G' to change formation", True, (255,255,255))
             action_text = self.mini_font.render(f"Action: {self.selected_unit.action} (Press 'F' to change)", True, (255, 255, 255))
+            # terrain_text = self.mini_font.render(f"Current terrain: {self.selected_unit.terrain}", True, (255, 255, 255))
                 
             self.status_surface.blit(name_text, (10, 40))
             self.status_surface.blit(remaining_units_text, (10, 70))
@@ -267,6 +272,7 @@ class Game:
             self.status_surface.blit(formation_text, (10,160))
             self.status_surface.blit(change_formation_text, (10, 190))
             self.status_surface.blit(action_text, (10, 220))
+            # self.status_surface.blit(terrain_text, (10, 250))
         else:
             no_unit_text = self.mini_font.render("Select a Unit", True, (255, 255, 255))
             self.status_surface.blit(no_unit_text, (10, 40))
@@ -620,9 +626,12 @@ class Game:
                 if self.state == "menu":
                     self.menu.draw()
                     new_state = self.menu.handle_events()
-                    
-                    if new_state == "quit":
-                        self.running = False
+
+                    if new_state.startswith("game_map"):
+                        self.state = "game"
+                        map_choice = 1 if new_state == "game_map1" else 2
+                        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units(), map_choice=map_choice)
+
                     elif new_state == "game":
                         self.state = "game"
                         if not self.menu.sound_enabled:
@@ -633,7 +642,9 @@ class Game:
                             for unit in self._get_all_units():
                                 unit.move_sound.set_volume(self.menu.sound_volume)
                                 unit.attack_sound.set_volume(self.menu.sound_volume)
-                
+                    elif new_state == "quit":
+                        self.running = False
+
                 elif self.state == "game":
                     self.handle_events()
                     self.update()

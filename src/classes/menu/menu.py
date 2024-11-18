@@ -129,6 +129,20 @@ class Menu:
                             panel_y + options_panel_height - 80,
                             150, 50)
         }
+        
+        if self.state == "map_select":
+            map_button_width = 250
+            map_button_height = 100
+            map_button_spacing = 50
+            
+            self.map_buttons = {
+                "map1": pygame.Rect((screen_width - map_button_width) // 2, 
+                                    screen_height // 2 - map_button_height - map_button_spacing // 2, 
+                                    map_button_width, map_button_height),
+                "map2": pygame.Rect((screen_width - map_button_width) // 2, 
+                                    screen_height // 2 + map_button_spacing // 2, 
+                                    map_button_width, map_button_height)
+            }
 
     def handle_events(self):
 
@@ -153,6 +167,8 @@ class Menu:
                     return self._handle_main_menu_click(mouse_pos)
                 elif self.state == "options":
                     return self._handle_options_menu_click(mouse_pos)
+                elif self.state == "map_select":
+                    return self._handle_map_selection_click(mouse_pos)
                     
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.dragging = None
@@ -170,7 +186,9 @@ class Menu:
                 if button_name == "quit":
                     return "quit"
                 elif button_name == "play":
-                    return "game"
+                    self.state = "map_select"
+                    self._init_buttons()
+                    return self.state
                 elif button_name == "options":
                     self.state = "options"
                 elif button_name == "tutorial":
@@ -212,6 +230,50 @@ class Menu:
                     pygame.mixer.music.set_volume(volume)
                 
         return self.state
+
+    def _handle_map_selection_click(self, mouse_pos):
+
+        if hasattr(self, 'map_buttons'):
+            for map_name, map_rect in self.map_buttons.items():
+                if map_rect.collidepoint(mouse_pos):
+                    if map_name == "map1":
+                        return f"game_map1"
+                    elif map_name == "map2":
+                        return f"game_map2"
+        
+        return self.state
+    
+    def _draw_map_selection(self):
+        # Draw a title for map selection
+        title_font = pygame.font.Font(None, 100)
+        title = title_font.render("Select a Map", True, (255, 215, 0))
+        title_rect = title.get_rect()
+        title_rect.centerx = self.screen.get_rect().centerx
+        title_rect.top = 50
+
+        shadow_offset = 3
+        title_shadow = title_font.render("Select a Map", True, (0, 0, 0))
+        shadow_rect = title_rect.copy()
+        shadow_rect.x += shadow_offset
+        shadow_rect.y += shadow_offset
+
+        self.screen.blit(title_shadow, shadow_rect)
+        self.screen.blit(title, title_rect)
+
+        # Draw map selection buttons
+        for map_name, map_rect in self.map_buttons.items():
+            mouse_pos = pygame.mouse.get_pos()
+            if map_rect.collidepoint(mouse_pos):
+                color = (70, 70, 75)
+            else:
+                color = (45, 45, 48)
+            
+            pygame.draw.rect(self.screen, color, map_rect, border_radius=10)
+            pygame.draw.rect(self.screen, self.COLORS['button_text'], map_rect, 2, border_radius=10)
+            
+            text = self.small_font.render(f"Map {map_name[-1]}", True, self.COLORS['button_text'])
+            text_rect = text.get_rect(center=map_rect.center)
+            self.screen.blit(text, text_rect)
                 
     
     def draw(self):
@@ -226,6 +288,8 @@ class Menu:
             self._draw_main_menu()
         elif self.state == "options":
             self._draw_options_menu()
+        elif self.state == "map_select":
+            self._draw_map_selection()
             
         if self.tutorial.active:
             self.tutorial.draw()
