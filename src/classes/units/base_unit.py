@@ -53,20 +53,22 @@ class BaseUnit(ABC):
             raise ValueError("Movement range cannot be negative in units/base_unit")
 
         self.position = initial_position
+        
+        self.terrain = None
+
         self.attack_points = 0
         self.defense_points = 0
         self.remaining_units = 0
+
         self.formation = formation
         self.formations = {
-            "normal": {
+            "Standard": {
                 "attack_modifier": 1.0,
                 "deffense_modifier": 1.0, 
             }
         }
         self.action = "Move"
         self.actions = ["Move", "Attack"]
-
-        self.terrain = None
 
         self.player = player
         self.movement_range = movement_range
@@ -254,7 +256,7 @@ class BaseUnit(ABC):
         Args:
             formation_name (str): Name of the formation to switch to
         """
-
+        
         if formation_name in self.formations:
             self.formation = formation_name
             modifiers = self.formations[formation_name]
