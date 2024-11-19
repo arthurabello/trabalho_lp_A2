@@ -1,6 +1,5 @@
 """
-Warrior unit implementation. Warriors are the main combat units with
-greater mobility than Kings but less strategic importance.
+This module contains the implementation of the Hoplite unit in the game.
 """
 
 import os
@@ -12,10 +11,7 @@ from .constants import Colors
 class Hoplite(BaseUnit):
 
     """
-    Represents a Warrior piece on the game board.
-    
-    Warriors are the main combat units with extended movement range
-    and the ability to attack enemies.
+    Represents a Hoplite piece on the game board.
     
     Attributes:
         Inherits all attributes from BaseUnit
@@ -25,7 +21,7 @@ class Hoplite(BaseUnit):
     def __init__(self, initial_position, player, formation="Standard"):
 
         """
-        Initialize a new Warrior unit.
+        Initialize a new Hoplite unit.
         
         Args:
             initial_position (tuple): Starting position (row, col)
@@ -39,6 +35,11 @@ class Hoplite(BaseUnit):
             formation=formation
         )
         self.attack_range=1
+        self.attack_type = "melee"
+        self.base_attack = 20
+        self.base_defense = 15
+        self.base_missile_defense = 30
+        
         self.formations = {
             "Standard": {
                 "attack_modifier": 1.0,
@@ -63,12 +64,11 @@ class Hoplite(BaseUnit):
 
         self.base_attack = 10
         self.base_defense = 5
-
-        # current stats (will be modified by formations)
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
+        self.max_hp = 100
+        self.current_hp = self.max_hp
 
-        self.remaining_units = 256
 
         self.primary_color = (Colors.PLAYER1_SECONDARY if player == 1 
                             else Colors.PLAYER2_SECONDARY)
@@ -94,6 +94,9 @@ class Hoplite(BaseUnit):
         
         x = self.position[1] * square_width + margin
         y = self.position[0] * square_height + margin
+
+        if board.selected_square == self.position:
+            self.draw_health_bar(screen, x, y, unit_width, unit_height)
 
         if not hasattr(self, 'sprite') or self.sprite is None:
             pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
@@ -139,10 +142,7 @@ class Hoplite(BaseUnit):
     def can_move_to(self, position, board, all_units):
 
         """
-        Check if the warrior can move to a given position.
-        
-        Warriors can move up to three squares in any direction, but cannot
-        move through or onto other units.
+        Check if the Hoplite can move to a given position.
         
         Args:
             position (tuple): Target position to check
@@ -173,7 +173,7 @@ class Hoplite(BaseUnit):
     def can_attack(self, target_position):
 
         """
-        Check if this warrior can attack a position.
+        Check if this hoplite can attack a position.
         
         Args:
             target_position (tuple): Position to check as (row, col)
@@ -191,7 +191,7 @@ class Hoplite(BaseUnit):
         distance = abs(row - target_row) + abs(col - target_col)
         return distance <= self.attack_range
 
-    def move_and_attack(self, target_unit, move_to_position):
+    def move_and_attack(self, target_unit, move_to_position, board):
 
         """
         Execute move-and-attack action
@@ -199,4 +199,4 @@ class Hoplite(BaseUnit):
         
         if move_to_position:
             self.move(move_to_position)
-        self.attack(target_unit)
+        self.attack(target_unit, board)

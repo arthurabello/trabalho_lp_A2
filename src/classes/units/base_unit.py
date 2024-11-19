@@ -4,6 +4,7 @@ This module contains the abstract base class for all units in the game.
 
 import pygame
 import os
+from math import ceil
 import random
 from abc import ABC, abstractmethod
 from .constants import Colors, Paths, UnitDefaults
@@ -53,12 +54,12 @@ class BaseUnit(ABC):
             raise ValueError("Movement range cannot be negative in units/base_unit")
 
         self.position = initial_position
+        self.is_alive = True
         
         self.terrain = None
 
         self.attack_points = 0
         self.defense_points = 0
-        self.remaining_units = 0
 
         self.formation = formation
         self.formations = {
@@ -67,15 +68,18 @@ class BaseUnit(ABC):
                 "deffense_modifier": 1.0, 
             }
         }
-        self.action = "Move"
-        self.actions = ["Move", "Attack"]
 
         self.player = player
         self.movement_range = movement_range
         self.size = (0, 0)
-        self.is_alive = True
         self._init_colors()
         self.has_general = False 
+        self.max_hp = 100
+        self.current_hp = self.max_hp
+        self.base_attack = 0  
+        self.base_defense = 0   
+        self.base_missile_defense = 0  
+        self.attack_type = None  #"melee" or "ranged", set by subclasses
         self._init_systems()
         
     
@@ -205,7 +209,7 @@ class BaseUnit(ABC):
         except Exception as e:
             print(f"Failed to play movement sound in units/base_unit: {str(e)}")
 
-    def attack(self, target):
+    def attack(self, target, board):
 
         """
         Attack another unit.
@@ -251,10 +255,10 @@ class BaseUnit(ABC):
     def change_formation(self, formation_name):
 
         """
-        Change the unit's formation and apply corresponding modifiers.
+        Change the formation of the unit.
         
         Args:
-            formation_name (str): Name of the formation to switch to
+            formation_name (str): Name of the new formation
         """
         
         if formation_name in self.formations:
@@ -267,22 +271,53 @@ class BaseUnit(ABC):
             self._update_sprite()
 
 
-    def change_action(self, action_name):
 
+    def draw_health_bar(self, screen, unit_x, unit_y, unit_width, unit_height):
+        
         """
-        Change the unit's action
-
+        Draw the health bar for the unit.
+        
         Args:
-            action_name (str): Name of the formation to switch to
+            screen (pygame.Surface): The surface to draw on
+            unit_x (int): X position of the unit
+            unit_y (int): Y position of the unit
+            unit_width (int): Width of the unit
+            unit_height (int): Height of the unit
         """
-        if action_name in self.actions:
-            self.action = action_name
 
+        if not self.is_alive:
+            return
+            
+        health_percentage = self.current_hp / self.max_hp
+        
+        bar_width = 5 #changeable
+        bar_height = unit_height * 0.8
+
+        if self.player == 1:
+            bar_x = unit_x - bar_width - 5  #left
+        else:
+            bar_x = unit_x + unit_width + 5  #right
+        bar_y = unit_y + (unit_height - bar_height) / 2
+
+        pygame.draw.rect(screen, (64, 64, 64), (bar_x, bar_y, bar_width, bar_height))
+        
+        filled_height = bar_height * health_percentage
+        filled_y = bar_y + (bar_height - filled_height)
+        
+        color = (0, 255, 0) if health_percentage > 0.7 else \
+                (255, 255, 0) if health_percentage > 0.3 else \
+                (255, 0, 0)
+                
+        pygame.draw.rect(screen, color, (bar_x, filled_y, bar_width, filled_height))
 
     def draw(self, screen, board):
 
         """
-        Draw the unit on the screen.
+        Draw the unit on the screen
+
+        Args:
+            screen (pygame.Surface): Game screen to draw on
+            board (Board): The game board
         """
 
         if not self.is_alive:
@@ -305,6 +340,9 @@ class BaseUnit(ABC):
             
             x = self.position[1] * square_width + margin
             y = self.position[0] * square_height + margin
+
+            if board.selected_square == self.position:
+                self.draw_health_bar(screen, x, y, unit_width, unit_height)
 
             pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
             pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
@@ -339,3 +377,132 @@ class BaseUnit(ABC):
             bool: True if the move is valid, False otherwise
         """
         pass
+        
+    @property
+    def remaining_units(self):
+        
+        """
+        Returns the number of units of the same type that are still alive.
+        """
+
+        return ceil(256 * (self.current_hp / self.max_hp))
+
+    def _calculate_defense_modifiers(self, attacker, board):
+        
+        """
+        Calculate total defense modifiers based on formation and general
+
+        Args:
+            attacker (BaseUnit): The attacking unit
+            board (Board): The game board
+        """
+
+        modifiers = 1.0
+        
+        if self.has_general:
+            modifiers *= 1.6 #alá o omi (motivação = 200%)
+            
+        row, col = self.position
+        terrain = board.terrain.get((row, col))
+        
+        if terrain == "mountain":
+            if attacker.attack_type == "melee":
+                modifiers *= 1.5
+            else:
+                modifiers *= 1.2
+        elif terrain == "forest":
+            if attacker.attack_type == "ranged":
+                modifiers *= 1.7
+            else:
+                modifiers *= 1.25
+                
+        if self.attack_type == "melee":
+            if self.formation == "Shield Wall":
+                if attacker.attack_type == "ranged":
+                    modifiers *= 2.5
+                else:
+                    modifiers *= 1.5
+            elif self.formation == "Phalanx":
+                if attacker.attack_type == "melee":
+                    if self._is_frontal_attack(attacker):
+                        modifiers *= 3.0
+                    else:
+                        modifiers *= 0.8
+                else:
+                    modifiers *= 1.15
+        elif self.attack_type == "ranged" and self.formation == "Spread": 
+            if attacker.attack_type == "ranged":
+                modifiers *= 1.6
+            else:
+                modifiers *= 0.8
+                
+        return modifiers
+
+    def _calculate_attack_modifiers(self):
+        
+        """
+        Calculate total attack modifiers based on formation and general
+        """
+
+        modifiers = 1.0
+        
+        if self.has_general:
+            modifiers *= 1.25
+            
+        if self.attack_type == "melee" and self.formation == "Phalanx":
+            modifiers *= 1.75
+            
+        return modifiers
+
+    def _is_frontal_attack(self, attacker):
+        
+        """
+        Determine if the attack is frontal
+
+        Args:
+            attacker (BaseUnit): The attacking unit
+        """
+
+        att_row, att_col = attacker.position
+        def_row, def_col = self.position
+        
+        return abs(att_row - def_row) <= abs(att_col - def_col)
+
+    def attack(self, target, board):
+        
+        """
+        Performs an attack on another unit.
+
+        Args:
+            target: The unit being attacked
+            board: The game board
+        """
+
+        if not self.is_alive or not target.is_alive or target.player == self.player:
+            return
+            
+        try:
+            self.attack_sound.play()
+        except Exception as e:
+            print(f"Failed to play attack sound: {str(e)}")
+
+        attack_mod = self._calculate_attack_modifiers()
+        defense_mod = target._calculate_defense_modifiers(self, board)
+        
+        base_damage = (self.base_attack * attack_mod) * (1 - (target.base_defense * defense_mod / 100))
+        
+        variation = random.uniform(0.8, 1.2)
+        
+        if random.random() < 0.05: #5% chance of critical hit
+            variation *= 1.5
+            
+        miss_chance = 0.05 #temporary miss chance
+        if random.random() < miss_chance:
+            final_damage = 0
+        else:
+            final_damage = base_damage * variation
+            
+        target.current_hp = max(0, target.current_hp - final_damage)
+        
+        if target.current_hp <= 0:
+            target.is_alive = False
