@@ -46,8 +46,8 @@ class Archer(BaseUnit):
                 "defense_modifier": 1.0,
             },
             "Spread": {
-                "attack_modifier": 1.0,
-                "defense_modifier": 1.0,
+                "attack_modifier": 1.3,
+                "defense_modifier": 0.8,
             }
         }
 
