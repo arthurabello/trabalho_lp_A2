@@ -9,7 +9,7 @@ from .base_unit import BaseUnit
 from .base_unit import UnitDefaults
 from .constants import Colors
 
-class Warrior(BaseUnit):
+class Hoplite(BaseUnit):
 
     """
     Represents a Warrior piece on the game board.
@@ -44,11 +44,11 @@ class Warrior(BaseUnit):
                 "attack_modifier": 1.0,
                 "defense_modifier": 1.0,
             },
-            "Defensive": {
+            "Shield Wall": {
                 "attack_modifier": 0.9,
                 "defense_modifier": 1.8,
             },
-            "Aggressive": {
+            "Phalanx": {
                 "attack_modifier": 1.5,
                 "defense_modifier": 0.6,
             }
@@ -56,9 +56,9 @@ class Warrior(BaseUnit):
 
         sprite_dir = os.path.join('..', 'assets', 'sprites')
         self.formation_sprites = {
-            "Standard": self._load_sprite(os.path.join(sprite_dir, 'warrior.png')),
-            "Defensive": self._load_sprite(os.path.join(sprite_dir, 'warrior_defense.png')),
-            "Aggressive": self._load_sprite(os.path.join(sprite_dir, 'warrior_attack.png'))
+            "Standard": self._load_sprite(os.path.join(sprite_dir, 'hoplite.png')),
+            "Shield Wall": self._load_sprite(os.path.join(sprite_dir, 'hoplite_defense.png')),
+            "Phalanx": self._load_sprite(os.path.join(sprite_dir, 'hoplite_attack.png'))
         }
 
         self.base_attack = 10
