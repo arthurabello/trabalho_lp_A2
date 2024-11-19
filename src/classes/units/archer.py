@@ -10,6 +10,7 @@ import os
 import pygame
 
 class Archer(BaseUnit):
+    
     """
     Represents an Archer piece on the game board.
     
@@ -38,7 +39,11 @@ class Archer(BaseUnit):
             movement_range=2,
             formation=formation
         )
-        self.attack_range = 2  
+        self.attack_type = "ranged"
+        self.base_attack = 22 #sus?
+        self.base_defense = 2 
+        self.attack_range = 2
+        self.base_missile_defense = 8
         
         self.formations = {
             "Standard": {
@@ -56,12 +61,13 @@ class Archer(BaseUnit):
             "Standard": self._load_sprite(os.path.join(sprite_dir, 'archer_sprite.png')),
             "Spread": self._load_sprite(os.path.join(sprite_dir, 'archer_spread_sprite.png'))
         }
-
+        
+        self.max_hp = 100
+        self.current_hp = self.max_hp
         self.base_attack = 20
         self.base_defense = 5
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
-        self.remaining_units = 256
         self.primary_color = (Colors.PLAYER1_SECONDARY if player == 1 else Colors.PLAYER2_SECONDARY)
         self._update_sprite()
 

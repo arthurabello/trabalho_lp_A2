@@ -28,7 +28,6 @@ class Game:
         self.max_screen_height = display_info.current_h
         self.windowed_width = self.n * 50 + 300  #+300 for status screen
         self.windowed_height = self.m * 50
-        
         self.is_fullscreen = False
         self.screen_width = self.windowed_width
         self.screen_height = self.windowed_height
@@ -51,29 +50,19 @@ class Game:
         pygame.display.set_caption("Warbound")
         
         self.status_surface = pygame.Surface((300, self.screen_height))
-
         self.running = True
-        
-
-        # initialize the board
         self.board = Board(self.m, self.n, self.board_width, self.board_height, [])
-        
         self.units1 = self._create_units(1)
         self.units2 = self._create_units(2)
-
         self.units1[0].has_general = True  
         self.units2[0].has_general = True
-
         self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
         self.board_surface = pygame.Surface((self.board_width, self.board_height))
         self.selected_square = None
-        
         self.selected_unit = None
         self.current_player = 1
-        
         self.movement_points = {}  #tracks movement points for each unit
         self._reset_movement_points()
-        
         self.game_over = False
         self.winner = None
         
@@ -265,7 +254,6 @@ class Game:
             defense_text = self.mini_font.render(f"Defense: {self.selected_unit.defense_points}", True, (255, 255, 255))
             formation_text = self.mini_font.render(f"Formation: {self.selected_unit.formation}", True, (255, 255, 255))
             change_formation_text = self.mini_font.render(f"Press 'G' to change formation", True, (255,255,255))
-            action_text = self.mini_font.render(f"Action: {self.selected_unit.action} (Press 'F' to change)", True, (255, 255, 255))
             terrain_text = self.mini_font.render(f"Current terrain: {self.selected_unit.terrain}", True, (255, 255, 255))
                 
             self.status_surface.blit(name_text, (10, 40))
@@ -274,7 +262,6 @@ class Game:
             self.status_surface.blit(defense_text, (10, 130))
             self.status_surface.blit(formation_text, (10,160))
             self.status_surface.blit(change_formation_text, (10, 190))
-            self.status_surface.blit(action_text, (10, 220))
             self.status_surface.blit(terrain_text, (10, 250))
         else:
             no_unit_text = self.mini_font.render("Select a Unit", True, (255, 255, 255))
@@ -304,18 +291,16 @@ class Game:
         return False
 
     def _handle_unit_selection(self, clicked_unit, clicked_square):
-        """
-        Handle the selection of a unit
-        """
         if clicked_unit and clicked_unit.player == self.current_player:
             if not self._handle_general_movement(clicked_unit):
                 self.selected_unit = clicked_unit
+                self.board.selected_square = clicked_square  
                 self.board.select_square(clicked_square, self.movement_points[clicked_unit])
-
                 self.board.update_attack_overlays(clicked_unit, self._get_all_units())
             self._draw_board()
         else:
             self.selected_unit = None
+            self.board.selected_square = None 
             self.board.select_square(None, 0)
             self.board.update_attack_overlays(None, self._get_all_units())
             self._draw_board()
@@ -326,7 +311,7 @@ class Game:
 
         target_unit = self._get_unit_at_position(clicked_square)
         
-        if isinstance(self.selected_unit, Archer) and self.selected_unit.action == "Attack":
+        if isinstance(self.selected_unit, Archer):
             if self.selected_unit.can_attack(clicked_square) and target_unit and target_unit.player != self.current_player:
                 self._handle_combat(target_unit)
                 self.movement_points[self.selected_unit] = 0
@@ -398,7 +383,7 @@ class Game:
             target_unit (BaseUnit): The unit being attacked
         """
 
-        self.selected_unit.attack(target_unit)
+        self.selected_unit.attack(target_unit, self.board)
         
         if target_unit.has_general and not target_unit.is_alive:
             self.game_over = True
@@ -474,8 +459,6 @@ class Game:
             self._end_turn()
         elif event.key == pygame.K_g: 
             self.toggle_formation()
-        elif event.key == pygame.K_f:
-            self.toggle_action()
 
     def _end_turn(self):
 
@@ -532,15 +515,6 @@ class Game:
                 next_index = (current_index + 1) % len(formations)
                 next_formation = formations[next_index]
                 self.selected_unit.change_formation(next_formation)
-
-    def toggle_action(self):
-
-        """
-        Changes the action of a given unit
-        """
-        if self.selected_unit:
-            current_index = self.selected_unit.actions.index(self.selected_unit.action)
-            self.selected_unit.change_action(self.selected_unit.actions[1-current_index])
 
     
     def _can_general_move(self, from_unit, to_unit):
