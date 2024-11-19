@@ -1,20 +1,127 @@
 """
-This module handles the main menu and its functionalities
+This module handles the main menu and its functionalities using a modular approach
 """
 
 import pygame
 import os
 from .tutorial import Tutorial
 
+class Button:
+    def __init__(self, x, y, width, height, text, callback, border_radius=10, fontsize=36):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.callback = callback
+        self.border_radius = border_radius
+        self.font = pygame.font.Font(None, fontsize)
+        
+        self.color_default = (45, 45, 48)
+        self.color_hover = (70, 70, 75)
+        self.color_text = (255, 255, 255)
+        self.color_current = self.color_default
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color_current, self.rect, border_radius=self.border_radius)
+        pygame.draw.rect(screen, self.color_text, self.rect, 2, border_radius=self.border_radius)
+        
+        text_surface = self.font.render(self.text.capitalize(), True, self.color_text)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        screen.blit(text_surface, text_rect)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.callback()
+                return True
+        elif event.type == pygame.MOUSEMOTION:
+            self.color_current = self.color_hover if self.rect.collidepoint(event.pos) else self.color_default
+        return False
+
+class ToggleButton:
+    def __init__(self, x, y, size, initial_state, callback):
+        self.rect = pygame.Rect(x, y, size, size)
+        self.callback = callback
+        self.state = initial_state
+        self.font = pygame.font.Font(None, 24)
+        
+        self.colors = {
+            'enabled': (76, 175, 80),
+            'disabled': (244, 67, 54),
+            'text': (255, 255, 255)
+        }
+
+    def draw(self, screen):
+        color = self.colors['enabled'] if self.state else self.colors['disabled']
+        pygame.draw.rect(screen, color, self.rect, border_radius=8)
+        
+        text = "ON" if self.state else "OFF"
+        text_surface = self.font.render(text, True, self.colors['text'])
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        screen.blit(text_surface, text_rect)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
+            self.state = not self.state
+            self.callback(self.state)
+            return True
+        return False
+
+class Slider:
+    def __init__(self, x, y, width, height, initial_value, callback):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.callback = callback
+        self.value = initial_value
+        self.dragging = False
+        
+        self.colors = {
+            'background': (70, 70, 75),
+            'fill': (76, 175, 80),
+            'handle': (120, 120, 125)
+        }
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.colors['background'], self.rect, border_radius=4)
+        
+        fill_rect = self.rect.copy()
+        fill_rect.width *= self.value
+        pygame.draw.rect(screen, self.colors['fill'], fill_rect, border_radius=4)
+
+        handle_pos = self.rect.x + (self.rect.width * self.value)
+        handle_rect = pygame.Rect(handle_pos - 8, self.rect.y - 6, 16, 20)
+        pygame.draw.rect(screen, self.colors['handle'], handle_rect, border_radius=5)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
+            self.dragging = True
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.dragging = False
+        elif event.type == pygame.MOUSEMOTION and self.dragging:
+            relative_x = (event.pos[0] - self.rect.x) / self.rect.width
+            self.value = max(0, min(1, relative_x))
+            self.callback(self.value)
+            return True
+        return False
+
 class Menu:
     def __init__(self, screen):
         self.screen = screen
-        self.running = True
-        self.state = "main"  
+        self.state = "main"
+        self.setup_resources()
+        self.setup_audio()
+        self.setup_ui_elements()
+        self.tutorial = Tutorial(self.screen)
         
+    def setup_resources(self):
         self.original_menu_image = pygame.image.load(os.path.join("..", "assets", "images", "menu_image.png"))
         self.menu_image = self._scale_image_to_screen()
         
+        self.fonts = {
+            'title': pygame.font.Font(None, 100),
+            'normal': pygame.font.Font(None, 74),
+            'small': pygame.font.Font(None, 36),
+            'mini': pygame.font.Font(None, 24)
+        }
+
+    def setup_audio(self):
         self.music_enabled = True
         self.sound_enabled = True
         self.music_volume = 0.7
@@ -22,26 +129,183 @@ class Menu:
         
         pygame.mixer.music.load(os.path.join("..", "assets", "sounds", "music", "menu_music.ogg"))
         pygame.mixer.music.set_volume(self.music_volume)
-        pygame.mixer.music.play(-1)  
-        
-        self.font = pygame.font.Font(None, 74)
-        self.small_font = pygame.font.Font(None, 36)  
-        self.mini_font = pygame.font.Font(None, 24)   
-        self._init_buttons()
-        self.tutorial = Tutorial(self.screen)
+        pygame.mixer.music.play(-1)
 
-        self.COLORS = {
-            'button_bg': (45, 45, 48),
-            'button_hover': (60, 60, 65),
-            'button_text': (255, 255, 255),
-            'slider_bg': (70, 70, 75),
-            'slider_handle': (120, 120, 125),
-            'enabled': (76, 175, 80),
-            'disabled': (244, 67, 54),
-            'title': (255, 215, 0),
-            'text': (200, 200, 200)
+    def setup_ui_elements(self):
+        screen_width, screen_height = self.screen.get_size()
+        
+        button_width, button_height = 200, 50
+        button_spacing = 20
+        start_y = screen_height // 2 - (button_height + button_spacing) * 2
+        
+        self.main_buttons = {
+            "play": Button(
+                (screen_width - button_width) // 2,
+                start_y,
+                button_width,
+                button_height,
+                "Play",
+                lambda: self.change_state("map_select")
+            ),
+            "options": Button(
+                (screen_width - button_width) // 2,
+                start_y + button_height + button_spacing,
+                button_width,
+                button_height,
+                "Options",
+                lambda: self.change_state("options")
+            ),
+            "tutorial": Button(
+                (screen_width - button_width) // 2,
+                start_y + (button_height + button_spacing) * 2,
+                button_width,
+                button_height,
+                "Tutorial",
+                self.start_tutorial
+            ),
+            "quit": Button(
+                (screen_width - button_width) // 2,
+                start_y + (button_height + button_spacing) * 3,
+                button_width,
+                button_height,
+                "Quit",
+                lambda: self.change_state("quit")
+            )
+        }
+        
+        self.setup_options_elements()
+        self.setup_map_buttons()
+
+    def setup_options_elements(self):
+        screen_width, screen_height = self.screen.get_size()
+        panel_width, panel_height = 400, 450
+        panel_x = (screen_width - panel_width) // 2
+        panel_y = (screen_height - panel_height) // 2
+        
+        self.options_panel = pygame.Rect(panel_x, panel_y, panel_width, panel_height)
+        
+        toggle_size = 40
+        slider_width = 250
+        slider_height = 8
+        element_start_y = panel_y + 80
+        
+        self.options_elements = {
+            "sound_toggle": ToggleButton(
+                panel_x + 30,
+                element_start_y + 70,
+                toggle_size,
+                self.sound_enabled,
+                self.toggle_sound
+            ),
+            "sound_slider": Slider(
+                panel_x + 30 + toggle_size + 20,
+                element_start_y + 70 + (toggle_size - slider_height) // 2,
+                slider_width,
+                slider_height,
+                self.sound_volume,
+                self.set_sound_volume
+            ),
+            "music_toggle": ToggleButton(
+                panel_x + 30,
+                element_start_y + 150,
+                toggle_size,
+                self.music_enabled,
+                self.toggle_music
+            ),
+            "music_slider": Slider(
+                panel_x + 30 + toggle_size + 20,
+                element_start_y + 150 + (toggle_size - slider_height) // 2,
+                slider_width,
+                slider_height,
+                self.music_volume,
+                self.set_music_volume
+            ),
+            "back": Button(
+                panel_x + (panel_width - 150) // 2,
+                panel_y + panel_height - 80,
+                150,
+                50,
+                "Back",
+                lambda: self.change_state("main")
+            )
         }
 
+    def setup_map_buttons(self):
+        screen_width, screen_height = self.screen.get_size()
+        button_width, button_height = 250, 100
+        button_spacing = 50
+        
+        self.map_buttons = {
+            "map1": Button(
+                (screen_width - button_width) // 2,
+                screen_height // 2 - button_height - button_spacing // 2,
+                button_width,
+                button_height,
+                "Map 1",
+                lambda: self.change_state("game_map1")
+            ),
+            "map2": Button(
+                (screen_width - button_width) // 2,
+                screen_height // 2 + button_spacing // 2,
+                button_width,
+                button_height,
+                "Map 2",
+                lambda: self.change_state("game_map2")
+            )
+        }
+
+    def toggle_sound(self, enabled):
+        self.sound_enabled = enabled
+
+    def toggle_music(self, enabled):
+        self.music_enabled = enabled
+        if enabled:
+            pygame.mixer.music.play(-1)
+        else:
+            pygame.mixer.music.stop()
+
+    def set_sound_volume(self, volume):
+        self.sound_volume = volume
+
+    def set_music_volume(self, volume):
+        self.music_volume = volume
+        pygame.mixer.music.set_volume(volume)
+
+    def start_tutorial(self):
+        self.tutorial.active = True
+        self.tutorial.current_page = 0
+
+    def change_state(self, new_state):
+        self.state = new_state
+        if new_state == "map_select":
+            self.setup_map_buttons()
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return "quit"
+                
+            if self.tutorial.active:
+                result = self.tutorial.handle_event(event)
+                if result == 'menu':
+                    self.tutorial.active = False
+                    return self.state
+                    
+            elif self.state == "main":
+                for button in self.main_buttons.values():
+                    if button.handle_event(event):
+                        break
+            elif self.state == "options":
+                for element in self.options_elements.values():
+                    if element.handle_event(event):
+                        break
+            elif self.state == "map_select":
+                for button in self.map_buttons.values():
+                    if button.handle_event(event):
+                        break
+                        
+        return self.state
+    
     def _scale_image_to_screen(self):
 
         """
@@ -70,218 +334,8 @@ class Menu:
         final_surface.blit(scaled_image, (x_offset, y_offset))
         
         return final_surface
-    
-    def handle_resize(self):
-        
-        """
-        Handles the resize event
-        """
 
-        self.menu_image = self._scale_image_to_screen()
-        self._init_buttons() 
-        
-    def _init_buttons(self):
-        
-        """
-        Initializes the buttons
-        """
-
-        screen_width, screen_height = self.screen.get_size()
-        button_width = 200
-        button_height = 50
-        button_spacing = 20
-        start_y = screen_height // 2 - (button_height + button_spacing) * 2
-        
-        self.main_buttons = {
-            "play": pygame.Rect((screen_width - button_width) // 2, start_y, button_width, button_height),
-            "options": pygame.Rect((screen_width - button_width) // 2, start_y + button_height + button_spacing, button_width, button_height),
-            "tutorial": pygame.Rect((screen_width - button_width) // 2, start_y + (button_height + button_spacing) * 2, button_width, button_height),
-            "quit": pygame.Rect((screen_width - button_width) // 2, start_y + (button_height + button_spacing) * 3, button_width, button_height)
-        }
-        
-        options_panel_width = 400
-        options_panel_height = 450
-        panel_x = (screen_width - options_panel_width) // 2
-        panel_y = (screen_height - options_panel_height) // 2
-        
-        self.options_panel = pygame.Rect(panel_x, panel_y, options_panel_width, options_panel_height)
-        
-        element_spacing = 60
-        element_start_y = panel_y + 80
-        toggle_size = 40
-        slider_width = 250
-        slider_height = 8
-        label_offset = 70  
-        self.options_elements = {
-            "sfx_label": pygame.Rect(panel_x + 30, element_start_y + 0.5*element_spacing, 200, 30),
-            "sound_toggle": pygame.Rect(panel_x + 30, element_start_y + label_offset, toggle_size, toggle_size),
-            "sound_slider": pygame.Rect(panel_x + 30 + toggle_size + 20, 
-                                    element_start_y + label_offset + (toggle_size - slider_height) // 2,
-                                    slider_width, slider_height),
-            
-            "music_label": pygame.Rect(panel_x + 30, element_start_y + 2*element_spacing, 200, 30),
-            "music_toggle": pygame.Rect(panel_x + 30, element_start_y + 1.5*element_spacing + label_offset, toggle_size, toggle_size),
-            "music_slider": pygame.Rect(panel_x + 30 + toggle_size + 20,
-                                    element_start_y + 1.5*element_spacing + label_offset + (toggle_size - slider_height) // 2,
-                                    slider_width, slider_height),
-            
-            "back": pygame.Rect(panel_x + (options_panel_width - 150) // 2,
-                            panel_y + options_panel_height - 80,
-                            150, 50)
-        }
-        
-        if self.state == "map_select":
-            map_button_width = 250
-            map_button_height = 100
-            map_button_spacing = 50
-            
-            self.map_buttons = {
-                "map1": pygame.Rect((screen_width - map_button_width) // 2, 
-                                    screen_height // 2 - map_button_height - map_button_spacing // 2, 
-                                    map_button_width, map_button_height),
-                "map2": pygame.Rect((screen_width - map_button_width) // 2, 
-                                    screen_height // 2 + map_button_spacing // 2, 
-                                    map_button_width, map_button_height)
-            }
-
-    def handle_events(self):
-
-        """
-        Handles the main events of the menu
-        """
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return "quit"
-              
-            if self.tutorial.active:
-                result = self.tutorial.handle_event(event)
-                if result == 'menu':
-                    self.tutorial.active = False
-                    return self.state
-                     
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                
-                if self.state == "main":
-                    return self._handle_main_menu_click(mouse_pos)
-                elif self.state == "options":
-                    return self._handle_options_menu_click(mouse_pos)
-                elif self.state == "map_select":
-                    return self._handle_map_selection_click(mouse_pos)
-                    
-            elif event.type == pygame.MOUSEBUTTONUP:
-                self.dragging = None
-        
-        return self.state
-    
-    def _handle_main_menu_click(self, mouse_pos):
-
-        """
-        Handles the main menu click
-        """
-
-        for button_name, button_rect in self.main_buttons.items():
-            if button_rect.collidepoint(mouse_pos):
-                if button_name == "quit":
-                    return "quit"
-                elif button_name == "play":
-                    self.state = "map_select"
-                    self._init_buttons()
-                    return self.state
-                elif button_name == "options":
-                    self.state = "options"
-                elif button_name == "tutorial":
-                    self.tutorial.active = True
-                    self.tutorial.current_page = 0  #first page
-
-        return self.state
-    
-    def _handle_options_menu_click(self, mouse_pos):
-        
-        """
-        Handles the options menu click
-        """
-
-        if self.options_elements["back"].collidepoint(mouse_pos):
-            self.state = "main"
-            return "main"
-            
-        for element_name, element_rect in self.options_elements.items():
-            if element_rect.collidepoint(mouse_pos):
-                if element_name == "sound_toggle":
-                    self.sound_enabled = not self.sound_enabled
-                    return self.state
-                elif element_name == "music_toggle":
-                    self.music_enabled = not self.music_enabled
-                    if self.music_enabled:
-                        pygame.mixer.music.play(-1)
-                    else:
-                        pygame.mixer.music.stop()
-                    return self.state
-                
-        for slider_name, volume_name in [("sound_slider", "sound_volume"), ("music_slider", "music_volume")]:
-            slider_rect = self.options_elements[slider_name]
-            if slider_rect.collidepoint(mouse_pos):
-                relative_x = (mouse_pos[0] - slider_rect.x) / slider_rect.width
-                volume = max(0, min(1, relative_x))
-                setattr(self, volume_name, volume)
-                if volume_name == "music_volume":
-                    pygame.mixer.music.set_volume(volume)
-                
-        return self.state
-
-    def _handle_map_selection_click(self, mouse_pos):
-
-        if hasattr(self, 'map_buttons'):
-            for map_name, map_rect in self.map_buttons.items():
-                if map_rect.collidepoint(mouse_pos):
-                    if map_name == "map1":
-                        return f"game_map1"
-                    elif map_name == "map2":
-                        return f"game_map2"
-        
-        return self.state
-    
-    def _draw_map_selection(self):
-        # Draw a title for map selection
-        title_font = pygame.font.Font(None, 100)
-        title = title_font.render("Select a Map", True, (255, 215, 0))
-        title_rect = title.get_rect()
-        title_rect.centerx = self.screen.get_rect().centerx
-        title_rect.top = 50
-
-        shadow_offset = 3
-        title_shadow = title_font.render("Select a Map", True, (0, 0, 0))
-        shadow_rect = title_rect.copy()
-        shadow_rect.x += shadow_offset
-        shadow_rect.y += shadow_offset
-
-        self.screen.blit(title_shadow, shadow_rect)
-        self.screen.blit(title, title_rect)
-
-        # Draw map selection buttons
-        for map_name, map_rect in self.map_buttons.items():
-            mouse_pos = pygame.mouse.get_pos()
-            if map_rect.collidepoint(mouse_pos):
-                color = (70, 70, 75)
-            else:
-                color = (45, 45, 48)
-            
-            pygame.draw.rect(self.screen, color, map_rect, border_radius=10)
-            pygame.draw.rect(self.screen, self.COLORS['button_text'], map_rect, 2, border_radius=10)
-            
-            text = self.small_font.render(f"Map {map_name[-1]}", True, self.COLORS['button_text'])
-            text_rect = text.get_rect(center=map_rect.center)
-            self.screen.blit(text, text_rect)
-                
-    
     def draw(self):
-
-        """
-        Draws the menu
-        """
-
         self.screen.blit(self.menu_image, (0, 0))
         
         if self.state == "main":
@@ -295,97 +349,66 @@ class Menu:
             self.tutorial.draw()
             
         pygame.display.flip()
-    
+
     def _draw_main_menu(self):
-        
-        """
-        Draws the main menu title and buttons
-        """
 
-        title_font = pygame.font.Font(None, 100) 
-        title = title_font.render("WARBOUND", True, (255, 215, 0))  #this color is changeable
-        title_rect = title.get_rect()
-        title_rect.centerx = self.screen.get_rect().centerx
-        title_rect.top = 50  
+        title = self.fonts['title'].render("WARBOUND", True, (255, 215, 0))
+        title_rect = title.get_rect(centerx=self.screen.get_rect().centerx, top=50)
         
-        shadow_offset = 3
-        title_shadow = title_font.render("WARBOUND", True, (0, 0, 0))
+        shadow = self.fonts['title'].render("WARBOUND", True, (0, 0, 0))
         shadow_rect = title_rect.copy()
-        shadow_rect.x += shadow_offset
-        shadow_rect.y += shadow_offset
-        self.screen.blit(title_shadow, shadow_rect)
+        shadow_rect.x += 3
+        shadow_rect.y += 3
+        self.screen.blit(shadow, shadow_rect)
         self.screen.blit(title, title_rect)
+        
+        for button in self.main_buttons.values():
+            button.draw(self.screen)
 
-        for button_name, button_rect in self.main_buttons.items():
-            mouse_pos = pygame.mouse.get_pos()
-            if button_rect.collidepoint(mouse_pos):
-                color = (70, 70, 75) 
-            else:
-                color = (45, 45, 48)  
-            
-            pygame.draw.rect(self.screen, color, button_rect, border_radius=10)
-            pygame.draw.rect(self.screen, self.COLORS['button_text'], button_rect, 2, border_radius=10)
-            
-            text = self.small_font.render(button_name.capitalize(), True, self.COLORS['button_text'])
-            text_rect = text.get_rect(center=button_rect.center)
-            self.screen.blit(text, text_rect)
-        
     def _draw_options_menu(self):
-        
-        """
-        Draws the options menu
-        """
 
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
         self.screen.blit(overlay, (0, 0))
         
         pygame.draw.rect(self.screen, (30, 30, 33), self.options_panel, border_radius=15)
-        pygame.draw.rect(self.screen, self.COLORS['button_text'], self.options_panel, 2, border_radius=15)
+        pygame.draw.rect(self.screen, (255, 255, 255), self.options_panel, 2, border_radius=15)
         
-        title = self.font.render("Options", True, self.COLORS['title'])
+        title = self.fonts['normal'].render("Options", True, (255, 215, 0))
         title_rect = title.get_rect(centerx=self.options_panel.centerx, top=self.options_panel.top + 20)
         self.screen.blit(title, title_rect)
         
-        sfx_label = self.small_font.render("Sound Effects", True, self.COLORS['text'])
-        self.screen.blit(sfx_label, self.options_elements["sfx_label"])
+        sfx_label = self.fonts['small'].render("Sound Effects", True, (200, 200, 200))
+        music_label = self.fonts['small'].render("Background Music", True, (200, 200, 200))
+        self.screen.blit(sfx_label, (self.options_panel.x + 30, self.options_panel.y + 120))
+        self.screen.blit(music_label, (self.options_panel.x + 30, self.options_panel.y + 200))
         
-        music_label = self.small_font.render("Background Music", True, self.COLORS['text'])
-        self.screen.blit(music_label, self.options_elements["music_label"])
-        
-        for toggle_name in ["sound_toggle", "music_toggle"]:
-            enabled = getattr(self, toggle_name.replace("_toggle", "_enabled"))
-            color = self.COLORS['enabled'] if enabled else self.COLORS['disabled']
-            rect = self.options_elements[toggle_name]
-            pygame.draw.rect(self.screen, color, rect, border_radius=8)
-            text = "ON" if enabled else "OFF"
-            text_surf = self.small_font.render(text, True, self.COLORS['button_text'])
-            text_rect = text_surf.get_rect(center=rect.center)
-            self.screen.blit(text_surf, text_rect)
-        
-        for slider_name, volume_name in [("sound_slider", "sound_volume"), ("music_slider", "music_volume")]:
+        for element in self.options_elements.values():
+            element.draw(self.screen)
 
-            slider_rect = self.options_elements[slider_name]
-            pygame.draw.rect(self.screen, self.COLORS['slider_bg'], slider_rect, border_radius=4)
-            volume = getattr(self, volume_name)
-            fill_rect = slider_rect.copy()
-            fill_rect.width *= volume
-            pygame.draw.rect(self.screen, self.COLORS['enabled'], fill_rect, border_radius=4)
-            handle_pos = slider_rect.x + (slider_rect.width * volume)
-            handle_rect = pygame.Rect(handle_pos - 8, slider_rect.y - 6, 16, 20)
-            pygame.draw.rect(self.screen, self.COLORS['slider_handle'], handle_rect, border_radius=5)
+    def change_state(self, new_state):
+        """
+        Changes the current menu state and handles necessary updates
+        """
+        self.state = new_state
+        if new_state == "map_select":
+            self.setup_map_buttons() 
+        return new_state
+
+    def _draw_map_selection(self):
+        """
+        Draws the map selection screen
+        """
+        title = self.fonts['title'].render("Select a Map", True, (255, 215, 0))
+        title_rect = title.get_rect(centerx=self.screen.get_rect().centerx, top=50)
         
-        mouse_pos = pygame.mouse.get_pos()
-        back_rect = self.options_elements["back"]
+        shadow = self.fonts['title'].render("Select a Map", True, (0, 0, 0))
+        shadow_rect = title_rect.copy()
+        shadow_rect.x += 3
+        shadow_rect.y += 3
+        self.screen.blit(shadow, shadow_rect)
+        self.screen.blit(title, title_rect)
         
-        if back_rect.collidepoint(mouse_pos):
-            color = (70, 70, 75)  
-        else:
-            color = (45, 45, 48) 
-            
-        pygame.draw.rect(self.screen, color, back_rect, border_radius=10)
-        pygame.draw.rect(self.screen, self.COLORS['button_text'], back_rect, 2, border_radius=10)
-        
-        back_text = self.small_font.render("Back", True, self.COLORS['button_text'])
-        back_rect = back_text.get_rect(center=self.options_elements["back"].center)
-        self.screen.blit(back_text, back_rect)
+        if hasattr(self, 'map_buttons'):
+            for button in self.map_buttons.values():
+                button.draw(self.screen)
