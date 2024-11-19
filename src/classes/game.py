@@ -4,7 +4,7 @@ This module represents the main game structure, responsible for initializing, ha
 
 import pygame
 from .board import Board
-from .units.warrior import Warrior
+from .units.hoplite import Hoplite
 from .menu.menu import Menu
 from .units.archer import Archer
 
@@ -160,7 +160,7 @@ class Game:
         for row in range(8):
             for col in range(5):
                 position = (warrior_start_row + row, warrior_col_start + col)
-                warrior = Warrior(position, player)
+                warrior = Hoplite(position, player)
                 warrior.terrain = self.board.terrain.get(position)
                 units.append(warrior)
 
@@ -333,7 +333,7 @@ class Game:
                 self._update_unit_selection(self.selected_unit.position)
                 return
 
-        if isinstance(self.selected_unit, Warrior):
+        if isinstance(self.selected_unit, Hoplite):
             if target_unit and target_unit.player != self.current_player:
                 if self.selected_unit.can_attack(clicked_square):
                     self._handle_combat(target_unit)
