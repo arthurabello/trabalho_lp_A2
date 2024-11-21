@@ -401,7 +401,14 @@ class BaseUnit(ABC):
         
         if self.has_general:
             modifiers *= 1.6 #alá o omi (motivação = 200%)
-            
+
+        if self.__class__.__name__ == "Hoplite": 
+            if self.player == any(unit.player for unit in board.units if unit.has_general and unit.general_id == 'leonidas'):
+                modifiers *= 1.1  
+                
+                if self.has_general and self.general_id == 'leonidas':
+                    modifiers *= 1.15 
+                
         row, col = self.position
         terrain = board.terrain.get((row, col))
         

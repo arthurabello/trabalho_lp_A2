@@ -109,6 +109,192 @@ class Menu:
         self.setup_audio()
         self.setup_ui_elements()
         self.tutorial = Tutorial(self.screen)
+        self.player1_general = None
+        self.player2_general = None
+        self.current_selecting_player = 1
+
+        self.general_sprites = {
+            'alexander': pygame.image.load("../assets/images/menu_generals/alexander_menu.png"),
+            'edward': pygame.image.load("../assets/images/menu_generals/edward_menu.png"),
+            'charlemagne': pygame.image.load("../assets/images/menu_generals/charlemagne_menu.png"),
+            'harald': pygame.image.load("../assets/images/menu_generals/harald_menu.png"),
+            'julius': pygame.image.load("../assets/images/menu_generals/julius_menu.png"),
+            'leonidas': pygame.image.load("../assets/images/menu_generals/leonidas_menu.png")
+        }
+        
+        self.generals = {
+            'alexander': {
+                'name': 'Alexander the Great',
+                'bonus': 'NA'
+            },
+            'edward': {
+                'name': 'Edward of Wessex',
+                'bonus': 'NA'
+            },
+            'charlemagne': {
+                'name': 'Charlemagne',
+                'bonus': 'NA'
+            },
+            'harald': {
+                'name': 'Harald Hardrada',
+                'bonus': 'NA'
+            },
+            'julius': {
+                'name': 'Julius Caesar',
+                'bonus': 'NA'
+            },
+            'leonidas': {
+                'name': 'Leonidas I',
+                'bonus': ['Hoplites: +10% Defense (Passive)', 
+                         'Hoplites: +15% Strength (When with Leonidas)']
+            }
+        }
+
+    
+    def draw_general_selection(self):
+        
+        """
+        blublubelkanoa vospasbvaiwods
+        """
+
+        screen_width, screen_height = self.screen.get_size()
+    
+        self.screen.fill((20, 20, 25))
+        
+        title_scale = min(screen_width / 1920, screen_height / 1080)
+        title_font = pygame.font.Font(None, int(100 * title_scale))
+        title = title_font.render("Select Your General", True, (255, 215, 0))
+        title_rect = title.get_rect(centerx=screen_width//2, top=screen_height*0.05)
+        self.screen.blit(title, title_rect)
+        
+        player_text = self.fonts['normal'].render(f"Player {self.current_selecting_player}'s Selection", 
+                                                True, (255, 255, 255))
+        player_rect = player_text.get_rect(centerx=screen_width//2, top=title_rect.bottom + 20)
+        self.screen.blit(player_text, player_rect)
+        
+        portrait_size = int(min(screen_width / 6, screen_height / 4))
+        gap = int(portrait_size * 0.2)
+        start_x = (screen_width - (3 * (portrait_size + gap))) // 2
+        start_y = screen_height * 0.22 
+
+        for i, (general_id, general_info) in enumerate(self.generals.items()):
+            row = i // 3
+            col = i % 3
+            x = start_x + col * (portrait_size + gap)
+            y = start_y + row * (portrait_size + gap * 2)
+            
+            portrait_rect = pygame.Rect(x, y, portrait_size, portrait_size)
+            pygame.draw.rect(self.screen, (40, 40, 45), portrait_rect)
+            pygame.draw.rect(self.screen, (200, 200, 200), portrait_rect, 2)
+            
+            sprite = pygame.transform.scale(self.general_sprites[general_id], (portrait_size-10, portrait_size-10))
+            self.screen.blit(sprite, (x+5, y+5))
+            
+            if ((self.current_selecting_player == 1 and self.player1_general == general_id) or
+                (self.current_selecting_player == 2 and self.player2_general == general_id)):
+                highlight_color = (255, 0, 0) if self.current_selecting_player == 1 else (0, 0, 255)
+                pygame.draw.rect(self.screen, highlight_color, portrait_rect, 4)
+            
+            name_text = self.fonts['small'].render(general_info['name'], True, (255, 255, 255))
+            name_rect = name_text.get_rect(centerx=x + portrait_size//2, top=y + portrait_size + 10)
+            self.screen.blit(name_text, name_rect)
+            
+            if isinstance(general_info['bonus'], list):
+                for j, bonus_line in enumerate(general_info['bonus']):
+                    bonus_text = self.fonts['mini'].render(bonus_line, True, (200, 200, 200))
+                    bonus_rect = bonus_text.get_rect(centerx=x + portrait_size//2, 
+                                                top=name_rect.bottom + 10 + j*25)  
+                    self.screen.blit(bonus_text, bonus_rect)
+            else:
+                bonus_text = self.fonts['mini'].render(general_info['bonus'], True, (200, 200, 200))
+                bonus_rect = bonus_text.get_rect(centerx=x + portrait_size//2, top=name_rect.bottom + 10)
+                self.screen.blit(bonus_text, bonus_rect)
+
+        button_width = 200
+        button_height = 50
+        button_y = screen_height * 0.92
+        
+        cancel_button = pygame.Rect(screen_width//4 - button_width//2, button_y, button_width, button_height)
+        pygame.draw.rect(self.screen, (180, 30, 30), cancel_button, border_radius=10)
+        cancel_text = self.fonts['small'].render("Cancel Selection", True, (255, 255, 255))
+        cancel_rect = cancel_text.get_rect(center=cancel_button.center)
+        self.screen.blit(cancel_text, cancel_rect)
+        
+        nav_text = "Next Player" if self.current_selecting_player == 1 else "Previous Player"
+        nav_color = (30, 180, 30) if self.current_selecting_player == 1 else (180, 180, 30)
+                
+        nav_button = pygame.Rect(screen_width*3//4 - button_width//2, button_y, button_width, button_height)
+        pygame.draw.rect(self.screen, nav_color, nav_button, border_radius=10)
+        nav_text = self.fonts['small'].render(nav_text, True, (255, 255, 255))
+        nav_rect = nav_text.get_rect(center=nav_button.center)
+        self.screen.blit(nav_text, nav_rect)
+
+        if self.player1_general and self.player2_general:
+            proceed_button = pygame.Rect(
+                screen_width//2 - 150,
+                screen_height * 0.96, 
+                300,
+                50
+            )
+            pygame.draw.rect(self.screen, (0, 180, 0), proceed_button, border_radius=10)
+            proceed_text = self.fonts['small'].render("Proceed to Map Selection", True, (255, 255, 255))
+            proceed_rect = proceed_text.get_rect(center=proceed_button.center)
+            self.screen.blit(proceed_text, proceed_rect)
+                
+    def handle_general_selection(self, pos):
+        screen_width = self.screen.get_width()
+        screen_height = self.screen.get_height()
+        button_width = 200
+        button_height = 50
+        button_y = screen_height * 0.92 #changeable
+
+        if self.player1_general and self.player2_general:
+            proceed_button = pygame.Rect(
+                screen_width//2 - 150,
+                screen_height * 0.96,
+                300,
+                50
+            )
+            if proceed_button.collidepoint(pos):
+                self.state = "map_select"
+                return
+        
+        cancel_button = pygame.Rect(screen_width//4 - button_width//2, button_y, button_width, button_height)
+        if cancel_button.collidepoint(pos):
+            if self.current_selecting_player == 1:
+                self.player1_general = None
+            else:
+                self.player2_general = None
+            return
+            
+        nav_button = pygame.Rect(screen_width*3//4 - button_width//2, button_y, button_width, button_height)
+        if nav_button.collidepoint(pos):
+            if self.current_selecting_player == 1 and self.player1_general:
+                self.current_selecting_player = 2
+            elif self.current_selecting_player == 2:
+                self.current_selecting_player = 1
+            return
+            
+        portrait_size = int(min(screen_width / 6, screen_height / 4))
+        gap = int(portrait_size * 0.2)
+        start_x = (screen_width - (3 * (portrait_size + gap))) // 2
+        start_y = screen_height * 0.22
+                
+        for i, general_id in enumerate(self.generals.keys()):
+            row = i // 3
+            col = i % 3
+            x = start_x + col * (portrait_size + gap)
+            y = start_y + row * (portrait_size + gap * 2)
+                    
+            portrait_rect = pygame.Rect(x, y, portrait_size, portrait_size)
+            if portrait_rect.collidepoint(pos):
+                if self.current_selecting_player == 1:
+                    if general_id != self.player2_general:
+                        self.player1_general = general_id
+                else:
+                    if general_id != self.player1_general:
+                        self.player2_general = general_id
+                break
         
     def setup_resources(self):
         self.original_menu_image = pygame.image.load(os.path.join("..", "assets", "images", "menu_image.png"))
@@ -145,7 +331,7 @@ class Menu:
                 button_width,
                 button_height,
                 "Play",
-                lambda: self.change_state("map_select")
+                lambda: self.change_state("general_selection")  
             ),
             "options": Button(
                 (screen_width - button_width) // 2,
@@ -277,8 +463,24 @@ class Menu:
 
     def change_state(self, new_state):
         self.state = new_state
+        
         if new_state == "map_select":
             self.setup_map_buttons()
+        elif new_state == "general_selection":
+            self.player1_general = None
+            self.player2_general = None
+            self.current_selecting_player = 1
+        elif new_state == "game_map1" or new_state == "game_map2":
+            if self.player1_general:
+                for unit in self.game.units1:
+                    if unit.has_general:
+                        unit.general_id = self.player1_general
+            if self.player2_general:
+                for unit in self.game.units2:
+                    if unit.has_general:
+                        unit.general_id = self.player2_general
+    
+        return new_state
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -295,6 +497,9 @@ class Menu:
                 for button in self.main_buttons.values():
                     if button.handle_event(event):
                         break
+            elif self.state == "general_selection":
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.handle_general_selection(event.pos)
             elif self.state == "options":
                 for element in self.options_elements.values():
                     if element.handle_event(event):
@@ -342,6 +547,8 @@ class Menu:
             self._draw_main_menu()
         elif self.state == "options":
             self._draw_options_menu()
+        elif self.state == "general_selection":
+            self.draw_general_selection()
         elif self.state == "map_select":
             self._draw_map_selection()
             
@@ -387,12 +594,13 @@ class Menu:
             element.draw(self.screen)
 
     def change_state(self, new_state):
-        """
-        Changes the current menu state and handles necessary updates
-        """
         self.state = new_state
         if new_state == "map_select":
-            self.setup_map_buttons() 
+            self.setup_map_buttons()
+        elif new_state == "general_selection":
+            self.player1_general = None
+            self.player2_general = None
+            self.current_selecting_player = 1
         return new_state
 
     def _draw_map_selection(self):
