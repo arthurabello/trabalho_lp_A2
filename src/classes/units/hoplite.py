@@ -36,7 +36,7 @@ class Hoplite(BaseUnit):
         )
         self.attack_range=1
         self.attack_type = "melee"
-        self.base_attack = 20
+        self.base_attack = 60
         self.base_defense = 15
         self.base_missile_defense = 30
         
@@ -62,8 +62,6 @@ class Hoplite(BaseUnit):
             "Phalanx": self._load_sprite(os.path.join(sprite_dir, 'hoplite_attack.png'))
         }
 
-        self.base_attack = 10
-        self.base_defense = 5
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
         self.max_hp = 100
