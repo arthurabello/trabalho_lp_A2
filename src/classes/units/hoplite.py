@@ -98,14 +98,7 @@ class Hoplite(BaseUnit):
         if board.selected_square == self.position:
             self.draw_health_bar(screen, x, y, unit_width, unit_height)
 
-        if not hasattr(self, 'sprite') or self.sprite is None:
-            pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
-            pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
-            
-            text_surface = self.font.render('W', True, Colors.TEXT)
-            text_rect = text_surface.get_rect(center=(x + unit_width/2, y + unit_height/2))
-            screen.blit(text_surface, text_rect)
-        else:
+        if self.sprite:
             resized_sprite = pygame.transform.scale(self.sprite, (unit_width, unit_height))
             screen.blit(resized_sprite, (x, y))
 
@@ -125,15 +118,14 @@ class Hoplite(BaseUnit):
         self.sprite = self.sprite.convert_alpha()
         colored_sprite = self.sprite.copy()
 
-
         if self.player == 1:
             overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
-            overlay.fill((255, 0, 0, 60))  
+            overlay.fill((255, 0, 0, 40))  
             colored_sprite.blit(overlay, (0,0))
         else:
             colored_sprite = pygame.transform.flip(colored_sprite, True, False)
             overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
-            overlay.fill((0, 0, 255, 60))
+            overlay.fill((0, 0, 255, 40))
             colored_sprite.blit(overlay, (0,0))
         
         self.sprite = colored_sprite
@@ -169,6 +161,22 @@ class Hoplite(BaseUnit):
                 return False
 
         return True
+
+    def attack(self, target, board=None):
+
+        """
+        Attack another unit from range.
+        
+        Args:
+            target: The unit being attacked
+        """
+
+        super().attack(target, board)
+        
+        try:
+            self.attack_sound.play()
+        except Exception as e:
+            print(f"Failed to play attack sound in units/archer: {str(e)}")
 
     def can_attack(self, target_position):
 

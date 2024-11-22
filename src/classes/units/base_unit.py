@@ -57,6 +57,8 @@ class BaseUnit(ABC):
         self.is_alive = True
         
         self.terrain = None
+        self.general_id = None
+        self.has_attacked = False
 
         self.attack_points = 0
         self.defense_points = 0
@@ -208,30 +210,42 @@ class BaseUnit(ABC):
             self.move_sound.play()
         except Exception as e:
             print(f"Failed to play movement sound in units/base_unit: {str(e)}")
-
+    
     def attack(self, target, board):
-
-        """
-        Attack another unit.
         
+        """
+        Performs an attack on another unit.
+
         Args:
             target: The unit being attacked
+            board: The game board
         """
 
         if not self.is_alive or not target.is_alive or target.player == self.player:
             return
-            
-        try:
-            self.attack_sound.play()
-        except Exception as e:
-            print(f"Failed to play attack sound in units/base_unit: {str(e)}")
 
-        chance_of_success = self.attack_points / (self.attack_points + target.defense_points)
+        attack_mod = self._calculate_attack_modifiers()
+        defense_mod = target._calculate_defense_modifiers(self, board)
+
+        base_damage = (self.base_attack * attack_mod) * (1 - (target.base_defense * defense_mod / 100))
+        
+        variation = random.uniform(0.8, 1.2)
+        
+        if random.random() < 0.05: #5% chance of critical hit
+            variation *= 1.5
             
-        if random.random() < chance_of_success:
-            target.is_alive = False
+        miss_chance = 0.05 #temporary miss chance
+        if random.random() < miss_chance:
+            final_damage = 0
         else:
-            self.is_alive = False
+            final_damage = base_damage * variation
+            
+        target.current_hp = max(0, target.current_hp - final_damage)
+        
+        if target.current_hp <= 0:
+            target.is_alive = False
+        
+        self.has_attacked = True
 
     def can_attack(self, target_position):
 
@@ -475,41 +489,3 @@ class BaseUnit(ABC):
         
         return abs(att_row - def_row) <= abs(att_col - def_col)
 
-    def attack(self, target, board):
-        
-        """
-        Performs an attack on another unit.
-
-        Args:
-            target: The unit being attacked
-            board: The game board
-        """
-
-        if not self.is_alive or not target.is_alive or target.player == self.player:
-            return
-            
-        try:
-            self.attack_sound.play()
-        except Exception as e:
-            print(f"Failed to play attack sound: {str(e)}")
-
-        attack_mod = self._calculate_attack_modifiers()
-        defense_mod = target._calculate_defense_modifiers(self, board)
-        
-        base_damage = (self.base_attack * attack_mod) * (1 - (target.base_defense * defense_mod / 100))
-        
-        variation = random.uniform(0.8, 1.2)
-        
-        if random.random() < 0.05: #5% chance of critical hit
-            variation *= 1.5
-            
-        miss_chance = 0.05 #temporary miss chance
-        if random.random() < miss_chance:
-            final_damage = 0
-        else:
-            final_damage = base_damage * variation
-            
-        target.current_hp = max(0, target.current_hp - final_damage)
-        
-        if target.current_hp <= 0:
-            target.is_alive = False
