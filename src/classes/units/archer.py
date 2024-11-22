@@ -5,7 +5,6 @@ This module contains the implementation of the Archer unit in the game.
 from .base_unit import BaseUnit
 from .base_unit import UnitDefaults
 from .constants import Colors
-import random
 import os
 import pygame
 
@@ -70,8 +69,37 @@ class Archer(BaseUnit):
         self.defense_points = self.base_defense
         self.primary_color = (Colors.PLAYER1_SECONDARY if player == 1 else Colors.PLAYER2_SECONDARY)
         self._update_sprite()
+    
+    def draw(self, screen, board):
+        
+        """
+        Draw the unit and handle arrow animation
+        """
 
-    def attack(self, target):
+        if not self.is_alive:
+            return
+
+        width, height = screen.get_size()
+        square_width = width // board.n
+        square_height = height // board.m
+        
+        margin = square_width * (1 - UnitDefaults.UNIT_SCALE) / 2
+        unit_width = square_width * UnitDefaults.UNIT_SCALE
+        unit_height = square_height * UnitDefaults.UNIT_SCALE
+        
+        x = self.position[1] * square_width + margin
+        y = self.position[0] * square_height + margin
+
+        if board.selected_square == self.position:
+            self.draw_health_bar(screen, x, y, unit_width, unit_height)
+
+        if self.sprite:
+            resized_sprite = pygame.transform.scale(self.sprite, (unit_width, unit_height))
+            screen.blit(resized_sprite, (x, y))
+
+        self._draw_general_flag(screen, x, y, unit_width, unit_height)
+
+    def attack(self, target, board=None):
 
         """
         Attack another unit from range.
@@ -80,15 +108,13 @@ class Archer(BaseUnit):
             target: The unit being attacked
         """
 
-        if not self.is_alive or not target.is_alive or target.player == self.player:
-            return
-                
+        super().attack(target, board)
+        
         try:
             self.attack_sound.play()
         except Exception as e:
             print(f"Failed to play attack sound in units/archer: {str(e)}")
 
-        target.is_alive = False
 
     def can_attack(self, target_position):
 
@@ -128,13 +154,13 @@ class Archer(BaseUnit):
 
         if self.player == 1:
             overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
-            overlay.fill((255, 0, 0, 60))  
+            overlay.fill((255, 0, 0, 40))  
             colored_sprite.blit(overlay, (0,0))
 
         else:
             colored_sprite = pygame.transform.flip(colored_sprite, True, False)
             overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
-            overlay.fill((0, 0, 255, 60))
+            overlay.fill((0, 0, 255, 40))
             colored_sprite.blit(overlay, (0,0))
         
         self.sprite = colored_sprite
