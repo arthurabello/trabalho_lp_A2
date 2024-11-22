@@ -65,6 +65,9 @@ class Game:
         self._reset_movement_points()
         self.game_over = False
         self.winner = None
+
+        for unit in self._get_player_units(self.current_player):
+            unit.has_attacked = False
         
         if not pygame.font.get_init():
             pygame.font.init()
@@ -312,7 +315,9 @@ class Game:
         target_unit = self._get_unit_at_position(clicked_square)
         
         if isinstance(self.selected_unit, Archer):
-            if self.selected_unit.can_attack(clicked_square) and target_unit and target_unit.player != self.current_player:
+            if self.selected_unit.can_attack(clicked_square) and \
+                target_unit and target_unit.player != self.current_player and \
+                not self.selected_unit.has_attacked:
                 self._handle_combat(target_unit)
                 self.movement_points[self.selected_unit] = 0
                 self._update_unit_selection(self.selected_unit.position)
@@ -320,7 +325,8 @@ class Game:
 
         if isinstance(self.selected_unit, Hoplite):
             if target_unit and target_unit.player != self.current_player:
-                if self.selected_unit.can_attack(clicked_square):
+                if self.selected_unit.can_attack(clicked_square) and \
+                    not self.selected_unit.has_attacked:
                     self._handle_combat(target_unit)
                     self.movement_points[self.selected_unit] = 0
                     self._update_unit_selection(self.selected_unit.position)
@@ -332,7 +338,8 @@ class Game:
                         self.selected_unit.move(clicked_square)
                         self.selected_unit.terrain = self.board.terrain.get(clicked_square)
                         self.movement_points[self.selected_unit] -= movement_cost
-                        if self.selected_unit.can_attack(target_unit.position):
+                        if self.selected_unit.can_attack(target_unit.position) and\
+                            not self.selected_unit.has_attacked:
                             self._handle_combat(target_unit)
                             self.movement_points[self.selected_unit] = 0
                         self._update_unit_selection(clicked_square)
@@ -472,6 +479,10 @@ class Game:
         self.board.select_square(None, 0)
         self.board.update_attack_overlays(None, self._get_all_units())
         self._reset_movement_points()
+        self._draw_board()
+
+        for unit in self._get_player_units(self.current_player):
+            unit.has_attacked = False
         self._draw_board()
 
     def handle_events(self):
