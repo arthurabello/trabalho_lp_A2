@@ -5,8 +5,12 @@ This module represents the main game structure, responsible for initializing, ha
 import pygame
 from .board import Board
 from .units.hoplite import Hoplite
+from .units.cavalry import Cavalry
+from .units.heavy_cavalry import HeavyCavalry
+from .units.viking import Viking
 from .menu.menu import Menu
 from .units.archer import Archer
+from .units.crossbowman import Crossbowman
 
 class Game:
     def __init__(self):
@@ -138,16 +142,59 @@ class Game:
         
         if player == 1:
             warrior_start_row = 6
-            archer_start_col = 1
             warrior_col_start = 6
+            
+            archer_start_col = 1
             left_archer_row_start = 1
             right_archer_row_start = 11  
+            
+            cavalry_start_row = 9
+            cavalry_start_col = 1
+
+            heavy_cavalry_start_row = 9
+            heavy_cavalry_start_col = 12
+
+            viking_start_row = 12
+            viking_start_col = 12
+        
         else:
-            warrior_start_row = 6 
-            archer_start_col = self.n - 4 
+            warrior_start_row = 6  
             warrior_col_start = self.n - 11
+
+            archer_start_col = self.n - 4
             left_archer_row_start = 11
-            right_archer_row_start = 1 
+            right_archer_row_start = 1
+
+            cavalry_start_row = 9
+            cavalry_start_col = self.n - 3
+
+            heavy_cavalry_start_row = 9
+            heavy_cavalry_start_col = self.n - 14
+
+            viking_start_row = 12
+            viking_start_col = self.n - 14
+
+        for row in range(2):
+            for col in range(2):
+                position = (viking_start_row + row, viking_start_col + col)
+                warrior = Viking(position, player)
+                warrior.terrain = self.board.terrain.get(position)
+                units.append(warrior)
+
+        for row in range(2):
+            for col in range(2):
+                position = (heavy_cavalry_start_row + row, heavy_cavalry_start_col + col)
+                warrior = HeavyCavalry(position, player)
+                warrior.terrain = self.board.terrain.get(position)
+                units.append(warrior)
+        
+
+        for row in range(2):
+            for col in range(2):
+                position = (cavalry_start_row + row, cavalry_start_col + col)
+                warrior = Cavalry(position, player)
+                warrior.terrain = self.board.terrain.get(position)
+                units.append(warrior)
 
         for row in range(8):
             for col in range(5):
@@ -166,7 +213,7 @@ class Game:
         for row in range(8):
             for col in range(3):
                 position = (left_archer_row_start + row, archer_start_col + col)
-                archer = Archer(position, player)
+                archer = Crossbowman(position, player)
                 archer.terrain = self.board.terrain.get((row, col))
                 units.append(archer)
         
@@ -314,7 +361,7 @@ class Game:
 
         target_unit = self._get_unit_at_position(clicked_square)
         
-        if isinstance(self.selected_unit, Archer):
+        if isinstance(self.selected_unit, (Archer, Crossbowman)):
             if self.selected_unit.can_attack(clicked_square) and \
                 target_unit and target_unit.player != self.current_player and \
                 not self.selected_unit.has_attacked:
@@ -323,7 +370,7 @@ class Game:
                 self._update_unit_selection(self.selected_unit.position)
                 return
 
-        if isinstance(self.selected_unit, Hoplite):
+        if isinstance(self.selected_unit, (Hoplite, Cavalry)):
             if target_unit and target_unit.player != self.current_player:
                 if self.selected_unit.can_attack(clicked_square) and \
                     not self.selected_unit.has_attacked:
