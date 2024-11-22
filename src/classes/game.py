@@ -506,6 +506,12 @@ class Game:
                     self.toggle_fullscreen()
                     if self.state == "menu":
                         self.menu.handle_resize()
+                elif event.key == pygame.K_r and self.game_over:
+                    self._restart_game()
+                elif event.key == pygame.K_m and self.game_over:
+                    self.state = "menu"
+                    self._restart_game()
+                    self.menu = Menu(self.screen)
                 elif self.state == "game" and not self.game_over:
                     self._handle_key_press(event)
             elif self.state == "game" and not self.game_over:
@@ -607,11 +613,9 @@ class Game:
             
 
     def run(self):
-        
         """
         R u n s.
         """
-
         try:
             while self.running:
                 if self.state == "menu":
@@ -622,6 +626,7 @@ class Game:
                         self.state = "game"
                         map_choice = 1 if new_state == "game_map1" else 2
                         self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units(), map_choice=map_choice)
+                        self._restart_game()  # Reinicia o jogo ao começar novo mapa
 
                     elif new_state == "game":
                         self.state = "game"
@@ -649,7 +654,7 @@ class Game:
     def update(self):
 
         """
-        uga uga buga ugaga lbubleub
+        Updates
         """
 
         try:        
@@ -669,9 +674,17 @@ class Game:
             
         message = f"Player {self.winner} Won!"
         text_surface = self.font.render(message, True, (255, 215, 0))  
-        text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2))
         
-        background_surface = pygame.Surface((text_rect.width + 40, text_rect.height + 40))
+        instructions = "Press R to restart or M to return to menu"
+        instructions_surface = self.small_font.render(instructions, True, (255, 255, 255))
+        
+        text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 - 20))
+        instructions_rect = instructions_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 + 40))
+        
+        total_height = text_rect.height + instructions_rect.height + 60
+        max_width = max(text_rect.width, instructions_rect.width) + 40
+
+        background_surface = pygame.Surface((max_width, total_height))
         background_surface.fill((0, 0, 0))
         background_surface.set_alpha(128)  #adjustable transparency
         
@@ -679,3 +692,27 @@ class Game:
         
         self.screen.blit(background_surface, background_rect)
         self.screen.blit(text_surface, text_rect)
+        self.screen.blit(instructions_surface, instructions_rect)
+
+    def _restart_game(self):
+        """
+        Resets the game state for a new game
+        """
+        self.running = True
+        self.units1 = self._create_units(1)
+        self.units2 = self._create_units(2)
+        self.units1[0].has_general = True
+        self.units2[0].has_general = True
+        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
+        self.selected_square = None
+        self.selected_unit = None
+        self.current_player = 1
+        self.movement_points = {}
+        self._reset_movement_points()
+        self.game_over = False
+        self.winner = None
+
+        for unit in self._get_player_units(self.current_player):
+            unit.has_attacked = False
+        
+        self._draw_board()
