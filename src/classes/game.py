@@ -5,8 +5,12 @@ This module represents the main game structure, responsible for initializing, ha
 import pygame
 from .board import Board
 from .units.hoplite import Hoplite
+from .units.cavalry import Cavalry
+from .units.heavy_cavalry import HeavyCavalry
+from .units.viking import Viking
 from .menu.menu import Menu
 from .units.archer import Archer
+from .units.crossbowman import Crossbowman
 
 class Game:
     def __init__(self):
@@ -52,8 +56,32 @@ class Game:
         self.status_surface = pygame.Surface((300, self.screen_height))
         self.running = True
         self.board = Board(self.m, self.n, self.board_width, self.board_height, [])
-        self.units1 = self._create_units(1)
-        self.units2 = self._create_units(2)
+
+        self.player_formation = [
+                            "##############################",
+                            "#AAA##########################",
+                            "#AAA##########################",
+                            "#AAA##########################",
+                            "#AAA##########################",
+                            "#AAA##########################",
+                            "#AAA##PPPPP###################",
+                            "#AAA##HHHVV###################",
+                            "#AAA##HHHVV###################",
+                            "#CCC##HHHVV###################",
+                            "#CCC##HHHVV###################",
+                            "#BBB##HHHVV###################",
+                            "#BBB##HHHVV###################",
+                            "#BBB##PPPPP###################",
+                            "#BBB##########################",
+                            "#BBB##########################",
+                            "#BBB##########################",
+                            "#BBB##########################",
+                            "#BBB##########################",
+                            "##############################"
+                        ]
+        
+        self.units1 = self._create_units(1, self.player_formation)
+        self.units2 = self._create_units(2, self.player_formation)
         self.units1[0].has_general = True  
         self.units2[0].has_general = True
         self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
@@ -130,46 +158,50 @@ class Game:
         else:
             return self.units2
 
-    def _create_units(self, player):
+    
+    def _create_units(self, player, board_layout):
         """
-        Creates warriors and archers in the specified symmetric formation for the given player
+        Creates units based on a string layout.
+        
+        Args:
+            player (int): Player number (1 or 2)
+            board_layout (List[str]): List of strings representing the board layout
+        
+        Returns:
+            List[BaseUnit]: List of created units
         """
+        
+        unit_mapping = {
+        'H': Hoplite,
+        'C': Cavalry,
+        'P': HeavyCavalry,
+        'V': Viking,
+        'A': Archer,
+        'B': Crossbowman,
+        '#': None
+        }
+
         units = []
         
-        if player == 1:
-            warrior_start_row = 6
-            archer_start_col = 1
-            warrior_col_start = 6
-            left_archer_row_start = 1
-            right_archer_row_start = 11  
-        else:
-            warrior_start_row = 6 
-            archer_start_col = self.n - 4 
-            warrior_col_start = self.n - 11
-            left_archer_row_start = 11
-            right_archer_row_start = 1 
-
-        for row in range(8):
-            for col in range(5):
-                position = (warrior_start_row + row, warrior_col_start + col)
-                warrior = Hoplite(position, player)
-                warrior.terrain = self.board.terrain.get(position)
-                units.append(warrior)
-
-        for row in range(8):
-            for col in range(3):
-                position = (right_archer_row_start + row, archer_start_col + col)
-                archer = Archer(position, player)
-                archer.terrain = self.board.terrain.get(position)
-                units.append(archer)
+        # If player 2, flip the layout horizontally
+        if player == 2:
+            board_layout = [row[::-1] for row in board_layout]
         
-        for row in range(8):
-            for col in range(3):
-                position = (left_archer_row_start + row, archer_start_col + col)
-                archer = Archer(position, player)
-                archer.terrain = self.board.terrain.get((row, col))
-                units.append(archer)
+        for row_idx, row in enumerate(board_layout):
+            for col_idx, char in enumerate(row):
+                if char in unit_mapping and char != '#':
+                    unit_class = unit_mapping[char]
+                    if player == 2:
+                        position = (self.m - 1 - row_idx, col_idx)
+                    else:
+                        position = (row_idx, col_idx)
+                    unit = unit_class(position, player)
+                    unit.terrain = self.board.terrain.get(position)
+                    units.append(unit)
         
+        if units:
+            units[0].has_general = True
+            
         return units
     
     def _get_all_units(self):
@@ -265,7 +297,7 @@ class Game:
             self.status_surface.blit(defense_text, (10, 130))
             self.status_surface.blit(formation_text, (10,160))
             self.status_surface.blit(change_formation_text, (10, 190))
-            self.status_surface.blit(terrain_text, (10, 250))
+            self.status_surface.blit(terrain_text, (10, 220))
         else:
             no_unit_text = self.mini_font.render("Select a Unit", True, (255, 255, 255))
             self.status_surface.blit(no_unit_text, (10, 40))
@@ -314,7 +346,7 @@ class Game:
 
         target_unit = self._get_unit_at_position(clicked_square)
         
-        if isinstance(self.selected_unit, Archer):
+        if isinstance(self.selected_unit, (Archer, Crossbowman)):
             if self.selected_unit.can_attack(clicked_square) and \
                 target_unit and target_unit.player != self.current_player and \
                 not self.selected_unit.has_attacked:
@@ -323,7 +355,7 @@ class Game:
                 self._update_unit_selection(self.selected_unit.position)
                 return
 
-        if isinstance(self.selected_unit, Hoplite):
+        if isinstance(self.selected_unit, (Hoplite, Cavalry, HeavyCavalry, Viking)):
             if target_unit and target_unit.player != self.current_player:
                 if self.selected_unit.can_attack(clicked_square) and \
                     not self.selected_unit.has_attacked:
@@ -506,6 +538,12 @@ class Game:
                     self.toggle_fullscreen()
                     if self.state == "menu":
                         self.menu.handle_resize()
+                elif event.key == pygame.K_r and self.game_over:
+                    self._restart_game()
+                elif event.key == pygame.K_m and self.game_over:
+                    self.state = "menu"
+                    self._restart_game()
+                    self.menu = Menu(self.screen)
                 elif self.state == "game" and not self.game_over:
                     self._handle_key_press(event)
             elif self.state == "game" and not self.game_over:
@@ -607,11 +645,9 @@ class Game:
             
 
     def run(self):
-        
         """
         R u n s.
         """
-
         try:
             while self.running:
                 if self.state == "menu":
@@ -622,6 +658,7 @@ class Game:
                         self.state = "game"
                         map_choice = 1 if new_state == "game_map1" else 2
                         self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units(), map_choice=map_choice)
+                        self._restart_game()
 
                     elif new_state == "game":
                         self.state = "game"
@@ -649,7 +686,7 @@ class Game:
     def update(self):
 
         """
-        uga uga buga ugaga lbubleub
+        Updates
         """
 
         try:        
@@ -669,9 +706,17 @@ class Game:
             
         message = f"Player {self.winner} Won!"
         text_surface = self.font.render(message, True, (255, 215, 0))  
-        text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2))
         
-        background_surface = pygame.Surface((text_rect.width + 40, text_rect.height + 40))
+        instructions = "Press R to restart or M to return to menu"
+        instructions_surface = self.small_font.render(instructions, True, (255, 255, 255))
+        
+        text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 - 20))
+        instructions_rect = instructions_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 + 40))
+        
+        total_height = text_rect.height + instructions_rect.height + 60
+        max_width = max(text_rect.width, instructions_rect.width) + 40
+
+        background_surface = pygame.Surface((max_width, total_height))
         background_surface.fill((0, 0, 0))
         background_surface.set_alpha(128)  #adjustable transparency
         
@@ -679,3 +724,27 @@ class Game:
         
         self.screen.blit(background_surface, background_rect)
         self.screen.blit(text_surface, text_rect)
+        self.screen.blit(instructions_surface, instructions_rect)
+
+    def _restart_game(self):
+        """
+        Resets the game state for a new game
+        """
+        self.running = True
+        self.units1 = self._create_units(1, self.player_formation)
+        self.units2 = self._create_units(2, self.player_formation)
+        self.units1[0].has_general = True
+        self.units2[0].has_general = True
+        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
+        self.selected_square = None
+        self.selected_unit = None
+        self.current_player = 1
+        self.movement_points = {}
+        self._reset_movement_points()
+        self.game_over = False
+        self.winner = None
+
+        for unit in self._get_player_units(self.current_player):
+            unit.has_attacked = False
+        
+        self._draw_board()

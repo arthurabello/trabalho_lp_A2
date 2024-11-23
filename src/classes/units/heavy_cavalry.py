@@ -1,5 +1,5 @@
 """
-This module contains the implementation of the Hoplite unit in the game.
+This module contains the implementation of the Heavy Cavalry unit in the game.
 """
 
 import os
@@ -8,10 +8,10 @@ from .base_unit import BaseUnit
 from .base_unit import UnitDefaults
 from .constants import Colors
 
-class Hoplite(BaseUnit):
+class HeavyCavalry(BaseUnit):
 
     """
-    Represents a Hoplite piece on the game board.
+    Represents a Heavy cavalry piece on the game board.
     
     Attributes:
         Inherits all attributes from BaseUnit
@@ -21,7 +21,7 @@ class Hoplite(BaseUnit):
     def __init__(self, initial_position, player, formation="Standard"):
 
         """
-        Initialize a new Hoplite unit.
+        Initialize a new Heavy cavalry unit.
         
         Args:
             initial_position (tuple): Starting position (row, col)
@@ -43,28 +43,23 @@ class Hoplite(BaseUnit):
         self.formations = {
             "Standard": {
                 "attack_modifier": 1.0,
-                "defense_modifier": 1.0
-            },
-            "Shield Wall": {
-                "attack_modifier": 0.9,
-                "defense_modifier": 1.8
-            },
-            "Phalanx": {
-                "attack_modifier": 1.5,
-                "defense_modifier": 0.6
+                "defense_modifier": 1.0,
             },
             "Spread": {
-                "attack_modifier": 1.2,
-                "defense_modifier": 0.9
+                "attack_modifier": 0.9,
+                "defense_modifier": 1.8,
+            },
+            "V": {
+                "attack_modifier": 1.5,
+                "defense_modifier": 0.6,
             }
         }
 
-        sprite_dir = os.path.join('..', 'assets', 'sprites', 'units', 'hoplite')
+        sprite_dir = os.path.join('..', 'assets', 'sprites', 'units', 'heavy_cavalry')
         self.formation_sprites = {
-            "Standard": self._load_sprite(os.path.join(sprite_dir, 'hoplite.png')),
-            "Shield Wall": self._load_sprite(os.path.join(sprite_dir, 'hoplite_shield_wall.png')),
-            "Phalanx": self._load_sprite(os.path.join(sprite_dir, 'hoplite_phalanx.png')),
-            "Spread": self._load_sprite(os.path.join(sprite_dir, 'hoplite_spread.png'))
+            "Standard": self._load_sprite(os.path.join(sprite_dir, 'heavy_cavalry.png')),
+            "Spread": self._load_sprite(os.path.join(sprite_dir, 'heavy_cavalry_spread.png')),
+            "V": self._load_sprite(os.path.join(sprite_dir, 'heavy_cavalry_V.png'))
         }
 
         self.attack_points = self.base_attack
@@ -137,7 +132,7 @@ class Hoplite(BaseUnit):
     def can_move_to(self, position, board, all_units):
 
         """
-        Check if the Hoplite can move to a given position.
+        Check if the Heavy cavalry can move to a given position.
         
         Args:
             position (tuple): Target position to check
@@ -179,12 +174,12 @@ class Hoplite(BaseUnit):
         try:
             self.attack_sound.play()
         except Exception as e:
-            print(f"Failed to play attack sound in units/hoplite: {str(e)}")
+            print(f"Failed to play attack sound in units/heavy cavalry: {str(e)}")
 
     def can_attack(self, target_position):
 
         """
-        Check if this hoplite can attack a position.
+        Check if this cavalry can attack a position.
         
         Args:
             target_position (tuple): Position to check as (row, col)

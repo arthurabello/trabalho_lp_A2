@@ -1,5 +1,5 @@
 """
-This module contains the implementation of the Hoplite unit in the game.
+This module contains the implementation of the Viking unit in the game.
 """
 
 import os
@@ -8,10 +8,10 @@ from .base_unit import BaseUnit
 from .base_unit import UnitDefaults
 from .constants import Colors
 
-class Hoplite(BaseUnit):
+class Viking(BaseUnit):
 
     """
-    Represents a Hoplite piece on the game board.
+    Represents a Viking piece on the game board.
     
     Attributes:
         Inherits all attributes from BaseUnit
@@ -21,7 +21,7 @@ class Hoplite(BaseUnit):
     def __init__(self, initial_position, player, formation="Standard"):
 
         """
-        Initialize a new Hoplite unit.
+        Initialize a new Viking unit.
         
         Args:
             initial_position (tuple): Starting position (row, col)
@@ -49,22 +49,27 @@ class Hoplite(BaseUnit):
                 "attack_modifier": 0.9,
                 "defense_modifier": 1.8
             },
-            "Phalanx": {
+            "Spread": {
                 "attack_modifier": 1.5,
                 "defense_modifier": 0.6
             },
-            "Spread": {
-                "attack_modifier": 1.2,
+            "Turtle": {
+                "attack_modifier": 0.4,
+                "defense_modifier": 2.0
+            },
+            "V": {
+                "attack_modifier": 1.3,
                 "defense_modifier": 0.9
             }
         }
 
-        sprite_dir = os.path.join('..', 'assets', 'sprites', 'units', 'hoplite')
+        sprite_dir = os.path.join('..', 'assets', 'sprites', 'units', 'viking')
         self.formation_sprites = {
-            "Standard": self._load_sprite(os.path.join(sprite_dir, 'hoplite.png')),
-            "Shield Wall": self._load_sprite(os.path.join(sprite_dir, 'hoplite_shield_wall.png')),
-            "Phalanx": self._load_sprite(os.path.join(sprite_dir, 'hoplite_phalanx.png')),
-            "Spread": self._load_sprite(os.path.join(sprite_dir, 'hoplite_spread.png'))
+            "Standard": self._load_sprite(os.path.join(sprite_dir, 'viking.png')),
+            "Shield Wall": self._load_sprite(os.path.join(sprite_dir, 'viking_shield_wall.png')),
+            "Spread": self._load_sprite(os.path.join(sprite_dir, 'viking_spread.png')),
+            "Turtle": self._load_sprite(os.path.join(sprite_dir, 'viking_turtle.png')),
+            "V": self._load_sprite(os.path.join(sprite_dir, 'viking_V.png'))
         }
 
         self.attack_points = self.base_attack
@@ -137,7 +142,7 @@ class Hoplite(BaseUnit):
     def can_move_to(self, position, board, all_units):
 
         """
-        Check if the Hoplite can move to a given position.
+        Check if the Viking can move to a given position.
         
         Args:
             position (tuple): Target position to check
@@ -179,12 +184,12 @@ class Hoplite(BaseUnit):
         try:
             self.attack_sound.play()
         except Exception as e:
-            print(f"Failed to play attack sound in units/hoplite: {str(e)}")
+            print(f"Failed to play attack sound in units/archer: {str(e)}")
 
     def can_attack(self, target_position):
 
         """
-        Check if this hoplite can attack a position.
+        Check if this viking can attack a position.
         
         Args:
             target_position (tuple): Position to check as (row, col)
