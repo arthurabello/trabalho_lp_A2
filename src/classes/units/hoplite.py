@@ -43,23 +43,28 @@ class Hoplite(BaseUnit):
         self.formations = {
             "Standard": {
                 "attack_modifier": 1.0,
-                "defense_modifier": 1.0,
+                "defense_modifier": 1.0
             },
             "Shield Wall": {
                 "attack_modifier": 0.9,
-                "defense_modifier": 1.8,
+                "defense_modifier": 1.8
             },
             "Phalanx": {
                 "attack_modifier": 1.5,
-                "defense_modifier": 0.6,
+                "defense_modifier": 0.6
+            },
+            "Spread": {
+                "attack_modifier": 1.2,
+                "defense_modifier": 0.9
             }
         }
 
-        sprite_dir = os.path.join('..', 'assets', 'sprites')
+        sprite_dir = os.path.join('..', 'assets', 'sprites', 'units', 'hoplite')
         self.formation_sprites = {
             "Standard": self._load_sprite(os.path.join(sprite_dir, 'hoplite.png')),
-            "Shield Wall": self._load_sprite(os.path.join(sprite_dir, 'hoplite_defense.png')),
-            "Phalanx": self._load_sprite(os.path.join(sprite_dir, 'hoplite_attack.png'))
+            "Shield Wall": self._load_sprite(os.path.join(sprite_dir, 'hoplite_shield_wall.png')),
+            "Phalanx": self._load_sprite(os.path.join(sprite_dir, 'hoplite_phalanx.png')),
+            "Spread": self._load_sprite(os.path.join(sprite_dir, 'hoplite_spread.png'))
         }
 
         self.attack_points = self.base_attack
@@ -174,7 +179,7 @@ class Hoplite(BaseUnit):
         try:
             self.attack_sound.play()
         except Exception as e:
-            print(f"Failed to play attack sound in units/archer: {str(e)}")
+            print(f"Failed to play attack sound in units/hoplite: {str(e)}")
 
     def can_attack(self, target_position):
 
