@@ -274,33 +274,159 @@ class Game:
     def _update_status_surface(self):
 
         """
-        Updates the status surface
+        Updates the status surface with a modern, organized layout
         """
 
-        self.status_surface.fill((50, 50, 50))
+        BACKGROUND_TOP = (31, 41, 55)     
+        BACKGROUND_BOTTOM = (17, 24, 39) 
+        TEXT_COLOR = (229, 231, 235)    
+        HEADER_COLOR = (252, 211, 77)    
+        SECTION_BG = (31, 41, 55, 128)   
+        
+        PANEL_WIDTH = 300
+        SECTION_PADDING = 15
+        
+        height = self.screen_height
+        self.status_surface = pygame.Surface((PANEL_WIDTH, height), pygame.SRCALPHA)
+        
+        for y in range(height):
+            progress = y / height
+            r = BACKGROUND_TOP[0] + (BACKGROUND_BOTTOM[0] - BACKGROUND_TOP[0]) * progress
+            g = BACKGROUND_TOP[1] + (BACKGROUND_BOTTOM[1] - BACKGROUND_TOP[1]) * progress
+            b = BACKGROUND_TOP[2] + (BACKGROUND_BOTTOM[2] - BACKGROUND_TOP[2]) * progress
+            pygame.draw.line(self.status_surface, (r, g, b), (0, y), (PANEL_WIDTH, y))
 
-        status_text = self.mini_font.render(f"Status", True, (255, 255, 255))
-        self.status_surface.blit(status_text, (10, 10))
+        y_offset = SECTION_PADDING
+
+        header_font = pygame.font.Font(None, 48) 
+        header_text = header_font.render("Unit Status", True, HEADER_COLOR)
+        header_rect = header_text.get_rect(centerx=PANEL_WIDTH // 2, top=y_offset)
+        self.status_surface.blit(header_text, header_rect)
+        
+        y_offset += header_rect.height + SECTION_PADDING
+        pygame.draw.line(self.status_surface, (75, 85, 99), (20, y_offset), (PANEL_WIDTH - 20, y_offset))
+        y_offset += SECTION_PADDING
+
+        if not self.selected_unit:
+            no_unit_text = self.mini_font.render("No Unit Selected", True, TEXT_COLOR)
+            no_unit_rect = no_unit_text.get_rect(centerx=PANEL_WIDTH // 2, top=y_offset)
+            self.status_surface.blit(no_unit_text, no_unit_rect)
+            return
+
+        unit = self.selected_unit
     
-        if self.selected_unit:
-            name_text = self.mini_font.render(f"Unit: {self.selected_unit.__class__.__name__}", True, (255, 255, 255))
-            remaining_units_text = self.mini_font.render(f"Remaining Units: {self.selected_unit.remaining_units}", True, (255, 255, 255))
-            attack_text = self.mini_font.render(f"Attack: {self.selected_unit.attack_points}", True, (255, 255, 255))
-            defense_text = self.mini_font.render(f"Defense: {self.selected_unit.defense_points}", True, (255, 255, 255))
-            formation_text = self.mini_font.render(f"Formation: {self.selected_unit.formation}", True, (255, 255, 255))
-            change_formation_text = self.mini_font.render(f"Press 'G' to change formation", True, (255,255,255))
-            terrain_text = self.mini_font.render(f"Current terrain: {self.selected_unit.terrain}", True, (255, 255, 255))
-                
-            self.status_surface.blit(name_text, (10, 40))
-            self.status_surface.blit(remaining_units_text, (10, 70))
-            self.status_surface.blit(attack_text, (10, 100))
-            self.status_surface.blit(defense_text, (10, 130))
-            self.status_surface.blit(formation_text, (10,160))
-            self.status_surface.blit(change_formation_text, (10, 190))
-            self.status_surface.blit(terrain_text, (10, 220))
-        else:
-            no_unit_text = self.mini_font.render("Select a Unit", True, (255, 255, 255))
-            self.status_surface.blit(no_unit_text, (10, 40))
+        section_bg = pygame.Surface((PANEL_WIDTH - 40, 80), pygame.SRCALPHA)
+        section_bg.fill(SECTION_BG)
+        self.status_surface.blit(section_bg, (20, y_offset))
+        
+        type_text = self.small_font.render(unit.__class__.__name__, True, HEADER_COLOR)
+        self.status_surface.blit(type_text, (30, y_offset + 10))
+        
+        hp_percent = (unit.current_hp / unit.max_hp) * 100
+        hp_text = self.mini_font.render(f"HP: {hp_percent:.1f}%", True, TEXT_COLOR)
+        self.status_surface.blit(hp_text, (30, y_offset + 40))
+        
+        pygame.draw.rect(self.status_surface, (75, 85, 99),(30, y_offset + 60, PANEL_WIDTH - 60, 8))
+        
+        hp_color = (34, 197, 94) if hp_percent > 70 else \
+                (234, 179, 8) if hp_percent > 30 else \
+                (239, 68, 68)
+        hp_width = int((PANEL_WIDTH - 60) * (hp_percent / 100))
+        pygame.draw.rect(self.status_surface, hp_color,
+                        (30, y_offset + 60, hp_width, 8))
+        
+        y_offset += 100 
+
+        section_bg = pygame.Surface((PANEL_WIDTH - 40, 120), pygame.SRCALPHA)
+        section_bg.fill(SECTION_BG)
+        self.status_surface.blit(section_bg, (20, y_offset))
+        
+        section_title = self.mini_font.render("COMBAT STATS", True, (156, 163, 175))
+        self.status_surface.blit(section_title, (30, y_offset + 10))
+        
+        stats_y = y_offset + 40
+        stats_data = [
+            (f"Attack Points: {unit.attack_points}", (239, 68, 68)),
+            (f"Defense Points: {unit.defense_points}", (59, 130, 246)),
+            (f"Attack Range: {unit.attack_range}", (168, 85, 247))
+        ]
+        
+        for text, color in stats_data:
+            stat_text = self.mini_font.render(text, True, color)
+            self.status_surface.blit(stat_text, (30, stats_y))
+            stats_y += 25
+            
+        y_offset += 140 
+
+        section_bg = pygame.Surface((PANEL_WIDTH - 40, 120), pygame.SRCALPHA)
+        section_bg.fill(SECTION_BG)
+        self.status_surface.blit(section_bg, (20, y_offset))
+        
+        section_title = self.mini_font.render("TACTICAL INFO", True, (156, 163, 175))
+        self.status_surface.blit(section_title, (30, y_offset + 10))
+        
+        tactical_y = y_offset + 40
+        tactical_data = [
+            (f"Movement Points: {self.movement_points.get(unit, 0)}", TEXT_COLOR),
+            (f"Formation: {unit.formation}", TEXT_COLOR),
+            (f"Terrain: {unit.terrain}", TEXT_COLOR)
+        ]
+        
+        for text, color in tactical_data:
+            tact_text = self.mini_font.render(text, True, color)
+            self.status_surface.blit(tact_text, (30, tactical_y))
+            tactical_y += 25
+            
+        y_offset += 140
+
+        section_bg = pygame.Surface((PANEL_WIDTH - 40, 160), pygame.SRCALPHA)
+        section_bg.fill(SECTION_BG)
+        self.status_surface.blit(section_bg, (20, y_offset))
+        
+        section_title = self.mini_font.render("ACTIVE MODIFIERS", True, (156, 163, 175))
+        self.status_surface.blit(section_title, (30, y_offset + 10))
+        
+        mod_y = y_offset + 40
+        
+        formation_mods = unit.formations.get(unit.formation, {})
+        
+        attack_mod = (formation_mods.get('attack_modifier', 1.0) - 1) * 100
+        if attack_mod != 0:
+            mod_text = f"{'+' if attack_mod > 0 else ''}{attack_mod:.0f}% Attack (Formation)"
+            mod_color = (34, 197, 94) if attack_mod > 0 else (239, 68, 68)
+            mod_surface = self.mini_font.render(mod_text, True, mod_color)
+            self.status_surface.blit(mod_surface, (30, mod_y))
+            mod_y += 25
+            
+        defense_mod = (formation_mods.get('defense_modifier', 1.0) - 1) * 100
+        if defense_mod != 0:
+            mod_text = f"{'+' if defense_mod > 0 else ''}{defense_mod:.0f}% Defense (Formation)"
+            mod_color = (34, 197, 94) if defense_mod > 0 else (239, 68, 68)
+            mod_surface = self.mini_font.render(mod_text, True, mod_color)
+            self.status_surface.blit(mod_surface, (30, mod_y))
+            mod_y += 25
+            
+        if unit.terrain == "mountain":
+            if unit.attack_type == "melee":
+                mod_text = "+50% Defense vs Melee (Mountain)"
+                mod_surface = self.mini_font.render(mod_text, True, (34, 197, 94))
+                self.status_surface.blit(mod_surface, (30, mod_y))
+                mod_y += 25
+            else:
+                mod_text = "+20% Defense vs Ranged (Mountain)"
+                mod_surface = self.mini_font.render(mod_text, True, (34, 197, 94))
+                self.status_surface.blit(mod_surface, (30, mod_y))
+                mod_y += 25
+        elif unit.terrain == "forest":
+            if unit.attack_type == "ranged":
+                mod_text = "+70% Defense vs Ranged (Forest)"
+                mod_surface = self.mini_font.render(mod_text, True, (34, 197, 94))
+                self.status_surface.blit(mod_surface, (30, mod_y))
+                mod_y += 25
+            else:
+                mod_text = "+25% Defense vs Melee (Forest)"
+                mod_surface = self.mini_font.render(mod_text, True, (34, 197, 94))
+                self.status_surface.blit(mod_surface, (30, mod_y))
 
     def _handle_general_movement(self, clicked_unit):
 
