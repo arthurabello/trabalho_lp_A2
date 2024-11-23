@@ -55,7 +55,7 @@ class Crossbowman(BaseUnit):
             }
         }
 
-        sprite_dir = os.path.join('..', 'assets', 'sprites')
+        sprite_dir = os.path.join('..', 'assets', 'sprites', 'units', 'crossbowman')
         self.formation_sprites = {
             "Standard": self._load_sprite(os.path.join(sprite_dir, 'crossbowman.png')),
             "Spread": self._load_sprite(os.path.join(sprite_dir, 'crossbowman_spread.png'))

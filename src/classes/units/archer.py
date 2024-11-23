@@ -55,10 +55,10 @@ class Archer(BaseUnit):
             }
         }
 
-        sprite_dir = os.path.join('..', 'assets', 'sprites')
+        sprite_dir = os.path.join('..', 'assets', 'sprites', 'units', 'archer')
         self.formation_sprites = {
-            "Standard": self._load_sprite(os.path.join(sprite_dir, 'archer_sprite.png')),
-            "Spread": self._load_sprite(os.path.join(sprite_dir, 'archer_spread_sprite.png'))
+            "Standard": self._load_sprite(os.path.join(sprite_dir, 'archer.png')),
+            "Spread": self._load_sprite(os.path.join(sprite_dir, 'archer_spread.png'))
         }
         
         self.max_hp = 100

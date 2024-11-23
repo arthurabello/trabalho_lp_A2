@@ -55,7 +55,7 @@ class Cavalry(BaseUnit):
             }
         }
 
-        sprite_dir = os.path.join('..', 'assets', 'sprites')
+        sprite_dir = os.path.join('..', 'assets', 'sprites', 'units', 'cavalry')
         self.formation_sprites = {
             "Standard": self._load_sprite(os.path.join(sprite_dir, 'cavalry.png')),
             "Spread": self._load_sprite(os.path.join(sprite_dir, 'cavalry_spread.png')),
@@ -174,7 +174,7 @@ class Cavalry(BaseUnit):
         try:
             self.attack_sound.play()
         except Exception as e:
-            print(f"Failed to play attack sound in units/archer: {str(e)}")
+            print(f"Failed to play attack sound in units/cavalry: {str(e)}")
 
     def can_attack(self, target_position):
 

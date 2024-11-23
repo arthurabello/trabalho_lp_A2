@@ -56,8 +56,32 @@ class Game:
         self.status_surface = pygame.Surface((300, self.screen_height))
         self.running = True
         self.board = Board(self.m, self.n, self.board_width, self.board_height, [])
-        self.units1 = self._create_units(1)
-        self.units2 = self._create_units(2)
+
+        self.player_formation = [
+                            "##############################",
+                            "#AAA##########################",
+                            "#AAA##########################",
+                            "#AAA##########################",
+                            "#AAA##########################",
+                            "#AAA##########################",
+                            "#AAA##PPPPP###################",
+                            "#AAA##HHHVV###################",
+                            "#AAA##HHHVV###################",
+                            "#CCC##HHHVV###################",
+                            "#CCC##HHHVV###################",
+                            "#BBB##HHHVV###################",
+                            "#BBB##HHHVV###################",
+                            "#BBB##PPPPP###################",
+                            "#BBB##########################",
+                            "#BBB##########################",
+                            "#BBB##########################",
+                            "#BBB##########################",
+                            "#BBB##########################",
+                            "##############################"
+                        ]
+        
+        self.units1 = self._create_units(1, self.player_formation)
+        self.units2 = self._create_units(2, self.player_formation)
         self.units1[0].has_general = True  
         self.units2[0].has_general = True
         self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
@@ -134,89 +158,50 @@ class Game:
         else:
             return self.units2
 
-    def _create_units(self, player):
+    
+    def _create_units(self, player, board_layout):
         """
-        Creates warriors and archers in the specified symmetric formation for the given player
+        Creates units based on a string layout.
+        
+        Args:
+            player (int): Player number (1 or 2)
+            board_layout (List[str]): List of strings representing the board layout
+        
+        Returns:
+            List[BaseUnit]: List of created units
         """
+        
+        unit_mapping = {
+        'H': Hoplite,
+        'C': Cavalry,
+        'P': HeavyCavalry,
+        'V': Viking,
+        'A': Archer,
+        'B': Crossbowman,
+        '#': None
+        }
+
         units = []
         
-        if player == 1:
-            warrior_start_row = 6
-            warrior_col_start = 6
+        # If player 2, flip the layout horizontally
+        if player == 2:
+            board_layout = [row[::-1] for row in board_layout]
+        
+        for row_idx, row in enumerate(board_layout):
+            for col_idx, char in enumerate(row):
+                if char in unit_mapping and char != '#':
+                    unit_class = unit_mapping[char]
+                    if player == 2:
+                        position = (self.m - 1 - row_idx, col_idx)
+                    else:
+                        position = (row_idx, col_idx)
+                    unit = unit_class(position, player)
+                    unit.terrain = self.board.terrain.get(position)
+                    units.append(unit)
+        
+        if units:
+            units[0].has_general = True
             
-            archer_start_col = 1
-            left_archer_row_start = 1
-            right_archer_row_start = 11  
-            
-            cavalry_start_row = 9
-            cavalry_start_col = 1
-
-            heavy_cavalry_start_row = 9
-            heavy_cavalry_start_col = 12
-
-            viking_start_row = 12
-            viking_start_col = 12
-        
-        else:
-            warrior_start_row = 6  
-            warrior_col_start = self.n - 11
-
-            archer_start_col = self.n - 4
-            left_archer_row_start = 11
-            right_archer_row_start = 1
-
-            cavalry_start_row = 9
-            cavalry_start_col = self.n - 3
-
-            heavy_cavalry_start_row = 9
-            heavy_cavalry_start_col = self.n - 14
-
-            viking_start_row = 12
-            viking_start_col = self.n - 14
-
-        for row in range(2):
-            for col in range(2):
-                position = (viking_start_row + row, viking_start_col + col)
-                warrior = Viking(position, player)
-                warrior.terrain = self.board.terrain.get(position)
-                units.append(warrior)
-
-        for row in range(2):
-            for col in range(2):
-                position = (heavy_cavalry_start_row + row, heavy_cavalry_start_col + col)
-                warrior = HeavyCavalry(position, player)
-                warrior.terrain = self.board.terrain.get(position)
-                units.append(warrior)
-        
-
-        for row in range(2):
-            for col in range(2):
-                position = (cavalry_start_row + row, cavalry_start_col + col)
-                warrior = Cavalry(position, player)
-                warrior.terrain = self.board.terrain.get(position)
-                units.append(warrior)
-
-        for row in range(8):
-            for col in range(5):
-                position = (warrior_start_row + row, warrior_col_start + col)
-                warrior = Hoplite(position, player)
-                warrior.terrain = self.board.terrain.get(position)
-                units.append(warrior)
-
-        for row in range(8):
-            for col in range(3):
-                position = (right_archer_row_start + row, archer_start_col + col)
-                archer = Archer(position, player)
-                archer.terrain = self.board.terrain.get(position)
-                units.append(archer)
-        
-        for row in range(8):
-            for col in range(3):
-                position = (left_archer_row_start + row, archer_start_col + col)
-                archer = Crossbowman(position, player)
-                archer.terrain = self.board.terrain.get((row, col))
-                units.append(archer)
-        
         return units
     
     def _get_all_units(self):
@@ -312,7 +297,7 @@ class Game:
             self.status_surface.blit(defense_text, (10, 130))
             self.status_surface.blit(formation_text, (10,160))
             self.status_surface.blit(change_formation_text, (10, 190))
-            self.status_surface.blit(terrain_text, (10, 250))
+            self.status_surface.blit(terrain_text, (10, 220))
         else:
             no_unit_text = self.mini_font.render("Select a Unit", True, (255, 255, 255))
             self.status_surface.blit(no_unit_text, (10, 40))
@@ -370,7 +355,7 @@ class Game:
                 self._update_unit_selection(self.selected_unit.position)
                 return
 
-        if isinstance(self.selected_unit, (Hoplite, Cavalry)):
+        if isinstance(self.selected_unit, (Hoplite, Cavalry, HeavyCavalry, Viking)):
             if target_unit and target_unit.player != self.current_player:
                 if self.selected_unit.can_attack(clicked_square) and \
                     not self.selected_unit.has_attacked:
@@ -673,7 +658,7 @@ class Game:
                         self.state = "game"
                         map_choice = 1 if new_state == "game_map1" else 2
                         self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units(), map_choice=map_choice)
-                        self._restart_game()  # Reinicia o jogo ao começar novo mapa
+                        self._restart_game()
 
                     elif new_state == "game":
                         self.state = "game"
@@ -746,8 +731,8 @@ class Game:
         Resets the game state for a new game
         """
         self.running = True
-        self.units1 = self._create_units(1)
-        self.units2 = self._create_units(2)
+        self.units1 = self._create_units(1, self.player_formation)
+        self.units2 = self._create_units(2, self.player_formation)
         self.units1[0].has_general = True
         self.units2[0].has_general = True
         self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())

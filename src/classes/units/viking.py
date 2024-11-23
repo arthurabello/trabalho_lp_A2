@@ -63,7 +63,7 @@ class Viking(BaseUnit):
             }
         }
 
-        sprite_dir = os.path.join('..', 'assets', 'sprites')
+        sprite_dir = os.path.join('..', 'assets', 'sprites', 'units', 'viking')
         self.formation_sprites = {
             "Standard": self._load_sprite(os.path.join(sprite_dir, 'viking.png')),
             "Shield Wall": self._load_sprite(os.path.join(sprite_dir, 'viking_shield_wall.png')),
