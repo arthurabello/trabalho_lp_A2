@@ -183,8 +183,7 @@ class Game:
 
         units = []
         
-        # If player 2, flip the layout horizontally
-        if player == 2:
+        if player == 2:   #if player 2, flip the layout horizontally
             board_layout = [row[::-1] for row in board_layout]
         
         for row_idx, row in enumerate(board_layout):
@@ -238,39 +237,7 @@ class Game:
         self.background.fill((0, 0, 0))
         self.board.draw(self.board_surface, self.board.selected_square)
 
-    def _draw_movement_points(self):
-
-        """
-        Draws the amount of movement points for a given unit as part of the UI
-        """
-
-        screen_width = self.screen.get_width()
-        screen_height = self.screen.get_height()
-        
-        padding = 10
-        line_height = 30
-        
-        turn_text = f"Player {self.current_player}'s Turn - Press SPACE to end turn"
-        mp_text = f"Movement Points: {self.movement_points.get(self.selected_unit, 0)}"
-        
-        turn_surface = self.small_font.render(turn_text, True, (255, 255, 255))
-        mp_surface = self.small_font.render(mp_text, True, (255, 255, 255))
-        
-        ui_width = max(turn_surface.get_width(), mp_surface.get_width()) + (padding * 3)
-        ui_height = (line_height * 2) + (padding * 2) 
-        
-        ui_surface = pygame.Surface((ui_width, ui_height))
-        ui_surface.fill((0, 0, 0))
-        ui_surface.set_alpha(128)
-        
-        ui_pos = (padding, screen_height - ui_height - padding)
-        self.screen.blit(ui_surface, ui_pos) #bottom left corner
-        
-        self.screen.blit(turn_surface, (padding * 2, screen_height - line_height - padding))
-        
-        if self.selected_unit:
-            self.screen.blit(mp_surface, (padding * 2, screen_height - (line_height * 2) - padding))
-        
+    
     def _update_status_surface(self):
 
         """
@@ -302,6 +269,22 @@ class Game:
         header_text = header_font.render("Unit Status", True, HEADER_COLOR)
         header_rect = header_text.get_rect(centerx=PANEL_WIDTH // 2, top=y_offset)
         self.status_surface.blit(header_text, header_rect)
+
+        y_offset += header_rect.height + SECTION_PADDING
+
+        turn_bg = pygame.Surface((PANEL_WIDTH - 40, 60), pygame.SRCALPHA)
+        turn_bg.fill(SECTION_BG)
+        self.status_surface.blit(turn_bg, (20, y_offset))
+
+        turn_text = f"Player {self.current_player}'s Turn"
+        turn_surface = self.small_font.render(turn_text, True, HEADER_COLOR)
+        self.status_surface.blit(turn_surface, (30, y_offset + 10))
+
+        space_text = "Press SPACE to end turn"
+        space_surface = self.mini_font.render(space_text, True, TEXT_COLOR)
+        self.status_surface.blit(space_surface, (30, y_offset + 35))
+
+        y_offset += 80  
         
         y_offset += header_rect.height + SECTION_PADDING
         pygame.draw.line(self.status_surface, (75, 85, 99), (20, y_offset), (PANEL_WIDTH - 20, y_offset))
@@ -742,7 +725,6 @@ class Game:
         board_y = (self.screen_height - self.board_height) // 2 if self.is_fullscreen else 0
         self.screen.blit(self.board_surface, (board_x, board_y))
         
-        self._draw_movement_points()
         self._update_status_surface()
         status_x = self.board_width
         self.screen.blit(self.status_surface, (status_x, 0))
