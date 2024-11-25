@@ -10,6 +10,7 @@ from .units.heavy_cavalry import HeavyCavalry
 from .units.viking import Viking
 from .menu.menu import Menu
 from .units.archer import Archer
+from .units.base_unit import Direction
 from .units.crossbowman import Crossbowman
 
 class Game:
@@ -352,7 +353,8 @@ class Game:
         tactical_data = [
             (f"Movement Points: {self.movement_points.get(unit, 0)}", TEXT_COLOR),
             (f"Formation: {unit.formation}", TEXT_COLOR),
-            (f"Terrain: {unit.terrain}", TEXT_COLOR)
+            (f"Terrain: {unit.terrain}", TEXT_COLOR),
+            (f"Facing: {Direction.to_string(self.selected_unit.facing_direction)}", TEXT_COLOR),
         ]
         
         for text, color in tactical_data:
@@ -370,6 +372,57 @@ class Game:
         self.status_surface.blit(section_title, (30, y_offset + 10))
         
         mod_y = y_offset + 40
+
+        y_offset += 160  
+        pygame.draw.line(self.status_surface, (75, 85, 99), 
+                        (20, y_offset), (PANEL_WIDTH - 20, y_offset))
+        
+        y_offset += 30  
+        center_x = PANEL_WIDTH // 2
+        compass_size = 70  #size is adjustable
+        
+        points = {
+            Direction.NORTH: [(center_x, y_offset), 
+                            (center_x + 15, y_offset + 35), 
+                            (center_x, y_offset + 30),
+                            (center_x - 15, y_offset + 35)],
+            Direction.EAST: [(center_x + 50, y_offset + 50),
+                           (center_x + 15, y_offset + 65),
+                           (center_x + 20, y_offset + 50),
+                           (center_x + 15, y_offset + 35)],
+            Direction.SOUTH: [(center_x, y_offset + 100),
+                            (center_x + 15, y_offset + 65),
+                            (center_x, y_offset + 70),
+                            (center_x - 15, y_offset + 65)],
+            Direction.WEST: [(center_x - 50, y_offset + 50),
+                           (center_x - 15, y_offset + 65),
+                           (center_x - 20, y_offset + 50),
+                           (center_x - 15, y_offset + 35)]
+        }
+        
+        for direction, point_list in points.items():
+            color = (252, 211, 77) if (self.selected_unit and 
+                                     direction == self.selected_unit.facing_direction) else (229, 231, 235)
+            pygame.draw.polygon(self.status_surface, color, point_list)
+
+        pygame.draw.circle(self.status_surface, (55, 65, 81), 
+                         (center_x, y_offset + 50), 3)
+        pygame.draw.circle(self.status_surface, (252, 211, 77), 
+                         (center_x, y_offset + 50), 3, 1)
+        
+        direction_labels = [
+            (Direction.NORTH, "N", center_x, y_offset - 10),
+            (Direction.EAST, "E", center_x + 60, y_offset + 55),
+            (Direction.SOUTH, "S", center_x, y_offset + 110),
+            (Direction.WEST, "W", center_x - 60, y_offset + 55)
+        ]
+
+        for direction, label, x, y in direction_labels:
+            color = (252, 211, 77) if (self.selected_unit and 
+                                    direction == self.selected_unit.facing_direction) else (229, 231, 235)
+            text = self.small_font.render(label, True, color)
+            text_rect = text.get_rect(center=(x, y))
+            self.status_surface.blit(text, text_rect)
         
         formation_mods = unit.formations.get(unit.formation, {})
         
@@ -608,6 +661,16 @@ class Game:
         elif event.key == pygame.K_g: 
             self.toggle_formation()
 
+        elif self.selected_unit and not self.selected_unit.has_changed_direction:
+            if event.key == pygame.K_UP:
+                self.selected_unit.change_direction(Direction.NORTH)
+            elif event.key == pygame.K_RIGHT:
+                self.selected_unit.change_direction(Direction.EAST)
+            elif event.key == pygame.K_DOWN:
+                self.selected_unit.change_direction(Direction.SOUTH)
+            elif event.key == pygame.K_LEFT:
+                self.selected_unit.change_direction(Direction.WEST)
+
     def _end_turn(self):
 
         """
@@ -624,6 +687,8 @@ class Game:
 
         for unit in self._get_player_units(self.current_player):
             unit.has_attacked = False
+            unit.reset_direction_change()
+
         self._draw_board()
 
     def handle_events(self):
