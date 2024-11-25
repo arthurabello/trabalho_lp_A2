@@ -6,8 +6,57 @@ import pygame
 import os
 from math import ceil
 import random
+from enum import IntEnum
 from abc import ABC, abstractmethod
 from .constants import Colors, Paths, UnitDefaults
+
+
+
+class Direction(IntEnum):
+    
+    """
+    Constant directions for unit movement
+    
+    Attributes:
+        NORTH (int): North direction
+        EAST (int): East direction
+        SOUTH (int): South direction
+        WEST (int): West direction
+    """
+
+    NORTH = 0
+    EAST = 1
+    SOUTH = 2
+    WEST = 3
+
+    @classmethod
+    def to_string(cls, direction):
+        return {
+            cls.NORTH: "North",
+            cls.EAST: "East", 
+            cls.SOUTH: "South",
+            cls.WEST: "West"
+        }[direction]
+    
+    @classmethod
+    def get_covered_directions(cls, direction):
+        
+        """
+        Returns a set of directions that are covered by the given direction
+        
+        Args:
+            direction (Direction): The direction to check
+        
+        Returns:
+            set: A set of directions
+        """
+
+        return {
+            cls.NORTH: {cls.NORTH, cls.NORTH_EAST, cls.NORTH_WEST},
+            cls.EAST: {cls.EAST, cls.NORTH_EAST, cls.SOUTH_EAST},
+            cls.SOUTH: {cls.SOUTH, cls.SOUTH_EAST, cls.SOUTH_WEST},
+            cls.WEST: {cls.WEST, cls.NORTH_WEST, cls.SOUTH_WEST}
+        }[direction]
 
 class BaseUnit(ABC):
 
@@ -59,6 +108,8 @@ class BaseUnit(ABC):
         self.terrain = None
         self.general_id = None
         self.has_attacked = False
+        self.facing_direction = Direction.EAST if player == 1 else Direction.WEST
+        self.has_changed_direction = False
 
         self.attack_points = 0
         self.defense_points = 0
@@ -117,6 +168,25 @@ class BaseUnit(ABC):
             (flag_x + pole_width, flag_y + flag_height * 0.6),  
         ]
         pygame.draw.polygon(screen, flag_color, flag_points)
+
+    def change_direction(self, new_direction):
+        """Change unit facing direction once per turn"""
+        if not self.has_changed_direction:
+            self.facing_direction = new_direction
+            self.has_changed_direction = True
+            self._update_sprite()
+            return True
+        return False
+        
+    def reset_direction_change(self):
+        """Reset direction change flag at turn end"""
+        self.has_changed_direction = False
+        
+    def _load_direction_sprite(self, base_sprite_path):
+        """Load direction-specific sprite"""
+        direction_str = Direction.to_string(self.facing_direction).lower()
+        sprite_path = base_sprite_path.replace('.png', f'_{direction_str}.png')
+        return self._load_sprite(sprite_path)
 
     def _init_colors(self):
 
@@ -185,13 +255,29 @@ class BaseUnit(ABC):
     
     @abstractmethod
     def _update_sprite(self):
-
-        """
-        Update the current sprite based on formation.
-        Should be implemented by derived classes.
-        """
-
-        pass
+        """Update sprite based on formation and direction"""
+        if self.formation in self.formation_sprites:
+            base_sprite = self.formation_sprites[self.formation]
+            sprite_path = os.path.dirname(base_sprite) + '/' + os.path.basename(base_sprite)
+            self.sprite = self._load_direction_sprite(sprite_path)
+        else:
+            base_sprite = self.formation_sprites.get("Standard")
+            sprite_path = os.path.dirname(base_sprite) + '/' + os.path.basename(base_sprite)
+            self.sprite = self._load_direction_sprite(sprite_path)
+            
+        self.sprite = self.sprite.convert_alpha()
+        colored_sprite = self.sprite.copy()
+        
+        if self.player == 1:
+            overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
+            overlay.fill((255, 0, 0, 40))
+            colored_sprite.blit(overlay, (0,0))
+        else:
+            overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
+            overlay.fill((0, 0, 255, 40))
+            colored_sprite.blit(overlay, (0,0))
+        
+        self.sprite = colored_sprite
     
     def move(self, new_position):
 
