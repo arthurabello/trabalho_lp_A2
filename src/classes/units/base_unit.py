@@ -170,20 +170,38 @@ class BaseUnit(ABC):
         pygame.draw.polygon(screen, flag_color, flag_points)
 
     def change_direction(self, new_direction):
-        """Change unit facing direction once per turn"""
+        
+        """
+        Change the direction of the unit.
+        
+        Args:
+            new_direction (Direction): New direction to face
+        """
+
         if not self.has_changed_direction:
             self.facing_direction = new_direction
             self.has_changed_direction = True
-            self._update_sprite()
+            self._update_sprite()  
             return True
         return False
         
     def reset_direction_change(self):
-        """Reset direction change flag at turn end"""
+        
+        """
+        Reset the direction change flag.
+        """
+
         self.has_changed_direction = False
         
     def _load_direction_sprite(self, base_sprite_path):
-        """Load direction-specific sprite"""
+        
+        """
+        Load a sprite based on the current facing direction.
+        
+        Args:
+            base_sprite_path (str): Path to the base sprite
+        """
+
         direction_str = Direction.to_string(self.facing_direction).lower()
         sprite_path = base_sprite_path.replace('.png', f'_{direction_str}.png')
         return self._load_sprite(sprite_path)
@@ -255,7 +273,11 @@ class BaseUnit(ABC):
     
     @abstractmethod
     def _update_sprite(self):
-        """Update sprite based on formation and direction"""
+        
+        """
+        Update the sprite based on the current facing direction.
+        """
+
         if self.formation in self.formation_sprites:
             base_sprite = self.formation_sprites[self.formation]
             sprite_path = os.path.dirname(base_sprite) + '/' + os.path.basename(base_sprite)
@@ -297,40 +319,151 @@ class BaseUnit(ABC):
         except Exception as e:
             print(f"Failed to play movement sound in units/base_unit: {str(e)}")
     
+    def _get_attack_direction(self, attacker):
+        
+        """
+        Determines the direction of attack relative to the defender's facing direction.
+
+        This function calculates whether an attack is coming from the front, flank, or rear 
+        based on the relative positions of the attacker and defender, and the defender's 
+        facing direction.
+
+        How it works:
+        1. First calculates relative positions:
+        - rel_row = defender_row - attacker_row
+        - rel_col = defender_col - attacker_col
+        
+        2. For each facing direction (NORTH, SOUTH, EAST, WEST):
+        NORTH facing defender (defender looking up):
+        - If attacker is below (rel_row > 0) = rear attack
+        - If attacker is above (rel_row < 0) = front attack
+        - If on same row = flank attack
+        
+        SOUTH facing defender (defender looking down):
+        - If attacker is above (rel_row < 0) = rear attack
+        - If attacker is below (rel_row > 0) = front attack
+        - If on same row = flank attack
+        
+        EAST facing defender (defender looking right):
+        - If attacker is to left (rel_col < 0) = rear attack
+        - If attacker is to right (rel_col > 0) = front attack
+        - If on same column = flank attack
+        
+        WEST facing defender (defender looking left):
+        - If attacker is to right (rel_col > 0) = rear attack
+        - If attacker is to left (rel_col < 0) = front attack
+        - If on same column = flank attack
+
+        Args:
+            attacker (BaseUnit): The unit performing the attack
+        
+        Returns:
+            str: Attack direction, one of:
+                - "front": Attack is coming from the direction unit is facing
+                - "rear": Attack is coming from behind
+                - "flank": Attack is coming from the sides
+        
+        Examples:
+            If defender at (5,5) facing NORTH:
+            - Attacker at (4,5): Returns "front" (attacker is above)
+            - Attacker at (6,5): Returns "rear" (attacker is below)
+            - Attacker at (5,4): Returns "flank" (attacker is on same row)
+        """
+        
+        att_row, att_col = attacker.position
+        def_row, def_col = self.position
+        
+        rel_row = def_row - att_row 
+        rel_col = def_col - att_col  
+        
+        match self.facing_direction:
+            case Direction.NORTH:
+                if rel_row > 0:
+                    return "rear"
+                elif rel_row < 0:  
+                    return "front"
+                else:  
+                    return "flank"
+                    
+            case Direction.SOUTH:
+                if rel_row < 0: 
+                    return "rear"
+                elif rel_row > 0: 
+                    return "front"
+                else:
+                    return "flank"
+                    
+            case Direction.EAST:
+                if rel_col < 0:  
+                    return "rear"
+                elif rel_col > 0: 
+                    return "front"
+                else:
+                    return "flank"
+                    
+            case Direction.WEST:
+                if rel_col > 0: 
+                    return "rear"
+                elif rel_col < 0: 
+                    return "front"
+                else:
+                    return "flank"
+
     def attack(self, target, board):
         
         """
-        Performs an attack on another unit.
-
-        Args:
-            target: The unit being attacked
-            board: The game board
+        Attack a target unit.
         """
 
         if not self.is_alive or not target.is_alive or target.player == self.player:
             return
 
+        attack_direction = target._get_attack_direction(self)
+
+        direction_mod = {
+            "front": 1.0,
+            "flank": 1.5, #this is changeable
+            "rear": 2.0
+        }[attack_direction]
+
+        crit_chance = {
+            "front": 0.05,
+            "flank": 0.10, #this is changeable
+            "rear": 0.15
+        }[attack_direction]
+
         attack_mod = self._calculate_attack_modifiers()
         defense_mod = target._calculate_defense_modifiers(self, board)
-
-        base_damage = (self.base_attack * attack_mod) * (1 - (target.base_defense * defense_mod / 100))
+        
+        base_damage = (self.base_attack * attack_mod * direction_mod) * (1 - (target.base_defense * defense_mod / 100))
         
         variation = random.uniform(0.8, 1.2)
-        
-        if random.random() < 0.05: #5% chance of critical hit
+        if random.random() < crit_chance:
             variation *= 1.5
             
-        miss_chance = 0.05 #temporary miss chance
-        if random.random() < miss_chance:
-            final_damage = 0
-        else:
-            final_damage = base_damage * variation
+        final_damage = base_damage * variation
             
         target.current_hp = max(0, target.current_hp - final_damage)
+
+        if self.attack_type == "melee" and target.attack_type == "melee":
+            counter_mod = {
+                "front": 0.6,
+                "flank": 0.4, #changeable (counter-damage)
+                "rear": 0.2
+            }[attack_direction]
+            
+            counter_base = (target.base_attack * counter_mod) * (1 - (self.base_defense/100))
+            counter_variation = random.uniform(0.8, 1.2)  
+            
+            counter_damage = counter_base * counter_variation
+                
+            self.current_hp = max(0, self.current_hp - counter_damage)
         
         if target.current_hp <= 0:
             target.is_alive = False
-        
+        if self.current_hp <= 0:
+            self.is_alive = False
+            
         self.has_attacked = True
 
     def can_attack(self, target_position):

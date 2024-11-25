@@ -124,29 +124,42 @@ class Menu:
         
         self.generals = {
             'alexander': {
-                'name': 'Alexander the Great',
-                'bonus': 'NA'
+                'name': 'Alexander the Great of Macedon',
+                'bonus': ['Hypaspist: +10% Defense (Passive)'
+                         'Hypaspist: +20% Strength in Phalanx (When with Alexander)'
+                         'Hypaspist: +27% Strength (When with Alexander)']
             },
             'edward': {
-                'name': 'Edward of Wessex',
-                'bonus': 'NA'
+                'name': 'Edward the Elder of Wessex',
+                'bonus': ['Archers: +5% Strength (Passive)',
+                         'Archers: +25% Strength (When with Edward)'
+                         'Crossbowmen: +5% Strength (Passive)'
+                         'Crossbowmen: +25% Strength (When with Edward)'
+                         'HeavyCavalry: +25% Strength, +5% Defense, +1 movement range (When with Edward)']
             },
             'charlemagne': {
-                'name': 'Charlemagne',
-                'bonus': 'NA'
+                'name': 'Charlemagne of The Franks',
+                'bonus': ['Heavy Cavalry: +5% Defense (Passive)'
+                          'Light Cavalry: +10% Defense (Passive)'
+                         'Heavy Cavalry: +35% Strength, +1 movement range (When with Charlemagne)'
+                         'Light Cavalry: +20% Strength, +1 movement range (When with Charlemagne)']
             },
             'harald': {
-                'name': 'Harald Hardrada',
-                'bonus': 'NA'
+                'name': 'Harald Hardrada of Norway',
+                'bonus': ['Vikings: +12% Defense (Passive)',
+                         'Vikings: +40% Strength (When with Harald)'
+                         'Archers: +15% Strength (When with Harald)']
             },
             'julius': {
-                'name': 'Julius Caesar',
-                'bonus': 'NA'
+                'name': 'Julius Caesar of Rome',
+                'bonus': ['Legions: +8% Defense (Passive)',
+                         'Light Cavalry: +5% Strength (Passive)'
+                         'Legions: +25% Strength, +1 movement range (When with Julius)']
             },
             'leonidas': {
-                'name': 'Leonidas I',
-                'bonus': ['Hoplites: +10% Defense (Passive)', 
-                         'Hoplites: +15% Strength (When with Leonidas)']
+                'name': 'Leonidas I of Sparta',
+                'bonus': ['Hoplites: +20% Defense (Passive)', 
+                         'Hoplites: +25% Strength, +1 movement range (When with Leonidas)']
             }
         }
 
