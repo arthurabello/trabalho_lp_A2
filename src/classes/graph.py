@@ -14,6 +14,8 @@ class BoardGraph:
     Attributes:
         m (int): Number of rows on the board.
         n (int): Number of columns on the board.
+        terrain (Dict[Tuple[int, int], str]): Mapping from positions to terrain types.
+        units (List[dict]): List of units with their positions and statuses.
         graph (defaultdict): Dictionary representing the graph, where each position is connected to its neighbors.
 
     Methods:
@@ -31,18 +33,20 @@ class BoardGraph:
         Args:
             m (int): number of rows on the board.
             n (int): number of columns on the board.
-            terrain (dict): dict that represents each position to its respective terrain
+            terrain (dict): dict that represents each position to its respective terrain.
+            units (List[dict]): List of units with their positions and alive status.
         """
 
         self.m = m  
         self.n = n
-        self.terrain = terrain
-        self.units = units
+
         if not isinstance(m, int) or not isinstance(n, int):
             raise TypeError("Board dimensions must be integers in graph/init")
         if m <= 0 or n <= 0:
             raise ValueError("Board dimensions must be positive in graph/init")
-        
+
+        self.terrain = terrain
+        self.units = units
         self.graph = defaultdict(dict)
         self._build_graph()
     
@@ -55,7 +59,7 @@ class BoardGraph:
             col (int): Column index of the position.
 
         Returns:
-            bool: Returns True if the position is within boundaries, otherwise False.
+            bool: Returns True if the position is within boundaries, False otherwise.
         """
 
         return 0 <= row < self.m and 0 <= col < self.n
@@ -63,7 +67,7 @@ class BoardGraph:
     def _build_graph(self):
 
         """
-        Builds the board graph by linking each position to its neighbors.
+        Constructs the graph linking each board position to its valid neighboring positions with associated weights.
         """
 
         directions = [
@@ -87,9 +91,14 @@ class BoardGraph:
     def _calculate_edge_weight(self, pos1: Tuple[int, int], pos2: Tuple[int, int]):
         """
         Calculates the edge weight between two positions based on the terrain
+        Args:
+            pos1 (Tuple[int, int]): The starting position.
+            pos2 (Tuple[int, int]): The ending position.
+
+        Returns:
+            float: The cost of moving from pos1 to pos2. Infinite if the path is blocked by a living unit.
         """
         
-        # checks if there is a unit in the path
         for unit in self.units:
             if unit.is_alive and unit.position == pos2:
                 return float('infinity')
@@ -124,7 +133,7 @@ class BoardGraph:
     def get_neighbors(self, position: Tuple[int, int]) -> Dict[Tuple[int,int], int]:
 
         """
-        Returns the neighbors of a position on the board.
+        Retrieves the neighbors and their movement costs for a given position.
         
         Args:
             position (Tuple[int, int]): Position on the board (row, column).
