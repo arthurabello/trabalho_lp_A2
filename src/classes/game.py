@@ -12,6 +12,8 @@ from .menu.menu import Menu
 from .units.archer import Archer
 from .units.base_unit import Direction
 from .units.crossbowman import Crossbowman
+from .units.legionary import Legionary
+from .units.hypaspist import Hypaspist
 
 class Game:
     def __init__(self):
@@ -64,7 +66,7 @@ class Game:
                             "#AAA##########################",
                             "#AAA##########################",
                             "#AAA##########################",
-                            "#AAA##########################",
+                            "#AAA##LLLLL###################",
                             "#AAA##PPPPP###################",
                             "#AAA##HHHVV###################",
                             "#AAA##HHHVV###################",
@@ -73,7 +75,7 @@ class Game:
                             "#BBB##HHHVV###################",
                             "#BBB##HHHVV###################",
                             "#BBB##PPPPP###################",
-                            "#BBB##########################",
+                            "#BBB##IIIII###################",
                             "#BBB##########################",
                             "#BBB##########################",
                             "#BBB##########################",
@@ -179,6 +181,8 @@ class Game:
         'V': Viking,
         'A': Archer,
         'B': Crossbowman,
+        'I': Hypaspist,
+        'L': Legionary,
         '#': None
         }
 
@@ -517,7 +521,7 @@ class Game:
                 self._update_unit_selection(self.selected_unit.position)
                 return
 
-        if isinstance(self.selected_unit, (Hoplite, Cavalry, HeavyCavalry, Viking)):
+        if isinstance(self.selected_unit, (Hoplite, Cavalry, HeavyCavalry, Viking, Hypaspist, Legionary)):
             if target_unit and target_unit.player != self.current_player:
                 if self.selected_unit.can_attack(clicked_square) and \
                     not self.selected_unit.has_attacked:
