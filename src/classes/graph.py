@@ -26,7 +26,7 @@ class BoardGraph:
         get_reachable_positions(start_pos, movement_points): Calculates reachable positions from a starting position, considering movement points.
     """
 
-    def __init__(self, m: int, n: int, terrain: Dict, units: List) -> None:
+    def __init__(self, m: int, n: int, terrain: Dict, units: List[Dict]) -> None:
 
         """Initializes the graph with the board dimensions and creates connections between squares.
 
