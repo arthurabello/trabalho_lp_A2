@@ -5,6 +5,30 @@ This module contains constants used for rendering units in the game.
 
 import os
 
+class Formations:
+    formation1 = [
+                    "##############################",
+                    "#AAA##########################",
+                    "#AAA##########################",
+                    "#AAA##########################",
+                    "#AAA##########################",
+                    "#AAA##LLLLL###################",
+                    "#AAA##PPPPP###################",
+                    "#AAA##HHHVV###################",
+                    "#AAA##HHHVV###################",
+                    "#CCC##HHHVV###################",
+                    "#CCC##HHHVV###################",
+                    "#BBB##HHHVV###################",
+                    "#BBB##HHHVV###################",
+                    "#BBB##PPPPP###################",
+                    "#BBB##IIIII###################",
+                    "#BBB##########################",
+                    "#BBB##########################",
+                    "#BBB##########################",
+                    "#BBB##########################",
+                    "##############################"
+                ]
+
 class Maps:
     map1 = '''
             #######x#x#.##..###x##########
@@ -56,12 +80,13 @@ class Colors:
     Colors used for rendering units and board elements.
     """
 
-    PLAYER1_PRIMARY = (255, 0, 0)    #bright red for player 1 main units
-    PLAYER2_PRIMARY = (0, 0, 255)    #bright blue for player 2 main units
-    PLAYER1_SECONDARY = (200, 0, 0)  #darker red for player 1 secondary units
-    PLAYER2_SECONDARY = (0, 0, 200)  #darker blue for player 2 secondary units
-    BORDER = (255, 255, 255)         #white borders
-    TEXT = (0, 0, 0)                 #black text
+    PLAYER1_PRIMARY = (255, 0, 0)        # bright red for player 1 main units
+    PLAYER2_PRIMARY = (0, 0, 255)        # bright blue for player 2 main units
+    PLAYER1_SECONDARY = (200, 0, 0)      # darker red for player 1 secondary units
+    PLAYER2_SECONDARY = (0, 0, 200)      # darker blue for player 2 secondary units
+    BORDER = (255, 255, 255)             # white borders
+    TEXT = (0, 0, 0)                     # black text
+    COLOR_HIGHLIGHT = (255, 255, 0, 180) # for reachable positions
 
 class Paths:
 
@@ -71,9 +96,16 @@ class Paths:
     
     ASSETS_DIR = os.path.join('..', 'assets')
     SPRITES_DIR = os.path.join(ASSETS_DIR, 'sprites')
+    
+    TERRAIN_DIR = os.path.join(SPRITES_DIR, 'terrains')
+    PLAIN_SPRITE = os.path.join(TERRAIN_DIR, 'plains.png')
+    FOREST_SPRITE = os.path.join(TERRAIN_DIR, 'forest.png')
+    MOUNTAIN_SPRITE = os.path.join(TERRAIN_DIR, 'mountain.png')
+
     SOUNDS_DIR = os.path.join(ASSETS_DIR, 'sounds')
     MOVE_SOUND = os.path.join(SOUNDS_DIR, 'movement.wav')
     ATTACK_SOUND = os.path.join(SOUNDS_DIR, 'attack.wav')
+    
     ATTACKABLE_SQUARE = os.path.join(SPRITES_DIR, 'attackable_square.png')
     DANGEROUS_SQUARE = os.path.join(SPRITES_DIR, 'dangerous_square.png')
 

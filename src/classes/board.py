@@ -4,7 +4,7 @@ This module represents the game board, responsible for managing selectable squar
 
 import pygame
 from .graph import BoardGraph
-from .units.constants import Paths
+from .units.constants import Paths, Maps, Colors
 
 class Board:
     
@@ -18,63 +18,23 @@ class Board:
         initial_width (int): Initial width of the game window.
         initial_height (int): Initial height of the game window.
         selected_square (tuple or None): The currently selected square on the board, or None if no square is selected.
+        terrain (dict): Dictionary mapping board coordinates to terrain types.
+        units (list): List of game units on the board.
         graph (BoardGraph): Instance of the BoardGraph class to manage board connectivity.
         reachable_positions (set): Set of squares that are reachable from the selected square.
+        sprites (dict): Terrain sprite dictionary.
+        dangerous_squares (set): Squares within enemy attack range.
+        attackable_squares (set): Squares containing attackable enemy units.
 
     Methods:
+        _is_valid_position(row, col): Checks if a position is within the board boundaries.
+        update_attack_overlays(selected_unit, all_units): Updates the dangerous and attackable squares
         get_square_from_click(mouse_pos, screen): Determines which square was clicked based on mouse position.
         select_square(square, movement_points): Selects a square and calculates reachable positions based on movement points.
+        initialize_terrain(terrain_map): Initializes the terrain map from a provided map string.
         draw(screen, selected_square): Draws the board, with highlights for reachable and selected squares.
     """
 
-    COLOR_LIGHT_GREEN = (144, 238, 144)
-    COLOR_DARK_GREEN = (0, 100, 0)
-    COLOR_RED = (255, 0, 0)
-    COLOR_GRAY = (139, 137, 137)
-    COLOR_HIGHLIGHT = (255, 255, 0, 180)
-    map1 = '''
-            #######x#x#.##..###x##########
-            #.x#xx#.##x##x#x.#x##x##x.#.#.
-            ####..xx####.#######.####x##..
-            ###.##x######.xx####x.###x.##.
-            #.############.x############.#
-            ###.#.x##.#.#####x##.####xxxx#
-            .###x.#.#######.##.##x#######x
-            ######xx#.#x.######x###.##.xx#
-            ######.####..#####.#..##.##x.#
-            x###x#x#####.###x#..#####.##x.
-            x#####x###.#########.x#x.#####
-            .x#########x#x#.########.##x.x
-            x###x##.###.x##x##xx#####xx###
-            ######x#x###.#####x#####x#x###
-            #x#.####.##x##.##.##x####.##.#
-            xx#x##x##x#x##x#.###x#.x####.#
-            ###..##xx.###.##x###########..
-            #xx#x.#.##.#####.###x########.
-            #x#####.####x.#xx##x.##.#.####
-            #.##.########.#####..#####x##x'''
-    
-    map2 = '''
-            .#.x#..##..#x###.#x####x.#####
-            .#############x#x##.######.##.
-            ####.#####x#x#######.##..#...x
-            ###.####x#####.xx##x##.#x##x##
-            #x###xx#######x####x##x#######
-            ##.#######.##########.####xxx#
-            ##.#############.#########x##x
-            x#x##.#.#####.########xxx#####
-            #######xx#.###.x#.##x#.#####.#
-            ####xx#.x####.x#.##.#####..###
-            ##.#####..x###.x##x####.x###.x
-            ######x###x######x#.##xx######
-            ###x.###x#####x.#######.#.###.
-            .#.##x###xx.#.xx.#..#####xx##.
-            x#xx#.##.##.x#xx.####.xx##.x##
-            #.############.x#############.
-            ##xx##.######x#x##.x#####x##.#
-            #.#x.#####...#..###.########x#
-            #x##x#.###x####.#########.###.
-            #xx#..###x.#x###x#x.###x###x##'''
 
     def __init__(self, m, n, initial_width, initial_height, units, map_choice=None) -> None:
 
@@ -86,13 +46,15 @@ class Board:
             n (int): Number of columns on the board
             initial_width (int): Initial width of the game window
             initial_height (int): Initial height of the game window
+            units (list): List of game units on the board.
+            map_choice (int, optional): Select predefined terrain map. 
         """
         if map_choice == 1:
-            self.terrain_map = self.map1
+            self.terrain_map = Maps.map1
         elif map_choice == 2:
-            self.terrain_map = self.map2
+            self.terrain_map = Maps.map2
         else:
-            self.terrain_map = self.map1 # by default
+            self.terrain_map = Maps.map1 # by default
             
         self.m = m
         self.n = n
@@ -110,12 +72,13 @@ class Board:
         self.reachable_positions = set()
 
         self.sprites = {
-            "plains": pygame.image.load("../assets/sprites/terrains/plains.png"),
-            "mountain": pygame.image.load("../assets/sprites/terrains/mountain.png"),
-            "forest": pygame.image.load("../assets/sprites/terrains/forest.png"),
+            "plains": pygame.image.load(Paths.PLAIN_SPRITE).convert_alpha(),
+            "mountain": pygame.image.load(Paths.MOUNTAIN_SPRITE).convert_alpha(),
+            "forest": pygame.image.load(Paths.FOREST_SPRITE).convert_alpha(),
             "attackable": pygame.image.load(Paths.ATTACKABLE_SQUARE).convert_alpha(),
             "dangerous": pygame.image.load(Paths.DANGEROUS_SQUARE).convert_alpha()
         }
+
         self.dangerous_squares = set()
         self.attackable_squares = set()
 
@@ -139,6 +102,10 @@ class Board:
         and enemy positions. Only marks squares as dangerous if they are both:
         - Within the selected unit's movement range
         - Within an enemy unit's attack range
+
+        Args:
+            selected_unit (Unit): Currently selected game unit.
+            all_units (list): List of all units in the game.
         """
 
         self.dangerous_squares.clear()
@@ -181,6 +148,9 @@ class Board:
 
         Returns:
             tuple: The (row, column) of the clicked square
+
+        Raises:
+            ValueError: If mouse position is improperly formatted.
         """
 
         x, y = mouse_pos
@@ -216,6 +186,9 @@ class Board:
         Args:
             square (tuple): The (row, column) position of the selected square
             movement_points (int): Number of movement points available for calculating reachable positions
+
+        Raises:
+            ValueError: If movement points are negative or square is invalid.
         """
 
         if movement_points < 0:
@@ -252,6 +225,9 @@ class Board:
             dict: A dictionary representing the terrain map, where:
                 - Keys are tuples (row_index, col_index) indicating the row and column of each cell.
                 - Values are strings representing the terrain type at each coordinate ("plains", "mountains" and "forests").
+        
+        Raises:
+            ValueError: If an unexpected terrain character is encountered.
         """
 
         terrain = {}
@@ -279,6 +255,9 @@ class Board:
         Args:
             screen (pygame.Surface): Surface to draw the board on
             selected_square (tuple or None): Currently selected square coordinates
+
+        Raises:
+            ValueError: If screen surface or dimensions are invalid.
         """
         
         if not screen:
@@ -310,16 +289,11 @@ class Board:
                     forest_sprite_scaled = pygame.transform.scale(forest_sprite, (square_width, square_height))
                     screen.blit(forest_sprite_scaled, (column * square_width, row * square_height))
 
-
                 if (row, column) in self.reachable_positions:
                     highlight_surface = pygame.Surface((square_width, square_height), pygame.SRCALPHA)
-                    pygame.draw.rect(highlight_surface, self.COLOR_HIGHLIGHT, (0, 0, square_width, square_height))
+                    pygame.draw.rect(highlight_surface, Colors.COLOR_HIGHLIGHT, (0, 0, square_width, square_height))
                     screen.blit(highlight_surface, (column * square_width, row * square_height))
-
-                if selected_square and (row, column) == selected_square:
-                    pygame.draw.rect(screen, self.COLOR_RED, 
-                                (column * square_width, row * square_height, square_width, square_height), 3)
-                    
+       
                 square_pos = (row, column)
 
                 if square_pos in self.dangerous_squares:
