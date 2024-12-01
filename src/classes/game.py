@@ -4,16 +4,17 @@ This module represents the main game structure, responsible for initializing, ha
 
 import pygame
 from .board import Board
-from .units.hoplite import Hoplite
-from .units.cavalry import Cavalry
-from .units.heavy_cavalry import HeavyCavalry
-from .units.viking import Viking
+from .units.units import Hoplite, Cavalry, Viking, Archer, Crossbowman, Legionary, Hypaspist, HeavyCavalry
+
+#from .units.cavalry import Cavalry
+#from .units.heavy_cavalry import HeavyCavalry
+#from .units.viking import Viking
 from .menu.menu import Menu
-from .units.archer import Archer
+#from .units.archer import Archer
 from .units.base_unit import Direction
-from .units.crossbowman import Crossbowman
-from .units.legionary import Legionary
-from .units.hypaspist import Hypaspist
+#from .units.crossbowman import Crossbowman
+#from .units.legionary import Legionary
+#from .units.hypaspist import Hypaspist
 
 class Game:
     def __init__(self):
