@@ -7,7 +7,7 @@ import os
 from math import ceil
 import random
 from enum import IntEnum
-from abc import ABC, abstractmethod
+from abc import ABC
 from .constants import Colors, Paths, UnitDefaults
 
 
@@ -121,6 +121,7 @@ class BaseUnit(ABC):
                 "deffense_modifier": 1.0, 
             }
         }
+        self.formation_sprites = None
 
         self.player = player
         self.movement_range = movement_range
@@ -133,6 +134,7 @@ class BaseUnit(ABC):
         self.base_defense = 0   
         self.base_missile_defense = 0  
         self.attack_type = None  #"melee" or "ranged", set by subclasses
+        self.attack_range = 0
         self._init_systems()
         
     
@@ -236,8 +238,8 @@ class BaseUnit(ABC):
             if not pygame.mixer.get_init():
                 pygame.mixer.init()
                 
-            self.move_sound = pygame.mixer.Sound(Paths.MOVE_SOUND)
-            self.attack_sound = pygame.mixer.Sound(Paths.ATTACK_SOUND)
+            self.move_sound = pygame.mixer.Sound(Paths.DEF_MOVE_SOUND)
+            self.attack_sound = pygame.mixer.Sound(Paths.DEF_ATTACK_SOUND)
             self.move_sound.set_volume(UnitDefaults.MOVE_SOUND_VOLUME)
             self.attack_sound.set_volume(UnitDefaults.ATTACK_SOUND_VOLUME)
             
@@ -271,32 +273,38 @@ class BaseUnit(ABC):
             print(f"Error loading sprite {sprite_path}: {str(e)}")
             return None
     
-    @abstractmethod
+    # @abstractmethod
     def _update_sprite(self):
         
         """
         Update the sprite based on the current facing direction.
         """
 
-        if self.formation in self.formation_sprites:
-            base_sprite = self.formation_sprites[self.formation]
-            sprite_path = os.path.dirname(base_sprite) + '/' + os.path.basename(base_sprite)
-            self.sprite = self._load_direction_sprite(sprite_path)
-        else:
-            base_sprite = self.formation_sprites.get("Standard")
-            sprite_path = os.path.dirname(base_sprite) + '/' + os.path.basename(base_sprite)
-            self.sprite = self._load_direction_sprite(sprite_path)
+        #if self.formation in self.formation_sprites:
+        #    base_sprite = self.formation_sprites[self.formation]
+        #    sprite_path = os.path.dirname(base_sprite) + '/' + os.path.basename(base_sprite)
+        #    self.sprite = self._load_direction_sprite(sprite_path)
+        #else:
+        #    base_sprite = self.formation_sprites.get("Standard")
+        #    sprite_path = os.path.dirname(base_sprite) + '/' + os.path.basename(base_sprite)
+        #    self.sprite = self._load_direction_sprite(sprite_path)
             
+        if self.formation in self.formation_sprites:
+            self.sprite = self.formation_sprites[self.formation]
+        else:
+            self.sprite = self.formation_sprites.get("Standard")
+        
         self.sprite = self.sprite.convert_alpha()
         colored_sprite = self.sprite.copy()
-        
+
         if self.player == 1:
             overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
-            overlay.fill((255, 0, 0, 40))
+            overlay.fill(Colors.PLAYER1_PRIMARY_HOVER)  
             colored_sprite.blit(overlay, (0,0))
         else:
+            colored_sprite = pygame.transform.flip(colored_sprite, True, False)
             overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
-            overlay.fill((0, 0, 255, 40))
+            overlay.fill(Colors.PLAYER2_PRIMARY_HOVER)
             colored_sprite.blit(overlay, (0,0))
         
         self.sprite = colored_sprite
@@ -314,10 +322,11 @@ class BaseUnit(ABC):
             return
 
         self.position = new_position
+        
         try:
             self.move_sound.play()
         except Exception as e:
-            print(f"Failed to play movement sound in units/base_unit: {str(e)}")
+            print(f"Failed to play movement sound in units/{__class__.__name__}: {str(e)}")
     
     def _get_attack_direction(self, attacker):
         
@@ -466,6 +475,11 @@ class BaseUnit(ABC):
             
         self.has_attacked = True
 
+        try:
+            self.attack_sound.play()
+        except Exception as e:
+            print(f"Failed to play attack sound in units/{__class__.__name__}: {str(e)}")
+
     def can_attack(self, target_position):
 
         """
@@ -483,7 +497,9 @@ class BaseUnit(ABC):
             
         row, col = self.position
         target_row, target_col = target_position
-        return abs(row - target_row) <= self.movement_range and abs(col - target_col) <= self.movement_range
+        
+        distance = abs(row - target_row) + abs(col - target_col)
+        return distance <= self.attack_range
     
     def change_formation(self, formation_name):
 
@@ -577,8 +593,8 @@ class BaseUnit(ABC):
             if board.selected_square == self.position:
                 self.draw_health_bar(screen, x, y, unit_width, unit_height)
 
-            pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
-            pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
+            # pygame.draw.rect(screen, self.primary_color, (x, y, unit_width, unit_height))
+            # pygame.draw.rect(screen, Colors.BORDER, (x, y, unit_width, unit_height), 2)
 
             if hasattr(self, 'sprite') and self.sprite is not None:
                 try:
@@ -594,22 +610,37 @@ class BaseUnit(ABC):
             print(f"Error in draw method: {str(e)}") 
             raise RuntimeError(f"Failed to draw unit in units/base_unit: {str(e)}")
 
-    @abstractmethod
-    def can_move_to(self, position, board, *args, **kwargs):
+    # @abstractmethod
+    def can_move_to(self, position, board, all_units):
 
         """
-        Abstract method that must be implemented by derived classes.
-        Determines if the unit can move to a given position.
+        Check if the Hoplite can move to a given position.
         
         Args:
             position (tuple): Target position to check
             board (Board): Game board instance
-            *args, **kwargs: Additional arguments specific to unit types
+            all_units (list): List of all units on the board
             
         Returns:
             bool: True if the move is valid, False otherwise
         """
-        pass
+
+        if not self.is_alive:
+            return False
+
+        reachable = board.graph.get_reachable_positions(
+            self.position, 
+            self.movement_range
+        )
+        if position not in reachable:
+            return False
+
+        for unit in all_units:
+            if (unit != self and unit.is_alive and 
+                unit.position == position):
+                return False
+
+        return True
         
     @property
     def remaining_units(self):
