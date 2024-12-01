@@ -80,8 +80,11 @@ class Colors:
     Colors used for rendering units and board elements.
     """
 
-    PLAYER1_PRIMARY = (255, 0, 0)        # bright red for player 1 main units
-    PLAYER2_PRIMARY = (0, 0, 255)        # bright blue for player 2 main units
+    PLAYER1_PRIMARY = (255, 0, 0)            # bright red for player 1 main units
+    PLAYER2_PRIMARY = (0, 0, 255)            # bright blue for player 2 main units
+    PLAYER1_PRIMARY_HOVER = (255, 0, 0, 40)  # red with opacity       
+    PLAYER2_PRIMARY_HOVER = (0, 0, 255, 40)  # blue with opacity
+            
     PLAYER1_SECONDARY = (200, 0, 0)      # darker red for player 1 secondary units
     PLAYER2_SECONDARY = (0, 0, 200)      # darker blue for player 2 secondary units
     BORDER = (255, 255, 255)             # white borders
@@ -103,8 +106,10 @@ class Paths:
     MOUNTAIN_SPRITE = os.path.join(TERRAIN_DIR, 'mountain.png')
 
     SOUNDS_DIR = os.path.join(ASSETS_DIR, 'sounds')
-    MOVE_SOUND = os.path.join(SOUNDS_DIR, 'movement.wav')
-    ATTACK_SOUND = os.path.join(SOUNDS_DIR, 'attack.wav')
+    MOVE_SOUND_DIR = os.path.join(SOUNDS_DIR, 'movement')
+    ATTACK_SOUND_DIR = os.path.join(SOUNDS_DIR, 'attack')
+    DEF_MOVE_SOUND = os.path.join(MOVE_SOUND_DIR, 'movement.wav')
+    DEF_ATTACK_SOUND = os.path.join(ATTACK_SOUND_DIR, 'attack.wav')
     
     ATTACKABLE_SQUARE = os.path.join(SPRITES_DIR, 'attackable_square.png')
     DANGEROUS_SQUARE = os.path.join(SPRITES_DIR, 'dangerous_square.png')
