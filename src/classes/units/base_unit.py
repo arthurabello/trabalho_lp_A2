@@ -136,7 +136,7 @@ class BaseUnit(ABC):
         self.attack_type = None  #"melee" or "ranged", set by subclasses
         self.attack_range = 0
         self._init_systems()
-        
+    
     
     def _draw_general_flag(self, screen, x, y, unit_width, unit_height):
 
@@ -273,42 +273,43 @@ class BaseUnit(ABC):
             print(f"Error loading sprite {sprite_path}: {str(e)}")
             return None
     
-    # @abstractmethod
     def _update_sprite(self):
         
         """
-        Update the sprite based on the current facing direction.
+        Update the sprite based on the current facing direction and formation.
         """
 
-        #if self.formation in self.formation_sprites:
-        #    base_sprite = self.formation_sprites[self.formation]
-        #    sprite_path = os.path.dirname(base_sprite) + '/' + os.path.basename(base_sprite)
-        #    self.sprite = self._load_direction_sprite(sprite_path)
-        #else:
-        #    base_sprite = self.formation_sprites.get("Standard")
-        #    sprite_path = os.path.dirname(base_sprite) + '/' + os.path.basename(base_sprite)
-        #    self.sprite = self._load_direction_sprite(sprite_path)
-            
-        if self.formation in self.formation_sprites:
-            self.sprite = self.formation_sprites[self.formation]
-        else:
-            self.sprite = self.formation_sprites.get("Standard")
+        unit_type = self.__class__.__name__.lower()
+        direction_str = Direction.to_string(self.facing_direction).lower()
+        formation_name = self.formation.lower().replace(" ", "_")
         
-        self.sprite = self.sprite.convert_alpha()
-        colored_sprite = self.sprite.copy()
+        current_file_path = os.path.dirname(os.path.abspath(__file__))
+        assets_path = os.path.normpath(os.path.join(current_file_path, "..", "..", "..", "assets"))
+        
+        sprite_path = os.path.join(
+            assets_path,
+            "sprites",
+            "units",
+            unit_type,
+            f"{unit_type}_{formation_name}_{direction_str.lower()}.png"
+        )
+        
+        sprite = self._load_sprite(sprite_path)
+        
+        if sprite:
+            self.sprite = sprite
+            self.sprite = self.sprite.convert_alpha()
+            colored_sprite = self.sprite.copy()
 
-        if self.player == 1:
             overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
-            overlay.fill(Colors.PLAYER1_PRIMARY_HOVER)  
+            if self.player == 1:
+                overlay.fill(Colors.PLAYER1_PRIMARY_HOVER)
+            else:
+                overlay.fill(Colors.PLAYER2_PRIMARY_HOVER)
             colored_sprite.blit(overlay, (0,0))
-        else:
-            colored_sprite = pygame.transform.flip(colored_sprite, True, False)
-            overlay = pygame.Surface(self.sprite.get_size()).convert_alpha()
-            overlay.fill(Colors.PLAYER2_PRIMARY_HOVER)
-            colored_sprite.blit(overlay, (0,0))
-        
-        self.sprite = colored_sprite
-    
+            
+            self.sprite = colored_sprite
+
     def move(self, new_position):
 
         """

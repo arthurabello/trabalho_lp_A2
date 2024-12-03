@@ -135,14 +135,14 @@ class Menu:
                          'Archers: +25% Strength (When with Edward)'
                          'Crossbowmen: +5% Strength (Passive)'
                          'Crossbowmen: +25% Strength (When with Edward)'
-                         'HeavyCavalry: +25% Strength, +5% Defense, +1 movement range (When with Edward)']
+                         'Heavy Cavalry: +25% Strength, +5% Defense, +1 movement range (When with Edward)']
             },
             'charlemagne': {
                 'name': 'Charlemagne of The Franks',
                 'bonus': ['Heavy Cavalry: +5% Defense (Passive)'
-                          'Light Cavalry: +10% Defense (Passive)'
+                          'Light Horsemen: +10% Defense (Passive)'
                          'Heavy Cavalry: +35% Strength, +1 movement range (When with Charlemagne)'
-                         'Light Cavalry: +20% Strength, +1 movement range (When with Charlemagne)']
+                         'Light Horsemen: +20% Strength, +1 movement range (When with Charlemagne)']
             },
             'harald': {
                 'name': 'Harald Hardrada of Norway',
@@ -153,7 +153,7 @@ class Menu:
             'julius': {
                 'name': 'Julius Caesar of Rome',
                 'bonus': ['Legions: +8% Defense (Passive)',
-                         'Light Cavalry: +5% Strength (Passive)'
+                         'Light Horsemen: +5% Strength (Passive)'
                          'Legions: +25% Strength, +1 movement range (When with Julius)']
             },
             'leonidas': {
