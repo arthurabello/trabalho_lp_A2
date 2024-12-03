@@ -5,11 +5,11 @@ This module represents the main game structure, responsible for initializing, ha
 import pygame
 from .board import Board
 from .units.units import Hoplite, LightHorsemen, Viking, Archer, Crossbowman, Legionary, Hypaspist, HeavyCavalry
-from .menu.menu import Menu
+from .units.constants import Formations
 from .units.base_unit import Direction
 
 class Game:
-    def __init__(self):
+    def __init__(self, player1_general=None, player2_general=None, map_choice=1):
         try:
             pygame.init()
             if pygame.get_error():
@@ -23,6 +23,8 @@ class Game:
         if self.m <= 0 or self.n <= 0:
             raise ValueError("Invalid board dimensions in game/init")
         
+        self.state = "game"
+
         display_info = pygame.display.Info()
         self.max_screen_width = display_info.current_w
         self.max_screen_height = display_info.current_h
@@ -48,40 +50,31 @@ class Game:
             raise RuntimeError(f"Failed to initialize display in game/init: {str(e)}")
 
         pygame.display.set_caption("Warbound")
+
+        self.player1_general = player1_general
+        self.player2_general = player2_general
+
+        self.player1_formation = getattr(Formations, player1_general.lower(), Formations.default) if player1_general else Formations.default
+        self.player2_formation = getattr(Formations, player2_general.lower(), Formations.default) if player2_general else Formations.default
         
         self.status_surface = pygame.Surface((300, self.screen_height))
         self.running = True
-        self.board = Board(self.m, self.n, self.board_width, self.board_height, [])
 
-        self.player_formation = [
-                            "##############################",
-                            "#AAA##########################",
-                            "#AAA##########################",
-                            "#AAA##########################",
-                            "#AAA##########################",
-                            "#AAA##LLLLL###################",
-                            "#AAA##PPPPP###################",
-                            "#AAA##HHHVV###################",
-                            "#AAA##HHHVV###################",
-                            "#CCC##HHHVV###################",
-                            "#CCC##HHHVV###################",
-                            "#BBB##HHHVV###################",
-                            "#BBB##HHHVV###################",
-                            "#BBB##PPPPP###################",
-                            "#BBB##IIIII###################",
-                            "#BBB##########################",
-                            "#BBB##########################",
-                            "#BBB##########################",
-                            "#BBB##########################",
-                            "##############################"
-                        ]
+        self.map_choice = map_choice
+        self.board = Board(self.m, self.n, self.board_width, self.board_height, [], map_choice=self.map_choice)
         
-        self.units1 = self._create_units(1, self.player_formation)
-        self.units2 = self._create_units(2, self.player_formation)
-        self.units1[0].has_general = True  
+        self.units1 = self._create_units(1, self.player1_formation)
+        self.units2 = self._create_units(2, self.player2_formation)
+        
+        self.units1[0].has_general = True
+        self.units1[0].general_id = self.player1_general
         self.units2[0].has_general = True
-        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
+        self.units2[0].general_id = self.player2_general
+
+        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units(), map_choice=self.map_choice)
         self.board_surface = pygame.Surface((self.board_width, self.board_height))
+        
+        self.running = True
         self.selected_square = None
         self.selected_unit = None
         self.current_player = 1
@@ -100,8 +93,7 @@ class Game:
         self.small_font = pygame.font.Font(None, 36) #UI elements
         self.mini_font = pygame.font.Font(None, 24)  #status elements
         self._draw_board()
-        self.menu = Menu(self.screen)
-        self.state = "menu"
+
 
     def toggle_fullscreen(self):
         self.is_fullscreen = not self.is_fullscreen
@@ -131,7 +123,7 @@ class Game:
         
         self.board_surface = pygame.Surface((self.board_width, self.board_height))
         self.status_surface = pygame.Surface((300, self.screen_height))
-        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
+        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units(), map_choice=self.map_choice)
     
     def _reset_movement_points(self):
 
@@ -700,26 +692,18 @@ class Game:
             elif event.type == pygame.VIDEORESIZE:
                 if not self.is_fullscreen:
                     self.screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                    if self.state == "menu":
-                        self.menu.handle_resize()
-                    else:
-                        self.toggle_fullscreen()  
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_F11:  
                     self.toggle_fullscreen()
-                    if self.state == "menu":
-                        self.menu.handle_resize()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
                 elif event.key == pygame.K_r and self.game_over:
                     self._restart_game()
                 elif event.key == pygame.K_m and self.game_over:
-                    self.state = "menu"
-                    self._restart_game()
-                    self.menu = Menu(self.screen)
-                elif self.state == "game" and not self.game_over:
+                    self.running = False 
+                else:
                     self._handle_key_press(event)
-            elif self.state == "game" and not self.game_over:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    self._handle_mouse_click(event, pygame.mouse.get_pos())
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self._handle_mouse_click(event, pygame.mouse.get_pos())
 
 
     
@@ -816,37 +800,13 @@ class Game:
 
     def run(self):
         """
-        R u n s.
+        Runs the game.
         """
         try:
             while self.running:
-                if self.state == "menu":
-                    self.menu.draw()
-                    new_state = self.menu.handle_events()
-
-                    if new_state.startswith("game_map"):
-                        self.state = "game"
-                        map_choice = 1 if new_state == "game_map1" else 2
-                        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units(), map_choice=map_choice)
-                        self._restart_game()
-
-                    elif new_state == "game":
-                        self.state = "game"
-                        if not self.menu.sound_enabled:
-                            for unit in self._get_all_units():
-                                unit.move_sound.set_volume(0)
-                                unit.attack_sound.set_volume(0)
-                        else:
-                            for unit in self._get_all_units():
-                                unit.move_sound.set_volume(self.menu.sound_volume)
-                                unit.attack_sound.set_volume(self.menu.sound_volume)
-                    elif new_state == "quit":
-                        self.running = False
-
-                elif self.state == "game":
-                    self.handle_events()
-                    self.update()
-                    self.render()
+                self.handle_events()
+                self.update()
+                self.render()
 
         except Exception as e:
             print(f"Game crashed: {str(e)}")
@@ -901,11 +861,11 @@ class Game:
         Resets the game state for a new game
         """
         self.running = True
-        self.units1 = self._create_units(1, self.player_formation)
-        self.units2 = self._create_units(2, self.player_formation)
+        self.units1 = self._create_units(1, self.player1_formation)
+        self.units2 = self._create_units(2, self.player2_formation)
         self.units1[0].has_general = True
         self.units2[0].has_general = True
-        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units())
+        self.board = Board(self.m, self.n, self.board_width, self.board_height, self._get_all_units(), map_choice=self.map_choice)
         self.selected_square = None
         self.selected_unit = None
         self.current_player = 1
