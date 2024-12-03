@@ -251,6 +251,70 @@ class HeavyCavalry(BaseUnit):
         
         self._update_sprite()
 
+class MenAtArms(BaseUnit):
+
+    """
+    Represents a Men-at-Arms piece on the game board.
+    
+    Attributes:
+        Inherits all attributes from BaseUnit
+        attack_bonus (int): Additional attack strength for this warrior
+    """
+    
+    def __init__(self, initial_position, player, formation="Standard"):
+
+        """
+        Initialize a new Men-at-Arms unit.
+        
+        Args:
+            initial_position (tuple): Starting position (row, col)
+            player (int): Player number (1 or 2)
+        """
+
+        super().__init__(
+            initial_position=initial_position,
+            player=player,
+            movement_range=2,
+            formation=formation
+        )
+        self.attack_range=1
+        self.attack_type = "melee"
+        self.base_attack = 60
+        self.base_defense = 15
+        self.base_missile_defense = 22 #sus
+        
+        self.formations = {
+            "Standard": {
+                "attack_modifier": 1.0, #sus
+                "defense_modifier": 1.0
+            },
+            "Shield Wall": {
+                "attack_modifier": 0.9, #sus
+                "defense_modifier": 1.8
+            },
+             "V": {
+                "attack_modifier": 1.5, #sus
+                "defense_modifier": 0.6
+            },
+            "Turtle": {
+                "attack_modifier": 0.5, #sus
+                "defense_modifier": 1.5
+            },
+            "Spread": {
+                "attack_modifier": 0.9, #sus
+                "defense_modifier": 1.2
+            }
+        }
+
+        self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'menatarms_movement.wav'))
+        self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'menatarms_attack.wav'))
+
+        self.attack_points = self.base_attack
+        self.defense_points = self.base_defense
+        self.max_hp = 100
+        self.current_hp = self.max_hp
+
+        self._update_sprite()
 
 class Legionary(BaseUnit):
 
