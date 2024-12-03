@@ -20,6 +20,11 @@ class Button:
         self.color_current = self.color_default
 
     def draw(self, screen):
+        
+        """
+        Draws the button on the screen
+        """
+
         pygame.draw.rect(screen, self.color_current, self.rect, border_radius=self.border_radius)
         pygame.draw.rect(screen, self.color_text, self.rect, 2, border_radius=self.border_radius)
         
@@ -28,6 +33,11 @@ class Button:
         screen.blit(text_surface, text_rect)
 
     def handle_event(self, event):
+        
+        """
+        Handles events for the button
+        """
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.callback()
@@ -50,6 +60,11 @@ class ToggleButton:
         }
 
     def draw(self, screen):
+        
+        """
+        Draws the toggle button on the screen
+        """
+
         color = self.colors['enabled'] if self.state else self.colors['disabled']
         pygame.draw.rect(screen, color, self.rect, border_radius=8)
         
@@ -59,6 +74,11 @@ class ToggleButton:
         screen.blit(text_surface, text_rect)
 
     def handle_event(self, event):
+        
+        """
+        Handles events for the toggle button
+        """
+
         if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             self.state = not self.state
             self.callback(self.state)
@@ -79,6 +99,11 @@ class Slider:
         }
 
     def draw(self, screen):
+        
+        """
+        Draws the slider on the screen
+        """
+
         pygame.draw.rect(screen, self.colors['background'], self.rect, border_radius=4)
         
         fill_rect = self.rect.copy()
@@ -90,6 +115,11 @@ class Slider:
         pygame.draw.rect(screen, self.colors['handle'], handle_rect, border_radius=5)
 
     def handle_event(self, event):
+        
+        """
+        Handles events for the slider
+        """
+
         if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             self.dragging = True
         elif event.type == pygame.MOUSEBUTTONUP:
@@ -125,182 +155,308 @@ class Menu:
         self.generals = {
             'alexander': {
                 'name': 'Alexander the Great of Macedon',
-                'bonus': ['Hypaspist: +10% Defense (Passive)'
-                         'Hypaspist: +20% Strength in Phalanx (When with Alexander)'
-                         'Hypaspist: +27% Strength (When with Alexander)']
+                'bonus': [
+                    'Hypaspists: +10% Defense (Passive)',
+                    'Hypaspists: +20% Strength in Phalanx',
+                    'Hypaspists: +30% Strength w/Alexander'
+                ]
             },
             'edward': {
                 'name': 'Edward the Elder of Wessex',
-                'bonus': ['Archers: +5% Strength (Passive)',
-                         'Archers: +25% Strength (When with Edward)'
-                         'Crossbowmen: +5% Strength (Passive)'
-                         'Crossbowmen: +25% Strength (When with Edward)'
-                         'Heavy Cavalry: +25% Strength, +5% Defense, +1 movement range (When with Edward)']
+                'bonus': [
+                    'Archers: +5% Strength (Passive)',
+                    'Man-at-arms: +25% Strength w/Edward',
+                    'Archers: +25% Str, +5% Def, +1 Move w/Edward'
+                ]
             },
             'charlemagne': {
                 'name': 'Charlemagne of The Franks',
-                'bonus': ['Heavy Cavalry: +5% Defense (Passive)'
-                          'Light Horsemen: +10% Defense (Passive)'
-                         'Heavy Cavalry: +35% Strength, +1 movement range (When with Charlemagne)'
-                         'Light Horsemen: +20% Strength, +1 movement range (When with Charlemagne)']
+                'bonus': [
+                    'Heavy Cavalry: +5% Defense (Passive)',
+                    'Heavy Cavalry: +35% Strength, +1 Move w/Charlemagne'
+                ]
             },
             'harald': {
                 'name': 'Harald Hardrada of Norway',
-                'bonus': ['Vikings: +12% Defense (Passive)',
-                         'Vikings: +40% Strength (When with Harald)'
-                         'Archers: +15% Strength (When with Harald)']
+                'bonus': [
+                    'Vikings: +12% Defense (Passive)',
+                    'Vikings: +40% Strength w/Harald',
+                    'Archers: +5% Strength (Passive)'
+                ]
             },
             'julius': {
                 'name': 'Julius Caesar of Rome',
-                'bonus': ['Legions: +8% Defense (Passive)',
-                         'Light Horsemen: +5% Strength (Passive)'
-                         'Legions: +25% Strength, +1 movement range (When with Julius)']
+                'bonus': [
+                    'Legions: +10% Defense (Passive)',
+                    'Light Cav: +5% Strength (Passive)',
+                    'Legions: +25% Str, +1 Move w/Julius'
+                ]
             },
             'leonidas': {
                 'name': 'Leonidas I of Sparta',
-                'bonus': ['Hoplites: +20% Defense (Passive)', 
-                         'Hoplites: +25% Strength, +1 movement range (When with Leonidas)']
+                'bonus': [
+                    'Hoplites: +20% Defense (Passive)',
+                    'Hoplites: +25% Str, +1 Move w/Leonidas'
+                ]
             }
         }
 
-    
+
     def draw_general_selection(self):
         
         """
-        blublubelkanoa vospasbvaiwods
+        Function to draw the general selection screen.
+
+        How it works:
+            1. It clears the screen.
+            2. It renders the title "Select Your General" in the center of the screen.
+            3. It renders the player's selection text in the center of the screen.
+            4. It defines the width and height of the cards and spacing between them.
+            5. It calculates the starting position of the cards.
+            6. It calls the draw_wave_separator function to draw the wave separator.
+            7. It iterates over the generals and their information.
+            8. It renders the general name and bonus information.
+            9. It blits the rendered text onto the screen.
+            10. It blits the general images onto the screen.
+            11. It blits the wave separator onto the screen.
+            12. It blits the "Back" button onto the screen.
+            13. It blits the "Next" button onto the screen.
+            14. It blits the "Done" button onto the screen.
+            15. It updates the display.
         """
 
         screen_width, screen_height = self.screen.get_size()
-    
         self.screen.fill((20, 20, 25))
-        
-        title_scale = min(screen_width / 1920, screen_height / 1080)
-        title_font = pygame.font.Font(None, int(100 * title_scale))
-        title = title_font.render("Select Your General", True, (255, 215, 0))
-        title_rect = title.get_rect(centerx=screen_width//2, top=screen_height*0.05)
+        title = self.fonts['title'].render("Select Your General", True, (255, 215, 0))
+        title_rect = title.get_rect(centerx=screen_width//2, top=20) 
         self.screen.blit(title, title_rect)
         
         player_text = self.fonts['normal'].render(f"Player {self.current_selecting_player}'s Selection", 
                                                 True, (255, 255, 255))
-        player_rect = player_text.get_rect(centerx=screen_width//2, top=title_rect.bottom + 20)
+        player_rect = player_text.get_rect(centerx=screen_width//2, top=title_rect.bottom + 10)  
         self.screen.blit(player_text, player_rect)
         
-        portrait_size = int(min(screen_width / 6, screen_height / 4))
-        gap = int(portrait_size * 0.2)
-        start_x = (screen_width - (3 * (portrait_size + gap))) // 2
-        start_y = screen_height * 0.22 
+        card_width = min(screen_width // 3.5, 280)  
+        card_height = int(card_width * 1.4)  
+        spacing = 25  
+        start_x = (screen_width - (card_width * 3 + spacing * 2)) // 2
+        start_y = player_rect.bottom + 15  
+        
+        def draw_wave_separator(surface, x, y, width):
+            
+            """
+            Auxiliary Function to draw a wave separator (merely aesthetic).
+
+            Args:
+                surface (pygame.Surface): The surface to draw on
+                x (int): X-coordinate of the separator
+                y (int): Y-coordinate of the separator
+                width (int): Width of the separator
+            """
+
+            points = []
+            wave_height = 2  
+            segments = 12 
+            for i in range(segments + 1):
+                segment_x = x + (width * i / segments)
+                segment_y = y + (wave_height * (-1 if i % 2 == 0 else 1))
+                points.append((segment_x, segment_y))
+                
+            if len(points) > 1:
+                pygame.draw.lines(surface, (100, 100, 100), False, points, 1)
+        
+        def wrap_text(text, font, max_width):
+            
+            """
+            Auxiliary Function to wrap text into multiple lines based on a maximum width.
+
+            Args:
+                text (str): The text to wrap.
+                font (pygame.font.Font): The font to use for the text.
+                max_width (int): The maximum width of each line.
+
+            Returns:
+                list: A list of wrapped lines of text.
+            """
+
+            words = text.split()
+            lines = []
+            current_line = []
+                
+            for word in words:
+                current_line.append(word)
+                test_surface = font.render(' '.join(current_line), True, (255, 255, 255))
+                if test_surface.get_width() > max_width:
+                    current_line.pop()
+                    if current_line:
+                        lines.append(' '.join(current_line))
+                    current_line = [word]
+            if current_line:
+                lines.append(' '.join(current_line))
+            return lines
+
 
         for i, (general_id, general_info) in enumerate(self.generals.items()):
-            row = i // 3
             col = i % 3
-            x = start_x + col * (portrait_size + gap)
-            y = start_y + row * (portrait_size + gap * 2)
+            row = i // 3
+            x = start_x + col * (card_width + spacing)
+            y = start_y + row * (card_height + spacing)
             
-            portrait_rect = pygame.Rect(x, y, portrait_size, portrait_size)
-            pygame.draw.rect(self.screen, (40, 40, 45), portrait_rect)
-            pygame.draw.rect(self.screen, (200, 200, 200), portrait_rect, 2)
+            card_surface = pygame.Surface((card_width, card_height))
+            card_surface.fill((40, 40, 45))
             
-            sprite = pygame.transform.scale(self.general_sprites[general_id], (portrait_size-10, portrait_size-10))
-            self.screen.blit(sprite, (x+5, y+5))
+            portrait_size = int(card_width * 0.7)  
+            portrait_x = (card_width - portrait_size) // 2
+            portrait_rect = pygame.Rect(portrait_x, 15, portrait_size, portrait_size) 
+            pygame.draw.rect(card_surface, (30, 30, 35), portrait_rect)
             
-            if ((self.current_selecting_player == 1 and self.player1_general == general_id) or
-                (self.current_selecting_player == 2 and self.player2_general == general_id)):
-                highlight_color = (255, 0, 0) if self.current_selecting_player == 1 else (0, 0, 255)
-                pygame.draw.rect(self.screen, highlight_color, portrait_rect, 4)
+            if self.general_sprites[general_id]:
+                portrait = pygame.transform.scale(self.general_sprites[general_id], 
+                                            (portrait_size, portrait_size))
+                card_surface.blit(portrait, (portrait_x, 20))
             
-            name_text = self.fonts['small'].render(general_info['name'], True, (255, 255, 255))
-            name_rect = name_text.get_rect(centerx=x + portrait_size//2, top=y + portrait_size + 10)
-            self.screen.blit(name_text, name_rect)
+            text_start_y = portrait_rect.bottom + 15  
             
-            if isinstance(general_info['bonus'], list):
-                for j, bonus_line in enumerate(general_info['bonus']):
-                    bonus_text = self.fonts['mini'].render(bonus_line, True, (200, 200, 200))
-                    bonus_rect = bonus_text.get_rect(centerx=x + portrait_size//2, 
-                                                top=name_rect.bottom + 10 + j*25)  
-                    self.screen.blit(bonus_text, bonus_rect)
-            else:
-                bonus_text = self.fonts['mini'].render(general_info['bonus'], True, (200, 200, 200))
-                bonus_rect = bonus_text.get_rect(centerx=x + portrait_size//2, top=name_rect.bottom + 10)
-                self.screen.blit(bonus_text, bonus_rect)
+            words = general_info['name'].split()
+            name_lines = []
+            current_line = []
+            
+            for word in words:
+                current_line.append(word)
+                test_surface = self.fonts['small'].render(' '.join(current_line), True, (255, 215, 0))
+                if test_surface.get_width() > card_width - 20:
+                    current_line.pop()
+                    if current_line:
+                        name_lines.append(' '.join(current_line))
+                    current_line = [word]
+            if current_line:
+                name_lines.append(' '.join(current_line))
+            
+            for idx, line in enumerate(name_lines):
+                name_surface = self.fonts['small'].render(line, True, (255, 215, 0))
+                name_rect = name_surface.get_rect(centerx=card_width//2, 
+                                                top=text_start_y + idx * 25)
+                card_surface.blit(name_surface, name_rect)
+            
 
-        button_width = 200
-        button_height = 50
-        button_y = screen_height * 0.92
+            effect_y = text_start_y + len(name_lines) * 22 + 15
+            max_effect_width = card_width - 40
+
+            for idx, bonus in enumerate(general_info['bonus']):
+                if idx > 0:
+                    draw_wave_separator(card_surface, 20, effect_y - 8, card_width - 40)
+                
+                color = (150, 255, 150) if '(Passive)' in bonus else (255, 255, 150)
+                wrapped_lines = wrap_text(bonus, self.fonts['mini'], max_effect_width)
+                
+                for line in wrapped_lines:
+                    effect_surface = self.fonts['mini'].render(line, True, color)
+                    effect_rect = effect_surface.get_rect(centerx=card_width//2)
+                    effect_rect.top = effect_y
+                    card_surface.blit(effect_surface, effect_rect)
+                    effect_y += 20  
+                
+                effect_y += 5 
+                if ((self.current_selecting_player == 1 and self.player1_general == general_id) or
+                    (self.current_selecting_player == 2 and self.player2_general == general_id)):
+                    pygame.draw.rect(card_surface, (255, 215, 0), 
+                                card_surface.get_rect(), 2)
+                
+                self.screen.blit(card_surface, (x, y))
         
-        cancel_button = pygame.Rect(screen_width//4 - button_width//2, button_y, button_width, button_height)
+        button_width = 200
+        button_height = 40  
+        button_y = screen_height - button_height - 10  
+        
+        cancel_button = pygame.Rect(
+            20, button_y, button_width, button_height) 
+         
         pygame.draw.rect(self.screen, (180, 30, 30), cancel_button, border_radius=10)
         cancel_text = self.fonts['small'].render("Cancel Selection", True, (255, 255, 255))
         cancel_rect = cancel_text.get_rect(center=cancel_button.center)
         self.screen.blit(cancel_text, cancel_rect)
         
         nav_text = "Next Player" if self.current_selecting_player == 1 else "Previous Player"
-        nav_color = (30, 180, 30) if self.current_selecting_player == 1 else (180, 180, 30)
-                
-        nav_button = pygame.Rect(screen_width*3//4 - button_width//2, button_y, button_width, button_height)
-        pygame.draw.rect(self.screen, nav_color, nav_button, border_radius=10)
-        nav_text = self.fonts['small'].render(nav_text, True, (255, 255, 255))
-        nav_rect = nav_text.get_rect(center=nav_button.center)
-        self.screen.blit(nav_text, nav_rect)
-
+        nav_button = pygame.Rect(
+            screen_width - button_width - 20, button_y, button_width, button_height)
+        
+        pygame.draw.rect(self.screen, (30, 180, 30), nav_button, border_radius=10)
+        nav_text_surf = self.fonts['small'].render(nav_text, True, (255, 255, 255))
+        nav_rect = nav_text_surf.get_rect(center=nav_button.center)
+        self.screen.blit(nav_text_surf, nav_rect)
+        
         if self.player1_general and self.player2_general:
             proceed_button = pygame.Rect(
-                screen_width//2 - 150,
-                screen_height * 0.96, 
-                300,
-                50
+                (screen_width - button_width) // 2,
+                button_y,
+                button_width,
+                button_height
             )
-            pygame.draw.rect(self.screen, (0, 180, 0), proceed_button, border_radius=10)
-            proceed_text = self.fonts['small'].render("Proceed to Map Selection", True, (255, 255, 255))
+            pygame.draw.rect(self.screen, (30, 30, 180), proceed_button, border_radius=10)
+            proceed_text = self.fonts['small'].render("Proceed", True, (255, 255, 255))
             proceed_rect = proceed_text.get_rect(center=proceed_button.center)
             self.screen.blit(proceed_text, proceed_rect)
                 
     def handle_general_selection(self, pos):
+        
+        """
+        Handles general selection and navigation
+
+        Args:
+            pos (tuple): The position of the mouse cursor
+        """
+
         screen_width = self.screen.get_width()
         screen_height = self.screen.get_height()
         button_width = 200
-        button_height = 50
-        button_y = screen_height * 0.92 #changeable
+        button_height = 40
+        button_y = screen_height - button_height - 20
 
-        if self.player1_general and self.player2_general:
-            proceed_button = pygame.Rect(
-                screen_width//2 - 150,
-                screen_height * 0.96,
-                300,
-                50
-            )
-            if proceed_button.collidepoint(pos):
-                self.state = "map_select"
-                return
-        
-        cancel_button = pygame.Rect(screen_width//4 - button_width//2, button_y, button_width, button_height)
+        cancel_button = pygame.Rect(20, button_y, button_width, button_height)
         if cancel_button.collidepoint(pos):
             if self.current_selecting_player == 1:
                 self.player1_general = None
             else:
                 self.player2_general = None
             return
-            
-        nav_button = pygame.Rect(screen_width*3//4 - button_width//2, button_y, button_width, button_height)
+
+        nav_button = pygame.Rect(screen_width - button_width - 20, button_y, button_width, button_height)
         if nav_button.collidepoint(pos):
             if self.current_selecting_player == 1 and self.player1_general:
                 self.current_selecting_player = 2
             elif self.current_selecting_player == 2:
                 self.current_selecting_player = 1
             return
-            
-        portrait_size = int(min(screen_width / 6, screen_height / 4))
-        gap = int(portrait_size * 0.2)
-        start_x = (screen_width - (3 * (portrait_size + gap))) // 2
-        start_y = screen_height * 0.22
-                
+
+        if self.player1_general and self.player2_general:
+            proceed_button = pygame.Rect(
+                (screen_width - button_width) // 2,
+                button_y,
+                button_width,
+                button_height
+            )
+            if proceed_button.collidepoint(pos):
+                self.state = "map_select"
+                return
+
+        card_width = min(screen_width // 3.5, 280)
+        card_height = int(card_width * 1.6)
+        spacing = 30
+        
+        player_text = self.fonts['normal'].render(f"Player {self.current_selecting_player}'s Selection", 
+                                                True, (255, 255, 255))
+        player_rect = player_text.get_rect(centerx=screen_width//2, top=80)
+        start_x = (screen_width - (card_width * 3 + spacing * 2)) // 2
+        start_y = player_rect.bottom + 20
+
         for i, general_id in enumerate(self.generals.keys()):
-            row = i // 3
             col = i % 3
-            x = start_x + col * (portrait_size + gap)
-            y = start_y + row * (portrait_size + gap * 2)
-                    
-            portrait_rect = pygame.Rect(x, y, portrait_size, portrait_size)
-            if portrait_rect.collidepoint(pos):
+            row = i // 3
+            x = start_x + col * (card_width + spacing)
+            y = start_y + row * (card_height + spacing)
+            
+            card_rect = pygame.Rect(x, y, card_width, card_height)
+            if card_rect.collidepoint(pos):
                 if self.current_selecting_player == 1:
                     if general_id != self.player2_general:
                         self.player1_general = general_id
@@ -310,6 +466,11 @@ class Menu:
                 break
         
     def setup_resources(self):
+        
+        """
+        Setup game resources and assets
+        """
+
         self.original_menu_image = pygame.image.load(os.path.join("..", "assets", "images", "menu_image.png"))
         self.menu_image = self._scale_image_to_screen()
         
@@ -317,10 +478,15 @@ class Menu:
             'title': pygame.font.Font(None, 100),
             'normal': pygame.font.Font(None, 74),
             'small': pygame.font.Font(None, 36),
-            'mini': pygame.font.Font(None, 24)
+            'mini': pygame.font.Font(None, 20)
         }
 
     def setup_audio(self):
+
+        """
+        Setup game audio and music
+        """
+
         self.music_enabled = True
         self.sound_enabled = True
         self.music_volume = 0.7
@@ -331,6 +497,11 @@ class Menu:
         pygame.mixer.music.play(-1)
 
     def setup_ui_elements(self):
+        
+        """
+        Setup game UI elements and buttons
+        """
+
         screen_width, screen_height = self.screen.get_size()
         
         button_width, button_height = 200, 50
@@ -376,6 +547,11 @@ class Menu:
         self.setup_map_buttons()
 
     def setup_options_elements(self):
+        
+        """
+        Setup game options and buttons
+        """
+
         screen_width, screen_height = self.screen.get_size()
         panel_width, panel_height = 400, 450
         panel_x = (screen_width - panel_width) // 2
@@ -430,6 +606,11 @@ class Menu:
         }
 
     def setup_map_buttons(self):
+        
+        """
+        Setup game map buttons
+        """
+
         screen_width, screen_height = self.screen.get_size()
         button_width, button_height = 250, 100
         button_spacing = 50
@@ -454,9 +635,19 @@ class Menu:
         }
 
     def toggle_sound(self, enabled):
+        
+        """
+        Enables sound
+        """
+
         self.sound_enabled = enabled
 
     def toggle_music(self, enabled):
+        
+        """
+        Enables or disables the background music 
+        """
+
         self.music_enabled = enabled
         if enabled:
             pygame.mixer.music.play(-1)
@@ -464,17 +655,37 @@ class Menu:
             pygame.mixer.music.stop()
 
     def set_sound_volume(self, volume):
+        
+        """
+        Controls the sound volume
+        """
+
         self.sound_volume = volume
 
     def set_music_volume(self, volume):
+        
+        """
+        Controls the music volume
+        """
+
         self.music_volume = volume
         pygame.mixer.music.set_volume(volume)
 
     def start_tutorial(self):
+        
+        """
+        Activates the tutorial
+        """
+
         self.tutorial.active = True
         self.tutorial.current_page = 0
 
     def change_state(self, new_state):
+        
+        """
+        Change the state of the menu and setup the appropriate UI elements
+        """
+
         self.state = new_state
         
         if new_state == "map_select":
@@ -554,6 +765,11 @@ class Menu:
         return final_surface
 
     def draw(self):
+        
+        """
+        Draws information to the screen
+        """
+
         self.screen.blit(self.menu_image, (0, 0))
         
         if self.state == "main":
@@ -571,6 +787,10 @@ class Menu:
         pygame.display.flip()
 
     def _draw_main_menu(self):
+        
+        """
+        Draws the main menu to the screen
+        """
 
         title = self.fonts['title'].render("WARBOUND", True, (255, 215, 0))
         title_rect = title.get_rect(centerx=self.screen.get_rect().centerx, top=50)
@@ -586,6 +806,10 @@ class Menu:
             button.draw(self.screen)
 
     def _draw_options_menu(self):
+        
+        """
+        Draws the options menu to the screen
+        """
 
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
@@ -607,6 +831,11 @@ class Menu:
             element.draw(self.screen)
 
     def change_state(self, new_state):
+        
+        """
+        Changes the state of the menu
+        """
+
         self.state = new_state
         if new_state == "map_select":
             self.setup_map_buttons()
@@ -617,9 +846,11 @@ class Menu:
         return new_state
 
     def _draw_map_selection(self):
+
         """
         Draws the map selection screen
         """
+        
         title = self.fonts['title'].render("Select a Map", True, (255, 215, 0))
         title_rect = title.get_rect(centerx=self.screen.get_rect().centerx, top=50)
         
