@@ -142,6 +142,8 @@ class Menu:
         self.player1_general = None
         self.player2_general = None
         self.current_selecting_player = 1
+        self.map_choice = None
+        self.running = True
 
         self.general_sprites = {
             'alexander': pygame.image.load("../assets/images/menu_generals/alexander_menu.png"),
@@ -201,7 +203,56 @@ class Menu:
             }
         }
 
+    def run(self):
+        """
+        Runs the menu and returns the game configuration when ready
+        """
+        while self.running:
+            self.draw()
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    return None
+                    
+                if self.tutorial.active:
+                    result = self.tutorial.handle_event(event)
+                    if result == 'menu':
+                        self.tutorial.active = False
+                        
+                elif self.state == "main":
+                    for button in self.main_buttons.values():
+                        if button.handle_event(event):
+                            break
+                            
+                elif self.state == "general_selection":
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        self.handle_general_selection(event.pos)
+                        
+                elif self.state == "map_select":
+                    for button in self.map_buttons.values():
+                        if button.handle_event(event):
+                            if self.map_choice and self.player1_general and self.player2_general:
+                                return {
+                                    'start_game': True,
+                                    'player1_general': self.player1_general,
+                                    'player2_general': self.player2_general,
+                                    'map_choice': self.map_choice
+                                }
+                            break
+                            
+                elif self.state == "options":
+                    for element in self.options_elements.values():
+                        if element.handle_event(event):
+                            break
+        
+        return None
 
+    def handle_map_selection(self, map_number):
+        self.map_choice = map_number
+        if self.player1_general and self.player2_general:
+            self.running = False
+    
     def draw_general_selection(self):
         
         """
@@ -622,7 +673,7 @@ class Menu:
                 button_width,
                 button_height,
                 "Map 1",
-                lambda: self.change_state("game_map1")
+                lambda: self.handle_map_selection(1)
             ),
             "map2": Button(
                 (screen_width - button_width) // 2,
@@ -630,7 +681,7 @@ class Menu:
                 button_width,
                 button_height,
                 "Map 2",
-                lambda: self.change_state("game_map2")
+                lambda: self.handle_map_selection(2)
             )
         }
 
