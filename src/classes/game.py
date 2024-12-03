@@ -4,17 +4,9 @@ This module represents the main game structure, responsible for initializing, ha
 
 import pygame
 from .board import Board
-from .units.units import Hoplite, Cavalry, Viking, Archer, Crossbowman, Legionary, Hypaspist, HeavyCavalry
-
-#from .units.cavalry import Cavalry
-#from .units.heavy_cavalry import HeavyCavalry
-#from .units.viking import Viking
+from .units.units import Hoplite, LightHorsemen, Viking, Archer, Crossbowman, Legionary, Hypaspist, HeavyCavalry
 from .menu.menu import Menu
-#from .units.archer import Archer
 from .units.base_unit import Direction
-#from .units.crossbowman import Crossbowman
-#from .units.legionary import Legionary
-#from .units.hypaspist import Hypaspist
 
 class Game:
     def __init__(self):
@@ -177,7 +169,7 @@ class Game:
         
         unit_mapping = {
         'H': Hoplite,
-        'C': Cavalry,
+        'C': LightHorsemen,
         'P': HeavyCavalry,
         'V': Viking,
         'A': Archer,
@@ -522,7 +514,7 @@ class Game:
                 self._update_unit_selection(self.selected_unit.position)
                 return
 
-        if isinstance(self.selected_unit, (Hoplite, Cavalry, HeavyCavalry, Viking, Hypaspist, Legionary)):
+        if isinstance(self.selected_unit, (Hoplite, LightHorsemen, HeavyCavalry, Viking, Hypaspist, Legionary)):
             if target_unit and target_unit.player != self.current_player:
                 if self.selected_unit.can_attack(clicked_square) and \
                     not self.selected_unit.has_attacked:
