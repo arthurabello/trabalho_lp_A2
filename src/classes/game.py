@@ -4,7 +4,7 @@ This module represents the main game structure, responsible for initializing, ha
 
 import pygame
 from .board import Board
-from .units.units import Hoplite, LightHorsemen, Viking, Archer, Crossbowman, Legionary, Hypaspist, HeavyCavalry
+from .units.units import Hoplite, LightHorsemen, Viking, Archer, Crossbowman, Legionary, Hypaspist, HeavyCavalry, MenAtArms
 from .units.constants import Formations
 from .units.base_unit import Direction
 
@@ -168,6 +168,7 @@ class Game:
         'B': Crossbowman,
         'I': Hypaspist,
         'L': Legionary,
+        'M': MenAtArms,
         '#': None
         }
 
