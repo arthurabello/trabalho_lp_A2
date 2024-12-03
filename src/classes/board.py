@@ -37,24 +37,12 @@ class Board:
 
 
     def __init__(self, m, n, initial_width, initial_height, units, map_choice=None) -> None:
-
-        """
-        Initializes the board with dimensions and sets up the board graph for connectivity management.
-
-        Args:
-            m (int): Number of rows on the board
-            n (int): Number of columns on the board
-            initial_width (int): Initial width of the game window
-            initial_height (int): Initial height of the game window
-            units (list): List of game units on the board.
-            map_choice (int, optional): Select predefined terrain map. 
-        """
         if map_choice == 1:
             self.terrain_map = Maps.map1
         elif map_choice == 2:
             self.terrain_map = Maps.map2
         else:
-            self.terrain_map = Maps.map1 # by default
+            self.terrain_map = Maps.map1  # by default
             
         self.m = m
         self.n = n
@@ -63,6 +51,10 @@ class Board:
         if initial_width <= 0 or initial_height <= 0:
             raise ValueError("Initial window dimensions must be positive in board/init")
         
+        # Add these two lines to store board dimensions
+        self.board_width = initial_width
+        self.board_height = initial_height
+        
         self.initial_width = initial_width
         self.initial_height = initial_height
         self.selected_square = None
@@ -70,6 +62,7 @@ class Board:
         self.units = units
         self.graph = BoardGraph(m, n, self.terrain, units)
         self.reachable_positions = set()
+        self.is_fullscreen = False
 
         self.sprites = {
             "plains": pygame.image.load(Paths.PLAIN_SPRITE).convert_alpha(),
@@ -178,7 +171,7 @@ class Board:
         
         return row, column
 
-    def select_square(self, square, movement_points) -> None:
+    def select_square(self, square, movement_points, units=None) -> None:
 
         """
         Selects a square and calculates all reachable positions based on the movement points available.
@@ -193,6 +186,9 @@ class Board:
 
         if movement_points < 0:
             raise ValueError("Negative movement points in board/select_square")
+        
+        if units is None:
+            units = []
 
         self.selected_square = square
         if square is not None:
