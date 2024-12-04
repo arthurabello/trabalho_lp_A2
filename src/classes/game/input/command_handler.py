@@ -78,17 +78,34 @@ class CommandHandler:
             self.game_manager.board.selected_square = clicked_square
             
             all_units = self.state_manager.get_all_units()
+            
             self.game_manager.board.select_square(
                 clicked_square, 
                 self.state_manager.movement_points[clicked_unit],
-                all_units  
+                all_units                
             )
+
+            valid_squares = [clicked_square]
+            for pos in self.game_manager.board.reachable_positions:
+                if pos == clicked_square:
+                    continue
+                    
+                path_blocked = False
+                for check_pos in self._get_positions_between(clicked_square, pos):
+                    if any(u.is_alive and u.position == check_pos for u in all_units):
+                        path_blocked = True
+                        break
+                        
+                if not path_blocked and not any(u.is_alive and u.position == pos for u in all_units):
+                    valid_squares.append(pos)
+
+            self.game_manager.board.reachable_positions = valid_squares
+
             self.game_manager.board.update_attack_overlays(
                 clicked_unit, 
                 all_units
             )
         self.game_manager.renderer.draw_board()
-
 
     def _handle_ranged_unit_action(self, clicked_square, target_unit):
         """Handle ranged unit actions."""
@@ -164,13 +181,36 @@ class CommandHandler:
                 return
         
         if clicked_square in self.game_manager.board.reachable_positions:
-            movement_cost = self.game_manager.board.movement_costs[clicked_square]
-            if self.state_manager.movement_points[unit] >= movement_cost:
-                if not target_unit:  
+            unit_row, unit_col = unit.position
+            target_row, target_col = clicked_square
+            
+            path_blocked = False
+            for pos in self._get_positions_between(unit.position, clicked_square):
+                if any(u.is_alive and u.position == pos for u in all_units):
+                    path_blocked = True
+                    break
+
+            if not path_blocked and not target_unit:
+                movement_cost = self.game_manager.board.movement_costs[clicked_square]
+                if self.state_manager.movement_points[unit] >= movement_cost:
                     unit.move(clicked_square)
                     unit.terrain = self.game_manager.board.terrain.get(clicked_square)
                     self.state_manager.movement_points[unit] -= movement_cost
                     self._update_unit_selection(clicked_square, all_units)
+
+    def _get_positions_between(self, start_pos, end_pos):
+        """Get all positions between start and end position."""
+        
+        start_row, start_col = start_pos
+        end_row, end_col = end_pos
+
+        if start_row == end_row: 
+            start, end = min(start_col, end_col), max(start_col, end_col)
+            return [(start_row, col) for col in range(start + 1, end)]
+        else:
+            start, end = min(start_row, end_row), max(start_row, end_row)
+            return [(row, start_col) for row in range(start + 1, end)]
+
 
     def _update_unit_selection(self, position, all_units):
         """Update unit selection after movement or combat."""
