@@ -17,8 +17,8 @@ class LightHorsemen(BaseUnit):
         )
         self.attack_range = 1
         self.attack_type = "melee"
-        self.base_attack = 40
-        self.base_defense = 12
+        self.base_attack = 50
+        self.base_defense = 10
         self.base_missile_defense = 25
         
         self.formations = {
@@ -28,7 +28,7 @@ class LightHorsemen(BaseUnit):
             },
             "Spread": {
                 "attack_modifier": 0.9,
-                "defense_modifier": 1.8
+                "defense_modifier": 1.2 #against ranged
             },
             "V": {
                 "attack_modifier": 1.5,
@@ -60,8 +60,8 @@ class HeavyCavalry(BaseUnit):
         )
         self.attack_range = 1
         self.attack_type = "melee"
-        self.base_attack = 70
-        self.base_defense = 20
+        self.base_attack = 65
+        self.base_defense = 30
         self.base_missile_defense = 35
         
         self.formations = {
@@ -71,7 +71,7 @@ class HeavyCavalry(BaseUnit):
             },
             "Spread": {
                 "attack_modifier": 0.9,
-                "defense_modifier": 1.8
+                "defense_modifier": 1.2 #against ranged
             },
             "V": {
                 "attack_modifier": 1.5,

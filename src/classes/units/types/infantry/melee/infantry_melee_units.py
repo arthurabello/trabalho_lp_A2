@@ -19,8 +19,8 @@ class Hoplite(BaseUnit):
         self.attack_range = 1
         self.attack_type = "melee"
         self.base_attack = 60
-        self.base_defense = 15
-        self.base_missile_defense = 30
+        self.base_defense = 20
+        self.base_missile_defense = 13
         
         self.formations = {
             "Standard": {
@@ -28,16 +28,16 @@ class Hoplite(BaseUnit):
                 "defense_modifier": 1.0
             },
             "Shield Wall": {
-                "attack_modifier": 0.9,
+                "attack_modifier": 0.7,
                 "defense_modifier": 1.8
             },
             "Phalanx": {
-                "attack_modifier": 1.5,
-                "defense_modifier": 0.6
+                "attack_modifier": 1.2,
+                "defense_modifier": 1.6
             },
             "Spread": {
-                "attack_modifier": 1.2,
-                "defense_modifier": 0.9
+                "attack_modifier": 1.0,
+                "defense_modifier": 1.0 #ranged will get bonus
             }
         }
 
@@ -65,9 +65,9 @@ class Legionary(BaseUnit):
         )
         self.attack_range = 1
         self.attack_type = "melee"
-        self.base_attack = 60
-        self.base_defense = 15
-        self.base_missile_defense = 30
+        self.base_attack = 50
+        self.base_defense = 22
+        self.base_missile_defense = 15
         
         self.formations = {
             "Standard": {
@@ -75,16 +75,16 @@ class Legionary(BaseUnit):
                 "defense_modifier": 1.0
             },
             "Shield Wall": {
-                "attack_modifier": 0.9,
+                "attack_modifier": 0.7,
                 "defense_modifier": 1.8
             },
             "Turtle": {
                 "attack_modifier": 0.5,
-                "defense_modifier": 1.3
+                "defense_modifier": 1.2 #ranged will get bonus
             },
             "Spread": {
-                "attack_modifier": 1.2,
-                "defense_modifier": 0.9
+                "attack_modifier": 0.9,
+                "defense_modifier": 1.0 #ranged will get bonus
             }
         }
 
@@ -112,9 +112,9 @@ class Viking(BaseUnit):
         )
         self.attack_range = 1
         self.attack_type = "melee"
-        self.base_attack = 60
+        self.base_attack = 65
         self.base_defense = 15
-        self.base_missile_defense = 30
+        self.base_missile_defense = 15
         
         self.formations = {
             "Standard": {
@@ -122,19 +122,19 @@ class Viking(BaseUnit):
                 "defense_modifier": 1.0
             },
             "Shield Wall": {
-                "attack_modifier": 0.9,
+                "attack_modifier": 0.7,
                 "defense_modifier": 1.8
             },
             "Spread": {
-                "attack_modifier": 1.5,
-                "defense_modifier": 0.6
+                "attack_modifier": 1.0,
+                "defense_modifier": 1.0 #ranged will get bonus
             },
             "Turtle": {
-                "attack_modifier": 0.4,
-                "defense_modifier": 2.0
+                "attack_modifier": 0.5,
+                "defense_modifier": 1.2
             },
             "V": {
-                "attack_modifier": 1.3,
+                "attack_modifier": 1.5, #berserkergang uga buga
                 "defense_modifier": 0.9
             }
         }
@@ -163,26 +163,22 @@ class Hypaspist(BaseUnit):
         )
         self.attack_range = 1
         self.attack_type = "melee"
-        self.base_attack = 60
-        self.base_defense = 15
-        self.base_missile_defense = 30
+        self.base_attack = 45
+        self.base_defense = 25
+        self.base_missile_defense = 15
         
         self.formations = {
             "Standard": {
                 "attack_modifier": 1.0,
                 "defense_modifier": 1.0
             },
-            "Shield Wall": {
-                "attack_modifier": 0.9,
-                "defense_modifier": 1.8
-            },
             "Phalanx": {
-                "attack_modifier": 1.5,
-                "defense_modifier": 0.6
+                "attack_modifier": 1.2,
+                "defense_modifier": 1.6
             },
             "Spread": {
-                "attack_modifier": 1.2,
-                "defense_modifier": 0.9
+                "attack_modifier": 0.9,
+                "defense_modifier": 1.0 #ranged will get bonus
             }
         }
 
@@ -210,9 +206,9 @@ class MenAtArms(BaseUnit):
         )
         self.attack_range = 1
         self.attack_type = "melee"
-        self.base_attack = 60
-        self.base_defense = 15
-        self.base_missile_defense = 22
+        self.base_attack = 50
+        self.base_defense = 35
+        self.base_missile_defense = 25
         
         self.formations = {
             "Standard": {
@@ -220,7 +216,7 @@ class MenAtArms(BaseUnit):
                 "defense_modifier": 1.0
             },
             "Shield Wall": {
-                "attack_modifier": 0.9,
+                "attack_modifier": 0.7,
                 "defense_modifier": 1.8
             },
             "V": {
@@ -229,11 +225,11 @@ class MenAtArms(BaseUnit):
             },
             "Turtle": {
                 "attack_modifier": 0.5,
-                "defense_modifier": 1.5
+                "defense_modifier": 1.2 #ranged will get bonus
             },
             "Spread": {
                 "attack_modifier": 0.9,
-                "defense_modifier": 1.2
+                "defense_modifier": 1.0 #ranged will get bonus
             }
         }
 
