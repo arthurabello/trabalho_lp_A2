@@ -99,7 +99,7 @@ class MenuManager:
 
     def start_game(self):
         """Prepare to start the game."""
-        if self.state.map_choice and self.state.player1_general and self.state.player2_general:
+        if self.state.player1_general and self.state.player2_general:
             self.state.should_start_game = True
 
     def toggle_fullscreen(self):
@@ -109,11 +109,11 @@ class MenuManager:
     def change_state(self, new_state):
         """Change menu state."""
         self.state.current = new_state
-        if new_state == "map_select":
-            screen_width, screen_height = self.screen.get_size()
-            self.renderer.setup_map_buttons(screen_width, screen_height)
-        elif new_state == "general_selection":
+
+        if new_state == "general_selection":
             self.state.reset_general_selection()
+        elif new_state == "game":
+            self.start_game()
         elif new_state == "quit":
             pygame.quit()
         return new_state

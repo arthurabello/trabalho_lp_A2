@@ -15,7 +15,8 @@ class MenuState:
         self.player2_general = None
         self.current_selecting_player = 1
         
-        self.map_choice = None
+        self.map_choice = 1
+        self.proceed = None
         
         self.music_enabled = True
         self.sound_enabled = True
@@ -84,8 +85,7 @@ class MenuState:
     def can_start_game(self):
         """Check if game can be started."""
         return (self.player1_general and 
-                self.player2_general and 
-                self.map_choice is not None)
+                self.player2_general)
 
     def toggle_sound(self, enabled):
         """Toggle sound effects."""
