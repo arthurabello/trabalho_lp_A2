@@ -19,8 +19,6 @@ class MenuInputHandler:
             self._handle_options_event(event)
         elif self.state.current == "general_selection":
             self._handle_general_selection_event(event)
-        elif self.state.current == "map_select":
-            self._handle_map_selection_event(event)
 
     def _handle_main_menu_event(self, event):
         """Handle main menu events."""
@@ -74,7 +72,8 @@ class MenuInputHandler:
                 button_height
             )
             if proceed_button.collidepoint(event.pos):
-                self.menu_manager.change_state("map_select")
+                self.menu_manager.change_state("game")
+                self.menu_manager.proceed = True
                 return
 
         self._handle_general_card_selection(event.pos)
@@ -89,12 +88,4 @@ class MenuInputHandler:
                 else:
                     if card.general_id != self.state.player1_general:
                         self.state.player2_general = card.general_id
-                break
-
-    def _handle_map_selection_event(self, event):
-        """Handle map selection events."""
-        for button in self.menu_manager.renderer.map_buttons.values():
-            if button.handle_event(event):
-                if self.state.map_choice and self.state.player1_general and self.state.player2_general:
-                    self.menu_manager.start_game()
                 break

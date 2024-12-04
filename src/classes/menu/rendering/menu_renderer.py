@@ -90,7 +90,6 @@ class MenuRenderer:
         screen_width, screen_height = self.screen.get_size()
         self.setup_main_menu_buttons(screen_width, screen_height)
         self.setup_options_elements(screen_width, screen_height)
-        self.setup_map_buttons(screen_width, screen_height)
         self.setup_general_cards()
 
 
@@ -148,30 +147,6 @@ class MenuRenderer:
             )
         }
 
-    def setup_map_buttons(self, screen_width, screen_height):
-        """Setup map selection buttons."""
-        button_width, button_height = 250, 100
-        button_spacing = 50
-        
-        self.map_buttons = {
-            "map1": Button(
-                (screen_width - button_width) // 2,
-                screen_height // 2 - button_height - button_spacing // 2,
-                button_width,
-                button_height,
-                "Map 1",
-                lambda: setattr(self.state, 'map_choice', 1)
-            ),
-            "map2": Button(
-                (screen_width - button_width) // 2,
-                screen_height // 2 + button_spacing // 2,
-                button_width,
-                button_height,
-                "Map 2",
-                lambda: setattr(self.state, 'map_choice', 2)
-            )
-        }
-
     def setup_general_cards(self):
         """Setup general selection cards."""
         self.general_cards = []
@@ -215,8 +190,6 @@ class MenuRenderer:
             self._draw_options_menu()
         elif self.state.current == "general_selection":
             self._draw_general_selection()
-        elif self.state.current == "map_select":
-            self._draw_map_selection()
         elif self.menu_manager.tutorial.active:
             self.menu_manager.tutorial.draw()
 
@@ -259,23 +232,6 @@ class MenuRenderer:
         for element in self.options_elements.values():
             element.draw(self.screen)
 
-
-
-    def _draw_map_selection(self):
-        """Draw map selection screen."""
-        title = self.fonts['title'].render("Select a Map", True, (255, 215, 0))
-        title_rect = title.get_rect(centerx=self.screen.get_rect().centerx, top=50)
-        
-        shadow = self.fonts['title'].render("Select a Map", True, (0, 0, 0))
-        shadow_rect = title_rect.copy()
-        shadow_rect.x += 3
-        shadow_rect.y += 3
-        
-        self.screen.blit(shadow, shadow_rect)
-        self.screen.blit(title, title_rect)
-        
-        for button in self.map_buttons.values():
-            button.draw(self.screen)
 
     def _scale_image_to_screen(self):
         """Scale background image to fit screen."""
@@ -443,7 +399,7 @@ class MenuRenderer:
                 button_height
             )
             if proceed_button.collidepoint(pos):
-                self.state = "map_select"
+                self.menu_manager.start_game()
                 return
 
         for card in self.general_cards:
