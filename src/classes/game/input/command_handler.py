@@ -19,8 +19,11 @@ class CommandHandler:
         """Handle moving general between units."""
         if not self.state_manager.selected_unit:
             return False
-            
+                
         if self.state_manager.can_general_move(self.state_manager.selected_unit, clicked_unit):
+            if clicked_unit == self.state_manager.selected_unit:
+                return False
+                
             clicked_unit.has_general = True
             clicked_unit.general_id = self.state_manager.selected_unit.general_id
             self.state_manager.selected_unit.has_general = False
@@ -32,7 +35,7 @@ class CommandHandler:
                 self.state_manager.movement_points[clicked_unit]
             )
             return True
-            
+                
         return False
 
     def handle_key_command(self, key):

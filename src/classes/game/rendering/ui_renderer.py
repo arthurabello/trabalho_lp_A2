@@ -161,7 +161,7 @@ class UIRenderer:
 
     def _draw_active_modifiers(self, unit, y_offset, PANEL_WIDTH):
         """Draw active modifiers and direction compass."""
-        section_bg = pygame.Surface((PANEL_WIDTH - 40, 160), pygame.SRCALPHA)
+        section_bg = pygame.Surface((PANEL_WIDTH - 40, 180), pygame.SRCALPHA)  # Increased height
         section_bg.fill(self.colors['section_bg'])
         self.status_surface.blit(section_bg, (20, y_offset))
 
@@ -176,40 +176,68 @@ class UIRenderer:
             
             attack_mod = (formation_mods.get('attack_modifier', 1.0) - 1) * 100
             if attack_mod != 0:
-                mod_text = f"{'+' if attack_mod > 0 else ''}{attack_mod:.0f}% Attack (Formation)"
+                sign = "+" if attack_mod > 0 else ""
+                mod_text = f"{sign}{attack_mod:.0f}% Attack ({unit.formation})"
                 mod_color = self.colors['hp_good'] if attack_mod > 0 else self.colors['hp_bad']
                 mod_surface = self.mini_font.render(mod_text, True, mod_color)
                 self.status_surface.blit(mod_surface, (30, mod_y))
                 mod_y += 25
 
-            defense_mod = (formation_mods.get('defense_modifier', 1.0) - 1) * 100
-            if defense_mod != 0:
-                mod_text = f"{'+' if defense_mod > 0 else ''}{defense_mod:.0f}% Defense (Formation)"
-                mod_color = self.colors['hp_good'] if defense_mod > 0 else self.colors['hp_bad']
-                mod_surface = self.mini_font.render(mod_text, True, mod_color)
+            # Defense modifiers with attack type specification
+            if unit.formation == "Spread":
+                mod_text = f"+20% Ranged Defense (Spread)"
+                mod_surface = self.mini_font.render(mod_text, True, self.colors['hp_good'])
+                self.status_surface.blit(mod_surface, (30, mod_y))
+                mod_y += 25
+            elif unit.formation == "Shield Wall":
+                mod_surface = self.mini_font.render("+50% Melee Defense (Shield Wall)", True, self.colors['hp_good'])
+                self.status_surface.blit(mod_surface, (30, mod_y))
+                mod_y += 25
+                mod_surface = self.mini_font.render("+150% Ranged Defense (Shield Wall)", True, self.colors['hp_good'])
+                self.status_surface.blit(mod_surface, (30, mod_y))
+                mod_y += 25
+            elif unit.formation == "Phalanx" and unit.attack_type == "melee":
+                mod_surface = self.mini_font.render("+300% Frontal Defense (Phalanx)", True, self.colors['hp_good'])
+                self.status_surface.blit(mod_surface, (30, mod_y))
+                mod_y += 25
+                mod_surface = self.mini_font.render("-20% Other Directions (Phalanx)", True, self.colors['hp_bad'])
+                self.status_surface.blit(mod_surface, (30, mod_y))
+                mod_y += 25
+            elif unit.formation == "Turtle" and unit.attack_type == "melee":
+                mod_surface = self.mini_font.render("+", True, self.colors['hp_good'])
+                self.status_surface.blit(mod_surface, (30, mod_y))
+                mod_y += 25
+                mod_surface = self.mini_font.render("-20% Other Directions (Phalanx)", True, self.colors['hp_bad'])
                 self.status_surface.blit(mod_surface, (30, mod_y))
                 mod_y += 25
 
-        # Terrain modifiers
+        # Terrain modifiers with attack type specification
         if hasattr(unit, 'terrain') and unit.terrain:
             if unit.terrain == "mountain":
                 if hasattr(unit, 'attack_type'):
                     if unit.attack_type == "melee":
-                        mod_text = "+50% Defense vs Melee (Mountain)"
+                        mod_text = "+50% Melee Defense (Mountain)"
                     else:
-                        mod_text = "+20% Defense vs Ranged (Mountain)"
+                        mod_text = "+20% Ranged Defense (Mountain)"
                     mod_surface = self.mini_font.render(mod_text, True, self.colors['hp_good'])
                     self.status_surface.blit(mod_surface, (30, mod_y))
                     mod_y += 25
             elif unit.terrain == "forest":
                 if hasattr(unit, 'attack_type'):
                     if unit.attack_type == "ranged":
-                        mod_text = "+70% Defense vs Ranged (Forest)"
+                        mod_text = "+70% Ranged Defense (Forest)"
                     else:
-                        mod_text = "+25% Defense vs Melee (Forest)"
+                        mod_text = "+25% Melee Defense (Forest)"
                     mod_surface = self.mini_font.render(mod_text, True, self.colors['hp_good'])
                     self.status_surface.blit(mod_surface, (30, mod_y))
                     mod_y += 25
+
+        # Add attack type info
+        attack_type_text = f"Attack Type: {unit.attack_type.capitalize()}"
+        attack_surface = self.mini_font.render(attack_type_text, True, self.colors['text'])
+        self.status_surface.blit(attack_surface, (30, mod_y))
+        mod_y += 25
+
 
         self._draw_compass(unit, y_offset + 200, PANEL_WIDTH)
 

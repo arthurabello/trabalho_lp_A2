@@ -6,6 +6,43 @@ import random
 from .unit_direction import Direction
 
 class UnitCombatMixin:
+    def _get_damage_variation(self):
+        """Get unit-specific damage variation range."""
+        unit_type = self.__class__.__name__
+        general_id = self.general_id if self.has_general else None
+
+        if general_id == 'leonidas' and (unit_type in ['Hoplite', 'Archer']):
+            return random.uniform(0.95, 1.2) #THIS IS SPARTA
+
+        if general_id == 'alexander':
+            return random.uniform(0.9, 1.1) #normal
+
+        if general_id == 'edward':
+            if unit_type == 'Archer':
+                return random.uniform(0.92, 1.09) #they have good longbows
+            if unit_type == 'MenAtArms':
+                return random.uniform(0.8, 1.1) #they are stupid
+            return random.uniform(0.9, 1.1)
+
+        if general_id == 'charlemagne':
+            if unit_type == 'HeavyCavalry':
+                return random.uniform(0.95, 1.17) #they eat good cheese and drink good wine
+            return random.uniform(0.9, 1.1)
+
+        if general_id == 'harald':
+            if unit_type == 'Viking':
+                return random.uniform(0.8, 1.2) #the gods are with them
+            if unit_type == 'Archer':
+                return random.uniform(0.9, 1.2)
+            return random.uniform(0.9, 1.1)
+
+        if general_id == 'julius':
+            if unit_type == 'Legionary':
+                return random.uniform(0.95, 1.15) #they eat good pecorino cheese
+            return random.uniform(0.9, 1.1)
+
+        return random.uniform(0.9, 1.1) #all other mere mortals
+
     def attack(self, target, board):
         """Execute attack against target unit."""
         if not self.is_alive or not target.is_alive or target.player == self.player:
@@ -18,13 +55,16 @@ class UnitCombatMixin:
         attack_mod = self._calculate_attack_modifiers()
         defense_mod = target._calculate_defense_modifiers(self, board)
         
-        base_damage = (self.base_attack * attack_mod * direction_mod) * (1 - (target.base_defense * defense_mod / 100))
-        variation = random.uniform(0.8, 1.2)
+        base_attack = self.base_attack * attack_mod * direction_mod
+        defense_reduction = min(0.9, (target.base_defense * defense_mod) / 100) 
+        base_damage = base_attack * (1 - defense_reduction)  
+        
+        variation = self._get_damage_variation()
         if random.random() < crit_chance:
-            variation *= 1.5
+            variation *= 1.5 
             
-        final_damage = base_damage * variation
-        target.current_hp = max(0, target.current_hp - final_damage)
+        final_damage = max(0, base_damage * variation)  
+        target.current_hp = max(0, min(target.max_hp, target.current_hp - final_damage))  
 
         if self.attack_type == "melee" and target.attack_type == "melee":
             self._handle_counter_attack(target, attack_direction)
@@ -38,7 +78,7 @@ class UnitCombatMixin:
         try:
             self._play_attack_sound()
         except Exception as e:
-            print(f"Failed to play attack sound fudeu menor: {str(e)}")
+            print(f"Failed to play attack sound: {str(e)}")
 
     def _get_direction_modifier(self, attack_direction):
         """Get damage modifier based on attack direction."""
@@ -98,38 +138,84 @@ class UnitCombatMixin:
         except Exception as e:
             print(f"Failed to play attack sound: {str(e)}")
 
+
     def _calculate_attack_modifiers(self):
-        """Calculate total attack modifiers."""
         modifiers = 1.0
+        unit_type = self.__class__.__name__
+        general_id = self.general_id if self.has_general else None
+            
+        if general_id == 'alexander' and unit_type == 'Hypaspist':
+            if self.formation == 'Phalanx':
+                modifiers *= 1.2 
+            if self.has_general:
+                modifiers *= 1.3  
         
-        if self.has_general:
-            modifiers *= 1.25
-            
-        if self.attack_type == "melee" and self.formation == "Phalanx":
-            modifiers *= 1.75
-            
+        elif general_id == 'edward':
+            if unit_type == 'Archer':
+                modifiers *= 1.05 
+                if self.has_general:
+                    modifiers *= 1.25 
+            elif unit_type == 'MenAtArms' and self.has_general:
+                modifiers *= 1.25 
+        
+        elif general_id == 'charlemagne' and unit_type == 'HeavyCavalry':
+            if self.has_general:
+                modifiers *= 1.35  
+        
+        elif general_id == 'harald':
+            if unit_type == 'Viking':
+                if self.has_general:
+                    modifiers *= 1.4  
+            elif unit_type == 'Archer':
+                modifiers *= 1.05  
+        
+        elif general_id == 'julius':
+            if unit_type == 'Legionary' and self.has_general:
+                modifiers *= 1.25 
+            elif unit_type == 'LightHorsemen':
+                modifiers *= 1.05 
+        
+        elif general_id == 'leonidas' and unit_type == 'Hoplite':
+            if self.has_general:
+                modifiers *= 1.25 
+        
+        if hasattr(self, 'formations') and self.formation in self.formations:
+            formation_mods = self.formations[self.formation]
+            modifiers *= formation_mods['attack_modifier']
+        
         return modifiers
 
     def _calculate_defense_modifiers(self, attacker, board):
-        """Calculate total defense modifiers."""
         modifiers = 1.0
+        unit_type = self.__class__.__name__
+        general_id = self.general_id if self.has_general else None
         
-        if self.has_general:
-            modifiers *= 1.6
-
-        if self.__class__.__name__ == "Hoplite": 
-            if self.player == any(unit.player for unit in board.units if unit.has_general and unit.general_id == 'leonidas'):
-                modifiers *= 1.1  
-                if self.has_general and self.general_id == 'leonidas':
-                    modifiers *= 1.15 
-
+        if general_id == 'alexander' and unit_type == 'Hypaspist':
+            modifiers *= 1.1  
+        
+        elif general_id == 'edward' and unit_type == 'Archer':
+            if self.has_general:
+                modifiers *= 1.05  
+        
+        elif general_id == 'charlemagne' and unit_type == 'HeavyCavalry':
+            modifiers *= 1.05  
+        
+        elif general_id == 'harald' and unit_type == 'Viking':
+            modifiers *= 1.12 
+        
+        elif general_id == 'julius' and unit_type == 'Legionary':
+            modifiers *= 1.10 
+        
+        elif general_id == 'leonidas' and unit_type == 'Hoplite':
+            modifiers *= 1.20  
+        
         row, col = self.position
         terrain = board.terrain.get((row, col))
         modifiers *= self._get_terrain_modifier(terrain, attacker)
-
         modifiers *= self._get_formation_modifier(attacker)
-                
+        
         return modifiers
+
     
     def _get_attack_direction(self, attacker):
         """
