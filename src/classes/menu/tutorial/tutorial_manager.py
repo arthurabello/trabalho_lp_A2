@@ -115,9 +115,11 @@ class TutorialManager:
                 
             if self.prev_button.collidepoint(mouse_pos) and self.current_page > 0:
                 self.current_page -= 1
+                return None
                 
             if self.next_button.collidepoint(mouse_pos) and self.current_page < len(self.pages) - 1:
                 self.current_page += 1
+                return None
                 
         return None
         
