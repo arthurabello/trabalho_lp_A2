@@ -1,0 +1,135 @@
+\section{Project Development}
+The development of the game focused on three main components: the game board, the units, and the user interface.
+
+\subsection{Main Game Logic}
+
+\begin{itemize}
+
+    \item \textbf{The Board and the Graph:}
+    
+    The game board is the foundation where all interactions take place. It was implemented as a two-dimensional grid, with the size configurable through variables representing the number of columns and rows. Each cell on the board can contain a unit and has specific terrain characteristics that affect unit movement. To manage the movement logic based on terrain costs, a graph was associated with the board. This graph is dynamically updated to reflect the positions of units and the characteristics of the terrain, using Dijkstra's algorithm to calculate movement costs, thus allowing units to move according to their capabilities and the terrain conditions.
+
+    \item \textbf{Units and Their Characteristics:}
+
+    \textbf{1. Class Hierarchy and Inheritance:}
+    The units in the game were implemented following a class hierarchy that derives from a common base class, located in the \texttt{base\_unit.py} file. This base class manages universal attributes such as position on the board, direction, and player identification. From this class, specific subclasses like \texttt{Hoplite} and \texttt{Archer} are derived and configured with specific attributes such as attack type, range, etc.
+    
+    \textbf{2. Some Important Unit Attributes:}
+    \begin{itemize}
+        \item \textbf{General\_id and has\_general}: There is only one general per player in the game. Some units can be commanded by a general, which alters their abilities. If a unit with a general is eliminated, the game ends for that player.
+        \item \textbf{Movement and Attack Range (movement\_range and attack\_range)}: These attributes define how far a unit can move or attack in a turn, directly influencing positioning tactics on the board.
+        \item \textbf{Terrain}: The type of terrain a unit is positioned on affects its defense and movement. For example, units on mountains receive a defense bonus against melee attacks.
+        \item \textbf{Formation}: A unit's formation affects its attack and defense stats. Changing a unit's formation during the game is conditioned by the unit's remaining movement points; if the movement points are zero, the unit cannot change formation during the current turn. This adds a strategic layer to movement and positioning on the battlefield.
+    \end{itemize}
+
+    \textbf{3. General's Movement:}
+    The general can only move between adjacent units, reflecting the need for proximity for effective command on the battlefield. This rule adds another strategic layer to the game, as players must position their units carefully to maintain protection for the general.
+
+    \textbf{4. Attack Mechanic:}
+    Attacking in \textit{Warbound} is characterized by a distinctive approach, involving a counterattack mechanism. When a unit attacks, it also takes damage from the target, creating a situation where the attack can result in mutual damage. The direction of the attack relative to the orientation of the defending unit (north, south, east, west) also influences the result, with flank or rear attacks being more effective.
+
+    \item \textbf{User Interface:}
+
+    \textbf{1. Main Menu:} The main menu of "Warbound" is the first interface with which the player interacts. This menu includes four main buttons: Play, Tutorial, Options, and Exit. Each button is designed with an attractive visual style and intuitive functionality, making it easy to access the different sections of the game.
+
+    \begin{itemize}
+        \item Play: Starts the general and map selection sequence, leading to the beginning of the match.
+        \item Tutorial: Opens a series of interactive "pages" that explain the fundamentals of the game, such as moving units, attacking, and using formations, among other aspects.
+        \item Options: Allows players to adjust settings such as sound volume and other game preferences.
+        \item Exit: Closes the game.
+    \end{itemize}
+
+    \textbf{2. Tutorial:} The \textit{Warbound} tutorial is designed to guide new players through a detailed introduction to the game. It is presented in a book format, where players can navigate between pages that contain information on how to play, move units, attack, and use various strategies. The tutorial is accessible from the main menu and is essential for new players to understand the complex mechanics of \textit{Warbound}.
+
+    \textbf{3. Options:} On the options screen, players can adjust sound and other game settings. This includes turning sound on or off, adjusting the volume, and modifying other preferences to help personalize the gaming experience. These settings are adjusted through toggle buttons and sliders that are easy to use and visually integrated into the game's style.
+
+    \textbf{4. Game Flow After Selecting 'Play':} After clicking "Play", the player is taken to the general selection screen, where they can choose from various historical generals, each with specific bonuses for different types of units. After selecting a general, the game begins with the units positioned according to the chosen general.
+
+    \textbf{5. In-Game Status Screen:} During the game, a status screen provides continuous information about the selected unit and the current turn. This screen shows details such as the unit's health, attack and defense points, attack and movement range. Additionally, information about the terrain, the current formation, and the orientation of the unit are displayed, helping players make smart tactical decisions during the game.
+
+\end{itemize}
+
+\subsection{Challenges Encountered}
+
+\subsubsection{Game Architecture}
+\textbf{Challenge:} Modularizing the code and ensuring good separation of responsibilities between the various game components.
+
+\textbf{Solution:} A modular architecture was created with specialized managers. The \texttt{GameManager} controls the game loop and initialization, the \texttt{CombatManager} is responsible for combat calculations, the \texttt{TurnManager} handles the turns, and the \texttt{InputHandler} processes user inputs. Each module operates independently but communicates through clearly defined interfaces, making the code easier to maintain and expand.
+
+\subsubsection{Core Game Mechanics}
+
+\noindent\textbf{Unit Movement}
+\vspace{5pt}
+
+\textbf{Challenge:} Implementing an efficient and realistic system for unit movement, considering terrain and other units.
+
+\textbf{Solution:} In the \texttt{BoardGraph} module, the \texttt{dijkstras\_algorithm} function calculates the shortest paths considering terrain and other units. This allows units to move efficiently, accounting for variable movement costs.
+
+\vspace{5pt}
+\noindent \textbf{Combat System}
+\vspace{5pt}
+
+\textbf{Challenge:} Creating a balanced and flexible combat system.
+
+\textbf{Solution:} In the \texttt{UnitCombatMixin} module, functions like \texttt{attack} and \texttt{calculate\_modifiers} allow for damage calculation considering factors like attack direction, terrain, and leadership bonuses. This keeps combat fair and engaging.
+
+\subsubsection{Formation System}
+\textbf{Challenge:} Allowing easy modification and addition of combat formations.
+
+\textbf{Solution:} The system uses a dictionary in each unit class to define attack and defense modifications, making formation management easier.
+
+\subsubsection{Visual Challenges}
+\textbf{Challenge:} Adapting the game to different screen resolutions.
+
+\textbf{Solution:} The \texttt{GameRenderer} class manages adaptive rendering, automatically adjusting graphics to fit different screen sizes, ensuring a consistent visual experience.
+
+\subsubsection{Command Input}
+\textbf{Challenge:} Managing player input efficiently and intuitively.
+
+\textbf{Solution:} The \texttt{CommandHandler} class maps keyboard and mouse actions to specific game commands, simplifying user control and interaction.
+
+\subsubsection{Menu System}
+\textbf{Challenge:} Creating intuitive menus and managing smooth transitions between different game states.
+
+\textbf{Solution:} The menu system is managed by \texttt{MenuState}, which handles state transitions and user interactions, offering smooth and clear navigation.
+
+\subsubsection{Game Balancing}
+\textbf{Challenge:} Balancing the abilities of units to ensure fair gameplay.
+
+\textbf{Solution:} A modifier system was implemented that adjusts unit stats, allowing dynamic tweaks to maintain game balance.
+
+\subsubsection{Asset Management}
+\textbf{Challenge:} Efficiently managing multimedia assets.
+
+\textbf{Solution:} Centralized asset management through path constants, making updates and maintenance easier.
+
+\subsection{Project Organization}
+
+The game is organized as follows:
+
+\begin{verbatim}
+trabalho_lp_A2/
+│
+├── assets/                     # Contains all game assets (images, sounds, etc.)
+│   ├── sprites/                # Sprites of terrains and units
+│   └── sounds/                 # Sound effects and background music
+│
+├── src/                        # Source code folder
+│   ├── classes/                # Entity classes, such as characters or items
+│   │   ├── game/               # Contains the game loop and initialization logic
+│   │   ├── menu/               # Contains the game menu logic
+│   │   ├── units/              # Contains the game unit logic
+│   │   ├── board.py            # Game board logic
+│   │   └── graph.py            # Logic for the graph associated with the game board
+│   │
+│   └── main.py                 # Main game file
+│
+├── tests/                      # Game tests folder
+├── docs/                       # Game documentation folder
+│   ├── pdf/                    # pdf documentation, including Report of the game
+│   └── tex/                    # .tex files
+├── .gitignore                  # File for ignoring files in git
+├── LICENSE                     # Project license
+├── README.md                   # Project info in markdown format
+└── requirements.txt            # Python package dependencies
+\end{verbatim}
