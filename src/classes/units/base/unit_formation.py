@@ -58,23 +58,36 @@ class UnitFormationMixin:
             self.sprite = colored_sprite
 
     def _get_formation_modifier(self, attacker):
-        """Get defense modifier based on formation."""
-        if self.attack_type == "melee":
-            if self.formation == "Shield Wall":
-                if attacker.attack_type == "ranged":
-                    return 2.5
-                return 1.5
-            elif self.formation == "Phalanx":
-                if attacker.attack_type == "melee":
-                    if self._is_frontal_attack(attacker):
-                        return 3.0
-                    return 0.8
-                return 1.15
-        elif self.attack_type == "ranged" and self.formation == "Spread":
-            if attacker.attack_type == "ranged":
-                return 1.6
-            return 0.8
-        return 1.0
+        """
+        Calculates the formation modifier based on the attacker's attack type and the unit's current formation.
+        """
+        if not self.formation in self.formations:
+            return 1.0
+            
+        formation_mod = self.formations[self.formation]['defense_modifier']
+        
+        if attacker.attack_type == "ranged":
+            if self.formation == "Spread":
+                return formation_mod * 1.2 #extra vs ranged
+            elif self.formation == "Turtle" or self.formation == "Phalanx":
+                return formation_mod * 1.2  #extra vs ranged saporra
+            return formation_mod
+            
+        else:     
+            if self.formation == "Phalanx":
+                if self._is_frontal_attack(attacker):
+                    if attacker.__class__.__name__ in ["HeavyCavalry", "LightHorsemen"]:
+                        return formation_mod * 3.5  #lapada do satafera vs cavalo
+                    return formation_mod * 2.5  #tapotente
+                return formation_mod * 0.5  #flank penalty
+            
+            elif self.formation == "Spread":
+                return formation_mod * 0.6 #negative melee vs spread
+            
+            elif self.formation == "Turtle":
+                return 1.1 #lil bonus vs melee
+            return formation_mod 
+
 
     def _get_terrain_modifier(self, terrain, attacker):
         """Get defense modifier based on terrain."""
