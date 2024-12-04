@@ -2,6 +2,8 @@
 Manages menu state and configuration.
 """
 
+import pygame
+
 class MenuState:
     def __init__(self):
         """Initialize menu state."""
@@ -88,15 +90,31 @@ class MenuState:
     def toggle_sound(self, enabled):
         """Toggle sound effects."""
         self.sound_enabled = enabled
+        if hasattr(pygame.mixer, 'get_init') and pygame.mixer.get_init():
+            for channel in range(pygame.mixer.get_num_channels()):
+                if not enabled:
+                    pygame.mixer.Channel(channel).set_volume(0)
+                else:
+                    pygame.mixer.Channel(channel).set_volume(self.sound_volume)
 
     def toggle_music(self, enabled):
         """Toggle background music."""
         self.music_enabled = enabled
+        if hasattr(pygame.mixer, 'music') and pygame.mixer.get_init():
+            if enabled:
+                pygame.mixer.music.set_volume(self.music_volume)
+            else:
+                pygame.mixer.music.set_volume(0)
 
     def set_sound_volume(self, volume):
         """Set sound effect volume."""
         self.sound_volume = volume
+        if self.sound_enabled and hasattr(pygame.mixer, 'get_init') and pygame.mixer.get_init():
+            for channel in range(pygame.mixer.get_num_channels()):
+                pygame.mixer.Channel(channel).set_volume(volume)
 
     def set_music_volume(self, volume):
         """Set background music volume."""
         self.music_volume = volume
+        if self.music_enabled and hasattr(pygame.mixer, 'music') and pygame.mixer.get_init():
+            pygame.mixer.music.set_volume(volume)

@@ -251,8 +251,8 @@ class MenuRenderer:
         title_rect = title.get_rect(centerx=self.options_panel.centerx, top=self.options_panel.top + 20)
         self.screen.blit(title, title_rect)
         
-        sfx_label = self.fonts['small'].render("Sound Effects", True, (200, 200, 200))
-        music_label = self.fonts['small'].render("Background Music", True, (200, 200, 200))
+        sfx_label = self.fonts['small'].render("Background Music", True, (200, 200, 200))
+        music_label = self.fonts['small'].render("Sound Effects", True, (200, 200, 200))
         self.screen.blit(sfx_label, (self.options_panel.x + 30, self.options_panel.y + 120))
         self.screen.blit(music_label, (self.options_panel.x + 30, self.options_panel.y + 200))
         
