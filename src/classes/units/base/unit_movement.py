@@ -3,10 +3,8 @@ Movement-related functionality for units.
 """
 
 class UnitMovementMixin:
-    """
-    Mixin class providing movement-related functionality for units.
-    """
-    def move(self, new_position):
+    def move(self, new_position) -> None:
+
         """
         Moves the unit to a new position.
 
@@ -17,13 +15,15 @@ class UnitMovementMixin:
             new_position (tuple): The new position to which the unit will be moved, 
                                    represented as a tuple (row, col).
         """
+
         if not self.is_alive:
             return
 
         self.position = new_position
         self._play_move_sound()
 
-    def can_move_to(self, position, board, all_units):
+    def can_move_to(self, position, board, all_units) -> bool:
+
         """
         Checks if the unit can move to the specified position.
 
@@ -39,6 +39,7 @@ class UnitMovementMixin:
         Returns:
             bool: True if the unit can move to the position, False otherwise.
         """
+
         if not self.is_alive:
             return False
 
@@ -56,8 +57,12 @@ class UnitMovementMixin:
 
         return True
 
-    def _play_move_sound(self):
-        """Play movement sound effect."""
+    def _play_move_sound(self) -> None:
+
+        """
+        Play movement sound effect.
+        """
+        
         try:
             self.move_sound.play()
         except Exception as e:
