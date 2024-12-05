@@ -7,7 +7,14 @@ from .unit_direction import Direction
 
 class UnitCombatMixin:
     def _get_damage_variation(self):
-        """Get unit-specific damage variation range."""
+        """
+        Returns the damage variation specific to a unit based on the general and unit type.
+        The variation is a random value within a range determined by the general and unit type.
+
+        Returns:
+            float: A random damage variation multiplier, typically between 0.9 and 1.2, 
+                  or other specific values depending on the general and unit.
+        """
         unit_type = self.__class__.__name__
         general_id = self.general_id if self.has_general else None
 
@@ -44,7 +51,17 @@ class UnitCombatMixin:
         return random.uniform(0.9, 1.1) #all other mere mortals
 
     def attack(self, target, board):
-        """Execute attack against target unit."""
+        """
+        Executes an attack on a target unit.
+
+        The attack calculates modifiers, checks for critical hits, computes the final damage, 
+        and applies it to the target unit's health. It also handles counter-attacks if both 
+        units are melee fighters.
+
+        Args:
+            target (BaseUnit): The unit being attacked.
+            board (GameBoard): The game board, which contains the terrain and other state information.
+        """
         if not self.is_alive or not target.is_alive or target.player == self.player:
             return
 
@@ -81,7 +98,15 @@ class UnitCombatMixin:
             print(f"Failed to play attack sound: {str(e)}")
 
     def _get_direction_modifier(self, attack_direction):
-        """Get damage modifier based on attack direction."""
+        """
+        Returns the damage modifier based on the attack direction.
+
+        Args:
+            attack_direction (str): The direction of the attack, which can be "front", "flank", or "rear".
+
+        Returns:
+            float: A multiplier based on the attack direction.
+        """
         return {
             "front": 1.0,
             "flank": 1.5,
@@ -89,7 +114,15 @@ class UnitCombatMixin:
         }[attack_direction]
 
     def _get_crit_chance(self, attack_direction):
-        """Get critical hit chance based on attack direction."""
+        """
+        Returns the critical hit chance based on the attack direction.
+
+        Args:
+            attack_direction (str): The direction of the attack, which can be "front", "flank", or "rear".
+
+        Returns:
+            float: The chance of a critical hit occurring.
+        """
         return {
             "front": 0.05,
             "flank": 0.10,
@@ -97,7 +130,16 @@ class UnitCombatMixin:
         }[attack_direction]
 
     def _handle_counter_attack(self, target, attack_direction):
-        """Handle counter-attack from melee units."""
+        """
+        Handles a counter-attack from a melee unit.
+
+        Calculates the counter-attack damage based on the direction of the initial attack 
+        and applies it to the attacking unit.
+
+        Args:
+            target (BaseUnit): The unit being attacked, which will retaliate.
+            attack_direction (str): The direction of the initial attack.
+        """
         counter_mod = {
             "front": 0.6,
             "flank": 0.4,
@@ -140,6 +182,15 @@ class UnitCombatMixin:
 
 
     def _calculate_attack_modifiers(self):
+        """
+        Calculates the attack modifiers based on unit type, general, and formation.
+
+        Considers the general's influence, the unit's type, and any formation bonuses 
+        to determine the final attack modifier.
+
+        Returns:
+            float: The final attack modifier after considering all factors.
+        """
         modifiers = 1.0
         unit_type = self.__class__.__name__
         general_id = self.general_id if self.has_general else None
@@ -186,6 +237,17 @@ class UnitCombatMixin:
         return modifiers
 
     def _calculate_defense_modifiers(self, attacker, board):
+        """
+        Calculates the defense modifiers based on the unit's type, general, terrain, and formation.
+
+        Args:
+            attacker (BaseUnit): The unit performing the attack.
+            board (GameBoard): The game board, which contains terrain and other state information.
+        
+        Returns:
+            float: The final defense modifier after considering all factors.
+        """
+        
         modifiers = 1.0
         unit_type = self.__class__.__name__
         general_id = self.general_id if self.has_general else None

@@ -4,7 +4,16 @@ Movement-related functionality for units.
 
 class UnitMovementMixin:
     def move(self, new_position):
-        """Move unit to new position."""
+        """
+        Moves the unit to a new position.
+
+        This method updates the unit's position and plays a sound effect associated 
+        with movement. The unit must be alive to move.
+
+        Args:
+            new_position (tuple): The new position to which the unit will be moved, 
+                                   represented as a tuple (row, col).
+        """
         if not self.is_alive:
             return
 
@@ -12,7 +21,21 @@ class UnitMovementMixin:
         self._play_move_sound()
 
     def can_move_to(self, position, board, all_units):
-        """Check if unit can move to position."""
+        """
+        Checks if the unit can move to the specified position.
+
+        This method checks if the target position is within the unit's movement range, 
+        and whether the position is occupied by another unit. The unit must be alive 
+        and the position must be reachable on the board.
+
+        Args:
+            position (tuple): The target position to check, represented as a tuple (row, col).
+            board (GameBoard): The game board containing the unit and terrain data.
+            all_units (list): A list of all units in the game to check for potential collisions.
+
+        Returns:
+            bool: True if the unit can move to the position, False otherwise.
+        """
         if not self.is_alive:
             return False
 
