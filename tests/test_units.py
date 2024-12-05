@@ -9,9 +9,12 @@ from classes.units.base.unit_direction import Direction
 from classes.units.base.base_unit import BaseUnit
 
 class TestUnitComponents(unittest.TestCase):
+    """
+    Unit tests for core unit components.
+    """
 
     def setUp(self):
-        # Create a mock board and mock unit for testing
+        """Create a mock board and mock unit for testing"""
         self.board = MagicMock()
         self.board.terrain = {}
         self.board.units = []
