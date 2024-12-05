@@ -6,7 +6,14 @@ import pygame
 
 class TutorialManager:
     def __init__(self, screen):
-        """Initialize tutorial system."""
+        
+        """
+        Initialize tutorial system.
+
+        Args:
+            screen (pygame.Surface): Game window surface.
+        """
+
         self.screen = screen
         self.active = False
         self.current_page = 0
@@ -16,12 +23,20 @@ class TutorialManager:
         self.setup_ui_elements()
         
     def setup_fonts(self):
-        """Initialize fonts."""
+        
+        """
+        Initialize fonts.
+        """
+
         self.font_title = pygame.font.Font(None, 48)
         self.font_text = pygame.font.Font(None, 36)
         
     def setup_colors(self):
-        """Setup color scheme."""
+        
+        """
+        Setup color scheme.
+        """
+
         self.colors = {
             'background': (245, 245, 220),
             'border': (139, 69, 19),
@@ -32,41 +47,152 @@ class TutorialManager:
         }
         
     def setup_tutorial_content(self):
-        """Setup tutorial pages content."""
+        
+        """
+        Setup tutorial pages content.
+        """
+
         self.pages = [
-            {
-                "title": "Welcome to Warbound",
-                "content": "Warbound is a turn-based strategy game where you command historical armies. "
-                          "Choose your general wisely, as each brings unique bonuses to specific units."
-            },
-            {
-                "title": "Movement",
-                "content": "Click on a unit to select it. Highlighted squares show where the unit can move. "
-                          "Right-click to deselect. Units can move and attack in the same turn."
-            },
-            {
-                "title": "Combat",
-                "content": "Units can attack enemies within their range. Melee units must be adjacent, "
-                          "while ranged units can attack from a distance. Position and formation matter!"
-            },
-            {
-                "title": "Terrain",
-                "content": "Different terrain types affect movement and combat:\n"
-                          "- Mountains provide defensive bonuses\n"
-                          "- Forests protect against ranged attacks\n"
-                          "- Plains allow free movement"
-            },
-            {
-                "title": "Formations",
-                "content": "Press 'G' to cycle through formations. Each formation has strengths and weaknesses:\n"
-                          "- Shield Wall: Better defense\n"
-                          "- Phalanx: Strong frontal defense\n"
-                          "- Spread: Good against ranged attacks"
-            }
-        ]
+        {
+            "title": "About Warbound",
+            "content": [
+                "Warbound is a turn-based strategy game where players command armies on a battlefield.",
+                "Your objective is to defeat the enemy by eliminating their general or destroying their entire army.",
+                "The game combines tactical positioning, unit management, and strategic decision-making."
+            ]
+        },
+        {
+            "title": "General Selection",
+            "content": [
+                "At the start of the game, choose a historical general who leads your army. Each general brings unique strategic advantages:",
+                "- Alexander the Great: Specializes in infantry, particularly Hypaspists. Provides substantial defensive and strength bonuses, with exceptional synergy when Alexander is present.",
+                "- Julius Caesar: Enhances legion movement and attack capabilities. Offers passive defense for legions and light cavalry improvements.",
+                "- Edward the Elder: Strengthens archers and man-at-arms units, providing significant combat and mobility boosts.",
+                "- Charlemagne: Focuses on heavy cavalry, offering defensive advantages and powerful strength enhancements.",
+                "- Harald Hardrada: Boosts Viking units and archers, providing robust defensive and offensive capabilities.",
+                "- Leonidas: Master of Spartan hoplites, delivering impressive defensive and movement bonuses.",
+                "Your general choice significantly impacts your initial army formation and overall battle strategy."
+            ]
+        },
+        {
+            "title": "Moving Units",
+            "content": [
+                "Unit movement in Warbound follows these rules:",
+                "- Use mouse to select and move units",
+                "- Movements restricted by unit's movement range",
+                "- Click unit first, then destination hex",
+                "- Cannot move through other units"
+                "- Movement through different terrains may consume additional movement points"
+            ]
+        },
+        {
+            "title": "Attacking Units: Melee",
+            "content": [
+                "Melee Units Combat Mechanics:",
+                "- Attack range is 1 hex",
+                "- Receive counter-attack when attacking",
+                "- Close combat involves mutual damage",
+                "- Positioning and direction are crucial"
+            ]
+        },
+        {
+            "title": "Attacking Units: Ranged",
+            "content": [
+                "Ranged Units Combat Mechanics:",
+                "- Attack range greater than 1 hex",
+                "- No counter-attack received",
+                "- Can attack from a distance",
+                "- Less vulnerable in direct confrontations"
+            ]
+        },
+        {
+            "title": "Passing the Turn",
+            "content": [
+                "Managing Your Turn:",
+                "- Press SPACE key to end current turn",
+                "- Transfer control to the other player",
+                "- Plan your moves carefully before ending turn"
+            ]
+        },
+        {
+            "title": "Formation System",
+            "content": [
+                "Warbound Formations:",
+                "- Phalanx: Increases attack, reduces defense",
+                "- Turtle: Maximum defensive formation",
+                "- Shield Wall: Strong defense against ranged attacks",
+                "- V Formation: Balanced attack and defense",
+                "- Spread: Good for ranged units",
+                "Press 'G' to cycle through formations"
+            ]
+        },
+        {
+            "title": "Unit Orientation",
+            "content": [
+                "Unit Orientation System:",
+                "- Four directions: North, South, East, West",
+                "- Use directional keys to change orientation",
+                "- One orientation change per turn",
+                "- Orientation affects combat effectiveness",
+                "Attacks from different angles have varied damage modifiers"
+            ]
+        },
+        {
+            "title": "Unit Types",
+            "content": [
+                "Warbound Unit Types:",
+                "Melee Units:",
+                "- Hoplite",
+                "- Legionary",
+                "- Viking",
+                "- Men-at-Arms",
+                "- Hypaspist",
+                "- Cavalry",
+                "- Heavy Cavalry",
+                "\nRanged Units:",
+                "- Archer",
+                "- Crossbowman"
+            ]
+        },
+        {
+            "title": "Combat Mechanics",
+            "content": [
+                "Damage Calculation Factors:",
+                "- Base damage calculation",
+                "- Direction modifiers",
+                "- Critical hit chances",
+                "- Terrain effects",
+                "- Unit formation",
+                "- General's presence",
+                "Damage varies 80-120% of base damage"
+            ]
+        },
+        {
+            "title": "Title Game Over",
+            "content": [
+                "After Losing the Game:",
+                "- Press M: Return to main menu"
+            ]
+        },
+        {
+            "title": "Pro Tips",
+            "content": [
+                "Strategic Advice:",
+                "- Position your general carefully",
+                "- Use terrain to your advantage",
+                "- Vary your formations strategically",
+                "- Consider unit orientations during combat",
+                "Good luck, commander!"
+            ]
+        }
+    ]
         
     def setup_ui_elements(self):
-        """Setup UI elements."""
+        
+        """
+        Setup UI elements.
+        """
+
         screen_width, screen_height = self.screen.get_size()
         self.window_width = int(screen_width * 0.8)
         self.window_height = int(screen_height * 0.8)
@@ -76,7 +202,11 @@ class TutorialManager:
         self.setup_buttons()
         
     def setup_buttons(self):
-        """Setup navigation buttons."""
+        
+        """
+        Setup navigation buttons.
+        """
+
         button_width = 100
         button_height = 40
         
@@ -102,7 +232,11 @@ class TutorialManager:
         )
         
     def handle_event(self, event):
-        """Handle tutorial events."""
+        
+        """
+        Handle tutorial events.
+        """
+
         if not self.active:
             return None
 
@@ -124,7 +258,11 @@ class TutorialManager:
         return None
         
     def draw(self):
-        """Draw tutorial window."""
+        
+        """
+        Draw tutorial window.
+        """
+
         if not self.active:
             return
             
@@ -133,7 +271,11 @@ class TutorialManager:
         self._draw_navigation()
         
     def _draw_background(self):
-        """Draw tutorial background."""
+        
+        """
+        Draw tutorial background.
+        """
+
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 128))
         self.screen.blit(overlay, (0, 0))
@@ -151,7 +293,11 @@ class TutorialManager:
         )
         
     def _draw_content(self):
-        """Draw tutorial content."""
+        
+        """
+        Draw tutorial content.
+        """
+
         if self.current_page >= len(self.pages):
             return
             
@@ -167,7 +313,11 @@ class TutorialManager:
         self._draw_wrapped_text(page['content'], self.window_y + 100)
         
     def _draw_navigation(self):
-        """Draw navigation buttons."""
+        
+        """
+        Draw navigation buttons.
+        """
+
         mouse_pos = pygame.mouse.get_pos()
         
         pygame.draw.rect(self.screen, self.colors['button'], self.close_button)
@@ -186,24 +336,41 @@ class TutorialManager:
             next_text = self.font_text.render('>>', True, self.colors['button_text'])
             self.screen.blit(next_text, (self.next_button.centerx - 16, self.next_button.centery - 12))
 
-    def _draw_wrapped_text(self, text, start_y):
-        """Draw wrapped text content."""
-        words = text.split()
+    def _draw_wrapped_text(self, content, start_y):
+        """
+        Draw text with word wrapping.
+
+        Args:
+            content (list): List of lines of text.
+            start_y (int): Y position to start drawing from.
+        """
+    
+        x = self.window_x + 60
         line_spacing = 36
-        x = self.window_x + 50
+        indent = 40
+
         y = start_y
+        for line in content:
+            is_list_item = line.strip().startswith('-')
+            line_x = x + indent if is_list_item else x
+
+            words = line.split()
+            current_line = []
+            for word in words:
+                test_line = ' '.join(current_line + [word])
+                text_surface = self.font_text.render(test_line, True, self.colors['text'])
+                if text_surface.get_width() > self.window_width - 120:
+                    text_surface = self.font_text.render(' '.join(current_line), True, self.colors['text'])
+                    self.screen.blit(text_surface, (line_x, y))
+                    y += line_spacing
+                    current_line = [word]
+                else:
+                    current_line.append(word)
+
+            if current_line:
+                text_surface = self.font_text.render(' '.join(current_line), True, self.colors['text'])
+                self.screen.blit(text_surface, (line_x, y))
+            y += line_spacing
+
+        return y
         
-        line = []
-        for word in words:
-            line.append(word)
-            text_surface = self.font_text.render(' '.join(line), True, self.colors['text'])
-            if text_surface.get_width() > self.window_width - 100:
-                line.pop()
-                text_surface = self.font_text.render(' '.join(line), True, self.colors['text'])
-                self.screen.blit(text_surface, (x, y))
-                y += line_spacing
-                line = [word]
-        
-        if line:
-            text_surface = self.font_text.render(' '.join(line), True, self.colors['text'])
-            self.screen.blit(text_surface, (x, y))
