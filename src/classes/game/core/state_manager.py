@@ -8,8 +8,12 @@ from ...units.types.infantry.ranged.infantry_ranged_units import Archer, Crossbo
 from ...units.types.infantry.melee.infantry_melee_units import Hoplite, Hypaspist, Legionary, MenAtArms, Viking
 
 class GameStateManager:
-    def __init__(self, player1_general, player2_general):
-        """Initialize game state."""
+    def __init__(self, player1_general, player2_general) -> None:
+        
+        """
+        Initialize the game state manager.
+        """
+
         self.m = 20  
         self.n = 30 
         if self.m <= 0 or self.n <= 0:
@@ -32,8 +36,12 @@ class GameStateManager:
         self.board = None
         self.return_to_menu = False
         
-    def setup_formations(self):
-        """Setup player formations based on generals."""
+    def setup_formations(self) -> None:
+        
+        """
+        Retrieve formations for both players.
+        """
+
         if not self.player1_general or not self.player2_general:
             raise ValueError("Both players must select a general")
         
@@ -46,8 +54,12 @@ class GameStateManager:
         self.player1_formation = getattr(Armies, general1)
         self.player2_formation = getattr(Armies, general2)
 
-    def setup_units(self):
-        """Initialize units for both players."""
+    def setup_units(self) -> None:
+        
+        """
+        Setup units for both players.
+        """
+
         self.units1 = self._create_units(1, self.player1_formation)
         self.units2 = self._create_units(2, self.player2_formation)
         
@@ -61,8 +73,19 @@ class GameStateManager:
         self.movement_points = {}
         self._reset_movement_points()
 
-    def _create_units(self, player, board_layout):
-        """Creates units based on layout."""
+    def _create_units(self, player, board_layout) -> list:
+        
+        """
+        Create units based on the board layout.
+
+        Args:
+            player (int): The player number.
+            board_layout (list): The board layout.
+
+        Returns:
+            list: A list of units.
+        """
+
         unit_mapping = {
             'H': Hoplite,
             'C': LightHorsemen,
@@ -98,29 +121,49 @@ class GameStateManager:
             
         return units
 
-    def _reset_movement_points(self):
-        """Reset movement points for current player."""
+    def _reset_movement_points(self) -> None:
+        
+        """
+        Reset movement points for all units.
+        """
+
         all_units = self._get_player_units(self.current_player)
         for unit in all_units:
             self.movement_points[unit] = unit.movement_range
 
-    def _get_player_units(self, player):
-        """Get all units for a player."""
+    def _get_player_units(self, player) -> list:
+       
+        """
+        Get units for a player.
+        """
+
         return self.units1 if player == 1 else self.units2
 
-    def get_all_units(self):
-        """Get all units in game."""
+    def get_all_units(self) -> list:
+        
+        """
+        Get all units in the game.
+        """
+
         return self.units1 + self.units2
 
-    def get_unit_at_position(self, position):
-        """Get unit at specified position."""
+    def get_unit_at_position(self, position) -> object:
+        
+        """
+        Get a unit at a specific position.
+        """
+
         for unit in self.get_all_units():
             if unit.is_alive and unit.position == position:
                 return unit
         return None
 
-    def can_general_move(self, from_unit, to_unit):
-        """Check if general can move between units."""
+    def can_general_move(self, from_unit, to_unit) -> bool:
+
+        """
+        Check if general can move between units.
+        """
+
         if not from_unit.has_general or not to_unit.is_alive:
             return False
             
