@@ -6,10 +6,8 @@ import random
 from .unit_direction import Direction
 
 class UnitCombatMixin:
-    """
-    Combat-related functionality for units.
-    """
-    def _get_damage_variation(self):
+    def _get_damage_variation(self) -> float:
+
         """
         Returns the damage variation specific to a unit based on the general and unit type.
         The variation is a random value within a range determined by the general and unit type.
@@ -18,6 +16,7 @@ class UnitCombatMixin:
             float: A random damage variation multiplier, typically between 0.9 and 1.2, 
                   or other specific values depending on the general and unit.
         """
+
         unit_type = self.__class__.__name__
         general_id = self.general_id if self.has_general else None
 
@@ -53,7 +52,8 @@ class UnitCombatMixin:
 
         return random.uniform(0.9, 1.1) #all other mere mortals
 
-    def attack(self, target, board):
+    def attack(self, target, board) -> None:
+
         """
         Executes an attack on a target unit.
 
@@ -65,6 +65,7 @@ class UnitCombatMixin:
             target (BaseUnit): The unit being attacked.
             board (GameBoard): The game board, which contains the terrain and other state information.
         """
+
         if not self.is_alive or not target.is_alive or target.player == self.player:
             return
 
@@ -100,7 +101,8 @@ class UnitCombatMixin:
         except Exception as e:
             print(f"Failed to play attack sound: {str(e)}")
 
-    def _get_direction_modifier(self, attack_direction):
+    def _get_direction_modifier(self, attack_direction) -> float:
+
         """
         Returns the damage modifier based on the attack direction.
 
@@ -110,13 +112,15 @@ class UnitCombatMixin:
         Returns:
             float: A multiplier based on the attack direction.
         """
+
         return {
             "front": 1.0,
             "flank": 1.5,
             "rear": 2.0
         }[attack_direction]
 
-    def _get_crit_chance(self, attack_direction):
+    def _get_crit_chance(self, attack_direction) -> float:
+
         """
         Returns the critical hit chance based on the attack direction.
 
@@ -126,13 +130,15 @@ class UnitCombatMixin:
         Returns:
             float: The chance of a critical hit occurring.
         """
+
         return {
             "front": 0.05,
             "flank": 0.10,
             "rear": 0.15
         }[attack_direction]
 
-    def _handle_counter_attack(self, target, attack_direction):
+    def _handle_counter_attack(self, target, attack_direction) -> None:
+
         """
         Handles a counter-attack from a melee unit.
 
@@ -143,6 +149,7 @@ class UnitCombatMixin:
             target (BaseUnit): The unit being attacked, which will retaliate.
             attack_direction (str): The direction of the initial attack.
         """
+
         counter_mod = {
             "front": 0.6,
             "flank": 0.4,
@@ -154,7 +161,8 @@ class UnitCombatMixin:
         counter_damage = counter_base * counter_variation
         self.current_hp = max(0, self.current_hp - counter_damage)
 
-    def can_attack(self, target_position):
+    def can_attack(self, target_position) -> bool:
+
         """
         Check if unit can attack a position.
         
@@ -164,6 +172,7 @@ class UnitCombatMixin:
         Returns:
             bool: True if the position is within attack range
         """
+
         if not self.is_alive:
             return False
                 
@@ -175,10 +184,12 @@ class UnitCombatMixin:
         
         return row_diff <= self.attack_range and col_diff <= self.attack_range
     
-    def _play_attack_sound(self):
+    def _play_attack_sound(self) -> None:
+
         """
         Play attack sound effect.
         """
+
         try:
             if hasattr(self, 'attack_sound') and self.attack_sound:
                 self.attack_sound.play()
@@ -186,16 +197,15 @@ class UnitCombatMixin:
             print(f"Failed to play attack sound: {str(e)}")
 
 
-    def _calculate_attack_modifiers(self):
+    def _calculate_attack_modifiers(self) -> float:
+
         """
         Calculates the attack modifiers based on unit type, general, and formation.
-
-        Considers the general's influence, the unit's type, and any formation bonuses 
-        to determine the final attack modifier.
 
         Returns:
             float: The final attack modifier after considering all factors.
         """
+
         modifiers = 1.0
         unit_type = self.__class__.__name__
         general_id = self.general_id if self.has_general else None
@@ -241,7 +251,8 @@ class UnitCombatMixin:
         
         return modifiers
 
-    def _calculate_defense_modifiers(self, attacker, board):
+    def _calculate_defense_modifiers(self, attacker, board) -> float:
+
         """
         Calculates the defense modifiers based on the unit's type, general, terrain, and formation.
 
@@ -284,7 +295,8 @@ class UnitCombatMixin:
         return modifiers
 
     
-    def _get_attack_direction(self, attacker):
+    def _get_attack_direction(self, attacker) -> str:
+
         """
         Determines the direction of attack relative to the defender's facing direction.
         
@@ -294,6 +306,7 @@ class UnitCombatMixin:
         Returns:
             str: "front", "flank", or "rear" depending on attack direction
         """
+        
         att_row, att_col = attacker.position
         def_row, def_col = self.position
         

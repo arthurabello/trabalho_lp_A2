@@ -9,21 +9,23 @@ from classes.units.base.unit_direction import Direction
 from classes.units.base.base_unit import BaseUnit
 
 class TestUnitComponents(unittest.TestCase):
-    """
-    Unit tests for core unit components.
-    """
+    def setUp(self) -> None:
 
-    def setUp(self):
-        """Create a mock board and mock unit for testing"""
+        """
+        Create a mock board and mock unit for testing
+        """
+
         self.board = MagicMock()
         self.board.terrain = {}
         self.board.units = []
 
-    def test_unit_initialization(self):
+    def test_unit_initialization(self) -> None:
+
         """
         Test BaseUnit initialization with valid parameters.
         Verifies correct setting of initial attributes.
         """
+
         unit = BaseUnit((5, 5), player=1, movement_range=3)
         
         self.assertEqual(unit.position, (5, 5))
@@ -34,11 +36,13 @@ class TestUnitComponents(unittest.TestCase):
         self.assertEqual(unit.facing_direction, Direction.EAST)
         self.assertEqual(unit.formation, "Standard")
 
-    def test_unit_initialization_invalid_parameters(self):
+    def test_unit_initialization_invalid_parameters(self) -> None:
+
         """
         Test BaseUnit initialization with invalid parameters.
         Ensures proper validation of input parameters.
         """
+
         with self.assertRaises(ValueError):
             BaseUnit("invalid position", player=1, movement_range=3)
         
@@ -48,7 +52,8 @@ class TestUnitComponents(unittest.TestCase):
         with self.assertRaises(ValueError):
             BaseUnit((5, 5), player=1, movement_range=-1)
 
-    def test_can_move_to(self):
+    def test_can_move_to(self) -> None:
+
         """
         Test unit movement validation.
         Verifies that a unit can only move to reachable, unoccupied positions.
@@ -66,11 +71,13 @@ class TestUnitComponents(unittest.TestCase):
         self.assertFalse(unit.can_move_to((6, 5), board, all_units))
         self.assertFalse(unit.can_move_to((7, 5), board, all_units))
 
-    def test_attack_direction_calculation(self):
+    def test_attack_direction_calculation(self) -> None:
+
         """
         Test _get_attack_direction method.
         Verify correct attack direction determination based on relative positioning.
         """
+
         defender = BaseUnit((5, 5), player=1, movement_range=3)
         defender.facing_direction = Direction.NORTH
 
@@ -83,7 +90,8 @@ class TestUnitComponents(unittest.TestCase):
         attacker_flank = BaseUnit((5, 6), player=2, movement_range=3)
         self.assertEqual(defender._get_attack_direction(attacker_flank), "flank")
 
-    def test_formation_modifier(self):
+    def test_formation_modifier(self) -> None:
+        
         """
         Test formation defense modifier calculations.
         Verify different modifiers for various attack and formation types.

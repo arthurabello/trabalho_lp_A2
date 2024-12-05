@@ -9,13 +9,8 @@ from .unit_direction import Direction
 from ..constants.colors import Colors
 
 class UnitFormationMixin:
-    """
-    Mixin class for handling unit formations and related functionality.
-    
-    This class provides methods for changing unit formations, updating sprites based on 
-    formation and direction, and calculating formation-based modifiers.
-    """
-    def change_formation(self, formation_name):
+    def change_formation(self, formation_name) -> None:
+
         """
         Changes the unit's formation and updates the corresponding stats.
         
@@ -27,6 +22,7 @@ class UnitFormationMixin:
             formation_name (str): The name of the new formation to switch to.
 
         """
+
         if formation_name in self.formations:
             self.formation = formation_name
             modifiers = self.formations[formation_name]
@@ -36,13 +32,15 @@ class UnitFormationMixin:
 
             self._update_sprite()
 
-    def _update_sprite(self):
+    def _update_sprite(self) -> None:
+
         """
         Updates the unit's sprite based on its formation and facing direction.
         
         This method constructs the appropriate path for the sprite based on the unit's type, 
         current formation, and direction, then loads and colors the sprite accordingly.
         """
+
         unit_type = self.__class__.__name__.lower()
         direction_str = Direction.to_string(self.facing_direction).lower()
         formation_name = self.formation.lower().replace(" ", "_")
@@ -50,7 +48,8 @@ class UnitFormationMixin:
         sprite_path = self._get_sprite_path(unit_type, formation_name, direction_str)
         self._load_and_color_sprite(sprite_path)
 
-    def _get_sprite_path(self, unit_type, formation_name, direction_str):
+    def _get_sprite_path(self, unit_type, formation_name, direction_str) -> str:
+
         """
         Constructs the path to the unit's sprite based on its type, formation, and direction.
         
@@ -62,6 +61,7 @@ class UnitFormationMixin:
         Returns:
             str: The file path to the unit's sprite image.
         """
+
         current_file_path = os.path.dirname(os.path.abspath(__file__))
         assets_path = os.path.normpath(os.path.join(current_file_path, "..", "..", "..", "assets"))
         
@@ -73,7 +73,8 @@ class UnitFormationMixin:
             f"{unit_type}_{formation_name}_{direction_str.lower()}.png"
         )
 
-    def _load_and_color_sprite(self, sprite_path):
+    def _load_and_color_sprite(self, sprite_path) -> None:
+
         """
         Loads and colors the unit's sprite based on the player's faction.
         
@@ -83,6 +84,7 @@ class UnitFormationMixin:
         Args:
             sprite_path (str): The file path to the unit's sprite image.
         """
+
         sprite = self._load_sprite(sprite_path)
         
         if sprite:
@@ -96,7 +98,8 @@ class UnitFormationMixin:
             
             self.sprite = colored_sprite
 
-    def _get_formation_modifier(self, attacker):
+    def _get_formation_modifier(self, attacker) -> float:
+
         """
         Calculates the defense modifier based on the unit's current formation and the attacker's attack type.
         
@@ -108,6 +111,7 @@ class UnitFormationMixin:
         Returns:
             float: The defense modifier based on the formation and the attacker's attack type.
         """
+
         if not self.formation in self.formations:
             return 1.0
             
@@ -136,7 +140,8 @@ class UnitFormationMixin:
             return formation_mod 
 
 
-    def _get_terrain_modifier(self, terrain, attacker):
+    def _get_terrain_modifier(self, terrain, attacker) -> float:
+
         """
         Returns the defense modifier based on the terrain type.
         
@@ -149,6 +154,7 @@ class UnitFormationMixin:
         Returns:
             float: The defense modifier based on the terrain type and attacker's attack type.
         """
+        
         if terrain == "mountain":
             if attacker.attack_type == "melee":
                 return 1.5

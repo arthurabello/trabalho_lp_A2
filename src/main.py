@@ -1,5 +1,5 @@
 """
-Main entry point for the Warbound game.
+Orchestrates the game.
 """
 
 import sys
@@ -8,10 +8,12 @@ from classes.menu.core.menu_manager import MenuManager
 from classes.game.core.game_manager import GameManager
 
 class WarBound:
-    """Main game application class."""
-    
-    def __init__(self):
-        """Initialize the game application."""
+    def __init__(self) -> None:
+
+        """
+        Initialize the game.
+        """
+
         try:
             pygame.init()
             if pygame.get_error():
@@ -24,8 +26,12 @@ class WarBound:
             print(f"Failed to initialize game: {str(e)}")
             sys.exit(1)
 
-    def run(self):
-        """Main application loop."""
+    def run(self) -> None:
+
+        """
+        Main game loop.
+        """
+
         try:
             running = True
             while running:
@@ -50,8 +56,12 @@ class WarBound:
         finally:
             pygame.quit()  
 
-def main():
-    """Entry point of the application."""
+def main() -> None:
+
+    """
+    Main function.
+    """
+    
     app = WarBound()
     app.run()
 

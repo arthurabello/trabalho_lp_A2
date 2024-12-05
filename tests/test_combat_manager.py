@@ -7,19 +7,19 @@ sys.path.append('../src')
 from classes.game.core.combat_manager import CombatManager
 
 class TestCombatManager(unittest.TestCase):
-    """
-    Unit tests for the CombatManager class.
-    """
-    def setUp(self):
-        """Set up test environment."""
-        self.state_manager = MagicMock()  # Mock the state manager
-        self.state_manager.board = MagicMock()  # Mock the game board
+    def setUp(self) -> None:
+
+        """
+        Set up the test environment.
+        """
+
+        self.state_manager = MagicMock()  
+        self.state_manager.board = MagicMock() 
         self.state_manager.current_player = 1
         self.state_manager.game_over = False
         self.state_manager.winner = None
         self.combat_manager = CombatManager(self.state_manager)
 
-        # Mock units
         self.attacker = MagicMock()
         self.defender = MagicMock()
         self.attacker.is_alive = True
@@ -30,10 +30,12 @@ class TestCombatManager(unittest.TestCase):
         self.defender.player = 2
         self.defender.has_general = False
 
-    def test_handle_combat_success(self):
+    def test_handle_combat_success(self) -> None:
+
         """
         Test successful combat interaction.
         """
+
         self.combat_manager._validate_combat = MagicMock(return_value=True)
         self.attacker.attack = MagicMock()
 
@@ -42,10 +44,12 @@ class TestCombatManager(unittest.TestCase):
         self.assertTrue(result)
         self.assertFalse(self.state_manager.game_over)
 
-    def test_handle_combat_defender_general_dies(self):
+    def test_handle_combat_defender_general_dies(self) -> None:
+
         """
         Test game-over condition when defender's general dies.
         """
+
         self.combat_manager._validate_combat = MagicMock(return_value=True)
         self.defender.has_general = True
         self.defender.is_alive = False
@@ -55,10 +59,12 @@ class TestCombatManager(unittest.TestCase):
         self.assertEqual(self.state_manager.winner, 1)
         self.assertTrue(result)
 
-    def test_handle_combat_attacker_general_dies(self):
+    def test_handle_combat_attacker_general_dies(self) -> None:
+
         """
         Test game-over condition when attacker's general dies.
         """
+
         self.combat_manager._validate_combat = MagicMock(return_value=True)
         self.attacker.has_general = True
         self.attacker.is_alive = False
@@ -68,53 +74,65 @@ class TestCombatManager(unittest.TestCase):
         self.assertEqual(self.state_manager.winner, 2)
         self.assertTrue(result)
 
-    def test_handle_combat_invalid(self):
+    def test_handle_combat_invalid(self) -> None:
+
         """
         Test combat with invalid conditions.
         """
+
         self.combat_manager._validate_combat = MagicMock(return_value=False)
         result = self.combat_manager.handle_combat(self.attacker, self.defender)
         self.assertFalse(result)
 
-    def test_validate_combat_dead_attacker(self):
+    def test_validate_combat_dead_attacker(self) -> None:
+
         """
         Test validation failure when the attacker is dead.
         """
+
         self.attacker.is_alive = False
         result = self.combat_manager._validate_combat(self.attacker, self.defender)
         self.assertFalse(result)
 
-    def test_validate_combat_same_player(self):
+    def test_validate_combat_same_player(self) -> None:
+
         """
         Test validation failure when both units belong to the same player.
         """
+
         self.defender.player = self.attacker.player
         result = self.combat_manager._validate_combat(self.attacker, self.defender)
         self.assertFalse(result)
 
-    def test_validate_combat_attacker_already_attacked(self):
+    def test_validate_combat_attacker_already_attacked(self) -> None:
+        
         """
         Test validation failure when the attacker has already attacked.
         """
+
         self.attacker.has_attacked = True
         result = self.combat_manager._validate_combat(self.attacker, self.defender)
         self.assertFalse(result)
 
-    def test_check_game_over_no_generals(self):
+    def test_check_game_over_no_generals(self) -> None:
+
         """
         Test game-over condition when no generals are alive.
         """
+
         self.state_manager.units1 = [MagicMock(is_alive=False, has_general=True)]
         self.state_manager.units2 = [MagicMock(is_alive=False, has_general=True)]
 
         self.combat_manager.check_game_over()
         self.assertTrue(self.state_manager.game_over)
-        self.assertEqual(self.state_manager.winner, 2)  # Assuming player 2 wins in this case.
+        self.assertEqual(self.state_manager.winner, 2) #assume player 2 wins
 
-    def test_check_game_over_generals_alive(self):
+    def test_check_game_over_generals_alive(self) -> None:
+
         """
         Test no game-over condition when generals are alive.
         """
+        
         self.state_manager.units1 = [MagicMock(is_alive=True, has_general=True)]
         self.state_manager.units2 = [MagicMock(is_alive=True, has_general=True)]
 

@@ -8,7 +8,18 @@ import os
 from ....constants.paths import Paths
 
 class Archer(BaseUnit):
-    def __init__(self, initial_position, player, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard") -> None:
+        
+        """
+        Initialize archer unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
+
         super().__init__(
             initial_position=initial_position,
             player=player,
@@ -36,18 +47,39 @@ class Archer(BaseUnit):
         self._update_stats()
         self._update_sprite()
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
+
+        """
+        Load sounds for archer.
+        """
+
         self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'archer_movement.wav'))
         self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'archer_attack.wav'))
 
-    def _update_stats(self):
+    def _update_stats(self) -> None:
+
+        """
+        Update stats for archer.
+        """
+
         self.max_hp = 100
         self.current_hp = self.max_hp
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
 
 class Crossbowmen(BaseUnit):
-    def __init__(self, initial_position, player, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard") -> None:
+
+        """
+        Initialize crossbowmen unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
+
         super().__init__(
             initial_position=initial_position,
             player=player,
@@ -75,11 +107,21 @@ class Crossbowmen(BaseUnit):
         self._update_stats()
         self._update_sprite()
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
+
+        """
+        Load sounds for crossbowmen.
+        """
+
         self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'crossbowman_movement.wav'))
         self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'crossbowman_attack.wav'))
 
-    def _update_stats(self):
+    def _update_stats(self) -> None:
+
+        """
+        Update stats for crossbowmen.
+        """
+        
         self.max_hp = 100
         self.current_hp = self.max_hp
         self.attack_points = self.base_attack
