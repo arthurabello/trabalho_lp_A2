@@ -92,30 +92,27 @@ class GameManager:
             raise RuntimeError(f"Failed to draw the board: {str(e)}")
 
     def toggle_fullscreen(self):
-        """Toggle between fullscreen and windowed mode."""
         self.is_fullscreen = not self.is_fullscreen
         
         if self.is_fullscreen:
             self.screen_width = self.max_screen_width
             self.screen_height = self.max_screen_height
             self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.FULLSCREEN)
+            
+            game_width = self.screen_width - 300
+            
+            width_scale = game_width / self.board.initial_width
+            height_scale = self.screen_height / self.board.initial_height
+            scale = min(width_scale, height_scale)
+            
+            self.board_width = int(self.board.initial_width * scale)
+            self.board_height = int(self.board.initial_height * scale)
         else:
             self.screen_width = self.windowed_width
             self.screen_height = self.windowed_height
             self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
-        
-        self.background = pygame.Surface(self.screen.get_size())
-        
-        if self.is_fullscreen:
-            game_area_width = self.screen_width - 300  
-            width_scale = game_area_width / (self.state_manager.n * 50)
-            height_scale = self.screen_height / (self.state_manager.m * 50)
-            scale = min(width_scale, height_scale)
-            
-            self.board_width = int(self.state_manager.n * 50 * scale)
-            self.board_height = int(self.state_manager.m * 50 * scale)
-        else:
-            self.board_width = self.state_manager.n * 50
-            self.board_height = self.state_manager.m * 50
-        
+            self.board_width = self.board.initial_width
+            self.board_height = self.board.initial_height
+
+        self.board.is_fullscreen = self.is_fullscreen
         self.renderer.update_surfaces(self.board_width, self.board_height)

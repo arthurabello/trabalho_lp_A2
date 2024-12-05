@@ -42,7 +42,7 @@ class Board:
         elif map_choice == 2:
             self.terrain_map = Maps.map2
         else:
-            self.terrain_map = Maps.map1  # by default
+            self.terrain_map = Maps.map1 
             
         self.m = m
         self.n = n
@@ -51,7 +51,6 @@ class Board:
         if initial_width <= 0 or initial_height <= 0:
             raise ValueError("Initial window dimensions must be positive in board/init")
         
-        # Add these two lines to store board dimensions
         self.board_width = initial_width
         self.board_height = initial_height
         
@@ -130,46 +129,34 @@ class Board:
                 self.attackable_squares.add(enemy_pos)
 
 
-    def get_square_from_click(self, mouse_pos, screen) -> None:
-
-        """
-        Determines the board square corresponding to a mouse click based on screen dimensions.
-
-        Args:
-            mouse_pos (tuple): The (x, y) position of the mouse click
-            screen (pygame.Surface): The game screen surface
-
-        Returns:
-            tuple: The (row, column) of the clicked square
-
-        Raises:
-            ValueError: If mouse position is improperly formatted.
-        """
-
+    def get_square_from_click(self, mouse_pos, screen):
+        """Determines clicked square based on current board dimensions."""
         x, y = mouse_pos
-        if not isinstance(mouse_pos, tuple) or len(mouse_pos) != 2:
-            raise ValueError("Invalid mouse position format in board/get_square_from_click")
         
-        width, height = screen.get_size()
-        if x < 0 or x >= width or y < 0 or y >= height:
-            return None  # clicked outside the board
-        
-        square_width = self.initial_width // self.n
-        square_height = self.initial_height // self.m
+        if self.is_fullscreen:
+            board_y_offset = (screen.get_height() - self.board_height) // 2
+            
+            adjusted_y = y - board_y_offset
+            
+            if (x < 0 or x > self.board_width or 
+                adjusted_y < 0 or adjusted_y > self.board_height):
+                return None
 
-        scale_x = width / self.initial_width
-        scale_y = height / self.initial_height
+            square_width = self.board_width / self.n
+            square_height = self.board_height / self.m
 
-        scaled_x = x / scale_x
-        scaled_y = y / scale_y
+            row = int(adjusted_y / square_height)
+            col = int(x / square_width)
+        else:
+            square_width = self.initial_width / self.n
+            square_height = self.initial_height / self.m
+            
+            row = int(y / square_height)
+            col = int(x / square_width)
 
-        column = int(scaled_x // square_width)
-        row = int(scaled_y // square_height)
-        
-        if row >= self.m or column >= self.n:
-            return None 
-        
-        return row, column
+        if 0 <= row < self.m and 0 <= col < self.n:
+            return row, col
+        return None
 
     def select_square(self, square, movement_points, units=None) -> None:
 

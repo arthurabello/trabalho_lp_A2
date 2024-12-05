@@ -18,16 +18,20 @@ class InputHandler:
             if event.type == pygame.QUIT:
                 self.state_manager.running = False
                 
-            elif event.type == pygame.VIDEORESIZE:
-                if not self.game_manager.is_fullscreen:
-                    self.game_manager.screen = pygame.display.set_mode(
-                        (event.w, event.h), pygame.RESIZABLE)
-                    self.game_manager.toggle_fullscreen()
-                    
             elif event.type == pygame.KEYDOWN:
-                self._handle_keydown(event)
-                
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.key == pygame.K_F11:
+                    self.game_manager.toggle_fullscreen()
+                elif event.key == pygame.K_ESCAPE and self.game_manager.is_fullscreen:
+                    self.game_manager.toggle_fullscreen()
+                elif self.state_manager.game_over:
+                    if event.key == pygame.K_r:
+                        self.game_manager.restart_game()
+                    elif event.key == pygame.K_m:
+                        self.state_manager.running = False
+                else:
+                    self._handle_keydown(event) 
+                    
+            elif event.type == pygame.MOUSEBUTTONDOWN:  
                 self._handle_mouse_click(event)
 
     def _handle_keydown(self, event):
@@ -41,6 +45,7 @@ class InputHandler:
         else:
             self.command_handler.handle_key_command(event.key)
 
+    
     def _handle_mouse_click(self, event):
         """Handle mouse input."""
         mouse_pos = pygame.mouse.get_pos()
@@ -49,13 +54,13 @@ class InputHandler:
             board_y_offset = (self.game_manager.screen_height - self.game_manager.board_height) // 2
             adjusted_y = mouse_pos[1] - board_y_offset
             mouse_pos = (mouse_pos[0], adjusted_y)
-
+        
         clicked_square = self.game_manager.board.get_square_from_click(
-            mouse_pos, self.game_manager.renderer.board_surface)
+            mouse_pos, self.game_manager.screen)
             
         if clicked_square is None:
             return
-
+            
         if event.button == 1:
             self.command_handler.handle_left_click(clicked_square)
         elif event.button == 3:
