@@ -8,7 +8,7 @@ class GameRenderer:
     def __init__(self, screen, board):
         self.screen = screen
         self.board = board
-        self.base_surface = pygame.Surface((board.initial_width, board.initial_height))
+        self.base_surface = pygame.Surface((board.initial_width, board.initial_height), pygame.SRCALPHA)
         self.board_surface = self.base_surface.copy()
         self.background = pygame.Surface(screen.get_size())
         self.init_fonts()
@@ -17,12 +17,12 @@ class GameRenderer:
         """Update dimensions while maintaining base surface"""
         self.board_width = board_width
         self.board_height = board_height
-        self.board_surface = self.base_surface.copy()
+        self.board_surface = pygame.Surface((board_width, board_height), pygame.SRCALPHA)
         self.background = pygame.Surface(self.screen.get_size())
 
     def render(self, state_manager, ui_renderer):
         self.screen.fill((0, 0, 0))
-        self.board_surface.fill((0, 0, 0))
+        self.board_surface.fill((0, 0, 0, 0))
         
         self.board.draw(self.board_surface, state_manager.selected_square)
         for unit in state_manager.get_all_units():
@@ -81,7 +81,7 @@ class GameRenderer:
         message = f"Player {winner} Won!"
         text_surface = self.victory_font.render(message, True, (255, 215, 0))
         
-        instructions = "Press R to restart or M to return to menu"
+        instructions = "Press M to return to menu"
         instructions_surface = self.normal_font.render(instructions, True, (255, 255, 255))
         
         text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 - 20))

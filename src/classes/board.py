@@ -159,23 +159,11 @@ class Board:
         return None
 
     def select_square(self, square, movement_points, units=None) -> None:
-
-        """
-        Selects a square and calculates all reachable positions based on the movement points available.
-
-        Args:
-            square (tuple): The (row, column) position of the selected square
-            movement_points (int): Number of movement points available for calculating reachable positions
-
-        Raises:
-            ValueError: If movement points are negative or square is invalid.
-        """
-
         if movement_points < 0:
             raise ValueError("Negative movement points in board/select_square")
         
-        if units is None:
-            units = []
+        if units is not None:
+            self.units = units 
 
         self.selected_square = square
         if square is not None:
@@ -184,7 +172,7 @@ class Board:
             
             row, col = square
             if not (0 <= row < self.m and 0 <= col < self.n):
-                raise ValueError("Square position out of bounds in board/select_square") #validating square position
+                raise ValueError("Square position out of bounds in board/select_square")
             
         if square:
             self.reachable_positions, self.movement_costs = self.graph.get_reachable_positions(square, movement_points, self.units)
