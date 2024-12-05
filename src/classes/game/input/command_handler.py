@@ -258,25 +258,3 @@ class CommandHandler:
                 next_index = (current_index + 1) % len(formations)
                 next_formation = formations[next_index]
                 self.state_manager.selected_unit.change_formation(next_formation)
-
-    def restart_game(self):
-        """Restart the game."""
-        self.state_manager.setup_units()
-        self.game_manager.board = Board(
-            self.state_manager.m, 
-            self.state_manager.n, 
-            self.game_manager.board_width, 
-            self.game_manager.board_height, 
-            self.state_manager.get_all_units(), 
-            map_choice=self.game_manager.map_choice
-        )
-        self.state_manager.selected_square = None
-        self.state_manager.selected_unit = None
-        self.state_manager.current_player = 1
-        self.state_manager.game_over = False
-        self.state_manager.winner = None
-
-        for unit in self.state_manager._get_player_units(self.state_manager.current_player):
-            unit.has_attacked = False
-        
-        self.game_manager.renderer.draw_board()

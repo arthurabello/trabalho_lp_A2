@@ -24,10 +24,9 @@ class InputHandler:
                 elif event.key == pygame.K_ESCAPE and self.game_manager.is_fullscreen:
                     self.game_manager.toggle_fullscreen()
                 elif self.state_manager.game_over:
-                    if event.key == pygame.K_r:
-                        self.game_manager.restart_game()
-                    elif event.key == pygame.K_m:
-                        self.state_manager.running = False
+                    if event.key == pygame.K_m:
+                        self.game_manager.state_manager.return_to_menu = True
+                        self.game_manager.state_manager.running = False
                 else:
                     self._handle_keydown(event) 
                     
@@ -38,14 +37,12 @@ class InputHandler:
         """Handle keyboard input."""
         if event.key == pygame.K_F11:
             self.game_manager.toggle_fullscreen()
-        elif event.key == pygame.K_r and self.state_manager.game_over:
-            self.command_handler.restart_game()
-        elif event.key == pygame.K_m and self.state_manager.game_over:
+        elif event.key == pygame.K_m and self.state_manager.game_over: # m for main menu
+            self.state_manager.return_to_menu = True
             self.state_manager.running = False
         else:
             self.command_handler.handle_key_command(event.key)
-
-    
+        
     def _handle_mouse_click(self, event):
         """Handle mouse input."""
         mouse_pos = pygame.mouse.get_pos()
