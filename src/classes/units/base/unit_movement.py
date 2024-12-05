@@ -3,6 +3,9 @@ Movement-related functionality for units.
 """
 
 class UnitMovementMixin:
+    """
+    Mixin class providing movement-related functionality for units.
+    """
     def move(self, new_position):
         """
         Moves the unit to a new position.
