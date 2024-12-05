@@ -5,7 +5,12 @@ Main renderer responsible for game visualization.
 import pygame
 
 class GameRenderer:
-    def __init__(self, screen, board):
+    def __init__(self, screen, board) -> None:
+        
+        """
+        Initialize the renderer.
+        """
+
         self.screen = screen
         self.board = board
         self.base_surface = pygame.Surface((board.initial_width, board.initial_height), pygame.SRCALPHA)
@@ -13,14 +18,31 @@ class GameRenderer:
         self.background = pygame.Surface(screen.get_size())
         self.init_fonts()
 
-    def update_surfaces(self, board_width, board_height):
-        """Update dimensions while maintaining base surface"""
+    def update_surfaces(self, board_width, board_height) -> None:
+        
+        """
+        Update the board and background surfaces.
+
+        Args:
+            board_width (int): The width of the board.
+            board_height (int): The height of the board.
+        """
+
         self.board_width = board_width
         self.board_height = board_height
         self.board_surface = pygame.Surface((board_width, board_height), pygame.SRCALPHA)
         self.background = pygame.Surface(self.screen.get_size())
 
-    def render(self, state_manager, ui_renderer):
+    def render(self, state_manager, ui_renderer) -> None:
+        
+        """
+        Render the game state.
+
+        Args:
+            state_manager (StateManager): The state manager.
+            ui_renderer (UIRenderer): The UI renderer.
+        """
+
         self.screen.fill((0, 0, 0))
         self.board_surface.fill((0, 0, 0, 0))
         
@@ -60,21 +82,36 @@ class GameRenderer:
         
         pygame.display.flip()
 
-    def init_fonts(self):
-        """Initialize fonts for rendering."""
+    def init_fonts(self) -> None:
+
+        """
+        Initialize fonts.
+        """
+
         if not pygame.font.get_init():
             pygame.font.init()
         self.victory_font = pygame.font.Font(None, 74)
         self.normal_font = pygame.font.Font(None, 36)
         
         
-    def draw_board(self):
-        """Refresh the board drawing."""
+    def draw_board(self) -> None:
+        
+        """
+        Draws the board.
+        """
+
         self.background.fill((0, 0, 0))
         self.board.draw(self.board_surface, self.board.selected_square)
         
-    def _draw_victory_message(self, winner):
-        """Draw the victory screen."""
+    def _draw_victory_message(self, winner) -> None:
+        
+        """
+        Draws the victory message.
+
+        Args:
+            winner (int): The winner of the game.
+        """
+
         if not winner:
             return
             

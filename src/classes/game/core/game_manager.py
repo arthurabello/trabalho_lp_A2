@@ -12,8 +12,12 @@ from .state_manager import GameStateManager
 from ...board import Board
 
 class GameManager:
-    def __init__(self, player1_general=None, player2_general=None, map_choice=1):
-        """Initialize the game manager and all subsystems."""
+    def __init__(self, player1_general=None, player2_general=None, map_choice=1) -> None:
+        
+        """
+        Initialize the game manager.
+        """
+
         try:
             pygame.init()
             if pygame.get_error():
@@ -27,8 +31,12 @@ class GameManager:
         self.map_choice = map_choice
         self.setup_managers(player1_general, player2_general, map_choice)
 
-    def setup_display(self):
-        """Setup the game display and window properties."""
+    def setup_display(self) -> None:
+        
+        """
+        Sets up the game display.
+        """
+
         display_info = pygame.display.Info()
         self.max_screen_width = display_info.current_w
         self.max_screen_height = display_info.current_h
@@ -55,8 +63,20 @@ class GameManager:
 
         pygame.display.set_caption("Warbound")
 
-    def setup_managers(self, player1_general, player2_general, map_choice):
-        """Initialize all game subsystem managers."""
+    def setup_managers(self, player1_general, player2_general, map_choice) -> None:
+        
+        """
+        Sets up the game managers.
+
+        Args:
+            player1_general (General): The player 1 general.
+            player2_general (General): The player 2 general.
+            map_choice (int): The map choice.
+
+        Returns:
+            None
+        """
+
         self.board = Board(self.state_manager.m, self.state_manager.n, 
                         self.board_width, self.board_height, [], 
                         map_choice=map_choice)
@@ -71,8 +91,12 @@ class GameManager:
         self.input_handler = InputHandler(self)
         self.turn_manager = TurnManager(self.state_manager)
 
-    def run(self):
-        """Main game loop."""
+    def run(self) -> dict:
+        
+        """
+        Main game loop.
+        """
+
         try:
             while self.state_manager.running:
                 self.input_handler.handle_events()
@@ -87,15 +111,24 @@ class GameManager:
             print(f"Game crashed: {str(e)}")
             return {'return_to_menu': True}  
 
-    def update(self):
-        """Update game state."""
+    def update(self) -> None:
+        
+        """
+        Updates the game state.
+        """
+
         try:        
             self.renderer.draw_board()
                     
         except Exception as e:
             raise RuntimeError(f"Failed to draw the board: {str(e)}")
 
-    def toggle_fullscreen(self):
+    def toggle_fullscreen(self) -> None:
+        
+        """
+        Sets the screen to fullscreen or windowed mode.
+        """
+
         self.is_fullscreen = not self.is_fullscreen
         
         if self.is_fullscreen:
@@ -120,5 +153,3 @@ class GameManager:
 
         self.board.is_fullscreen = self.is_fullscreen
         self.renderer.update_surfaces(self.board_width, self.board_height)
-
-
