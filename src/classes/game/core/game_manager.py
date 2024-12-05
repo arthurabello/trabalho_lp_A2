@@ -24,6 +24,7 @@ class GameManager:
         
         self.state_manager = GameStateManager(player1_general, player2_general)
         self.setup_display()
+        self.map_choice = map_choice
         self.setup_managers(player1_general, player2_general, map_choice)
 
     def setup_display(self):
@@ -78,10 +79,13 @@ class GameManager:
                 self.update()
                 self.renderer.render(self.state_manager, self.ui_renderer)
 
+            return {
+                'return_to_menu': self.state_manager.return_to_menu
+            }
+
         except Exception as e:
             print(f"Game crashed: {str(e)}")
-        finally:
-            pygame.quit()
+            return {'return_to_menu': True}  
 
     def update(self):
         """Update game state."""
@@ -116,3 +120,5 @@ class GameManager:
 
         self.board.is_fullscreen = self.is_fullscreen
         self.renderer.update_surfaces(self.board_width, self.board_height)
+
+
