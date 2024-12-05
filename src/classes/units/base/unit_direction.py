@@ -77,7 +77,9 @@ class DirectionMixin:
         return False
         
     def reset_direction_change(self):
-        """Reset direction change flag."""
+        """
+        Reset direction change flag.
+        """
         self.has_changed_direction = False
         
     def _is_frontal_attack(self, attacker):
