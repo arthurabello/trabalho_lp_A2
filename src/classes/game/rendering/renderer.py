@@ -6,13 +6,60 @@ import pygame
 
 class GameRenderer:
     def __init__(self, screen, board):
-        """Initialize the renderer."""
         self.screen = screen
         self.board = board
-        self.board_surface = pygame.Surface((board.board_width, board.board_height))
+        self.base_surface = pygame.Surface((board.initial_width, board.initial_height))
+        self.board_surface = self.base_surface.copy()
         self.background = pygame.Surface(screen.get_size())
         self.init_fonts()
+
+    def update_surfaces(self, board_width, board_height):
+        """Update dimensions while maintaining base surface"""
+        self.board_width = board_width
+        self.board_height = board_height
+        self.board_surface = self.base_surface.copy()
+        self.background = pygame.Surface(self.screen.get_size())
+
+    def render(self, state_manager, ui_renderer):
+        self.screen.fill((0, 0, 0))
+        self.board_surface.fill((0, 0, 0))
         
+        self.board.draw(self.board_surface, state_manager.selected_square)
+        for unit in state_manager.get_all_units():
+            if unit.is_alive:
+                unit.draw(self.board_surface, self.board)
+
+        if self.board.is_fullscreen:
+            game_width = self.screen.get_width() - 300  
+            game_height = self.screen.get_height()
+            
+            width_scale = game_width / self.board.initial_width
+            height_scale = game_height / self.board.initial_height
+            scale = min(width_scale, height_scale)
+            
+            actual_width = int(self.board.initial_width * scale)
+            actual_height = int(self.board.initial_height * scale)
+            
+            scaled = pygame.transform.smoothscale(self.board_surface, (actual_width, actual_height))
+            
+            board_y = (game_height - actual_height) // 2
+            
+            self.board.board_width = actual_width
+            self.board.board_height = actual_height
+            
+            self.screen.blit(scaled, (0, board_y))
+        else:
+            self.screen.blit(self.board_surface, (0, 0))
+            self.board.board_width = self.board.initial_width
+            self.board.board_height = self.board.initial_height
+
+        ui_renderer.render(state_manager)
+        
+        if state_manager.game_over:
+            self._draw_victory_message(state_manager.winner)
+        
+        pygame.display.flip()
+
     def init_fonts(self):
         """Initialize fonts for rendering."""
         if not pygame.font.get_init():
@@ -20,32 +67,6 @@ class GameRenderer:
         self.victory_font = pygame.font.Font(None, 74)
         self.normal_font = pygame.font.Font(None, 36)
         
-    def update_surfaces(self, board_width, board_height):
-        """Update surface sizes when screen changes."""
-        self.board_surface = pygame.Surface((board_width, board_height))
-        self.background = pygame.Surface(self.screen.get_size())
-        
-    def render(self, state_manager, ui_renderer):
-        """Main render method."""
-        self.screen.fill((0, 0, 0))
-        self.board_surface.fill((0, 0, 0))
-        
-        self.board.draw(self.board_surface, state_manager.selected_square)
-
-        for unit in state_manager.get_all_units():
-            if unit.is_alive:
-                unit.draw(self.board_surface, self.board)
-
-        board_x = 0
-        board_y = (self.screen.get_height() - self.board_surface.get_height()) // 2 if self.board.is_fullscreen else 0
-        self.screen.blit(self.board_surface, (board_x, board_y))
-        
-        ui_renderer.render(state_manager)
-        
-        if state_manager.game_over:
-            self._draw_victory_message(state_manager.winner)
-        
-        pygame.display.flip()
         
     def draw_board(self):
         """Refresh the board drawing."""
