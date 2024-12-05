@@ -10,10 +10,8 @@ from .unit_direction import Direction
 from ..constants.paths import Paths
 
 class UnitRenderingMixin:
-    """
-    Mixin class for unit rendering functionality.
-    """
-    def draw(self, screen, board):
+    def draw(self, screen, board) -> None:
+
         """
         Draw unit on the screen.
 
@@ -21,6 +19,7 @@ class UnitRenderingMixin:
             screen (pygame.Surface): Surface to draw the unit on
             board (Board): Board instance
         """
+
         if not self.is_alive:
             return
 
@@ -51,7 +50,8 @@ class UnitRenderingMixin:
         except Exception as e:
             raise RuntimeError(f"Failed to draw unit: {str(e)}")
 
-    def _draw_sprite(self, screen, x, y, width, height):
+    def _draw_sprite(self, screen, x, y, width, height) -> None:
+
         """
         Draw unit sprite on the screen.
 
@@ -62,18 +62,21 @@ class UnitRenderingMixin:
             width (int): Width of the sprite
             height (int): Height of the sprite
         """
+
         try:
             resized_sprite = pygame.transform.scale(self.sprite, (width, height))
             screen.blit(resized_sprite, (x, y))
         except Exception as e:
             print(f"Failed to draw sprite: {e}")
     
-    def _load_sprite(self, sprite_path):
+    def _load_sprite(self, sprite_path) -> pygame.Surface | None:
+
         """Load sprite from the given path.
         
         Args:
             sprite_path (str): The path to the sprite image file.
         """
+
         try:
             if os.path.exists(sprite_path):
                 return pygame.image.load(sprite_path)
@@ -83,12 +86,14 @@ class UnitRenderingMixin:
             print(f"Failed to load sprite: {str(e)}")
             return None
 
-    def _update_sprite(self):
+    def _update_sprite(self) -> None:
+
         """Update unit sprite based on formation and direction.
         
         This method constructs the appropriate path for the sprite based on the unit's type, 
         current formation, and direction, then loads and colors the sprite accordingly.
         """
+
         try:
             unit_type = self.__class__.__name__.lower()
             direction_str = Direction.to_string(self.facing_direction).lower()
@@ -116,8 +121,10 @@ class UnitRenderingMixin:
         except Exception as e:
             print(f"Failed to update sprite: {str(e)}")
 
-    def draw_health_bar(self, screen, unit_x, unit_y, unit_width, unit_height):
-        """Draw unit health bar.
+    def draw_health_bar(self, screen, unit_x, unit_y, unit_width, unit_height) -> None:
+
+        """
+        Draw unit health bar.
         
         Args:
             screen (pygame.Surface): Surface to draw the health bar on
@@ -126,6 +133,7 @@ class UnitRenderingMixin:
             unit_width (int): Width of the unit
             unit_height (int): Height of the unit
         """
+
         if not self.is_alive:
             return
             
@@ -153,8 +161,10 @@ class UnitRenderingMixin:
         pygame.draw.rect(screen, color, 
                         (bar_x, filled_y, bar_width, filled_height))
 
-    def _draw_general_flag(self, screen, x, y, unit_width, unit_height):
-        """Draw general's flag if unit has general.
+    def _draw_general_flag(self, screen, x, y, unit_width, unit_height) -> None:
+
+        """
+        Draw general's flag if unit has general.
         
         Args:
             screen (pygame.Surface): Surface to draw the flag on
@@ -163,6 +173,7 @@ class UnitRenderingMixin:
             unit_width (int): Width of the unit
             unit_height (int): Height of the unit
         """
+        
         if not self.has_general:
             return
             

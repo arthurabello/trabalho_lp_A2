@@ -3,9 +3,10 @@ Manages the tutorial system.
 """
 
 import pygame
+from typing import Optional
 
 class TutorialManager:
-    def __init__(self, screen):
+    def __init__(self, screen) -> None:
         
         """
         Initialize tutorial system.
@@ -22,7 +23,7 @@ class TutorialManager:
         self.setup_tutorial_content()
         self.setup_ui_elements()
         
-    def setup_fonts(self):
+    def setup_fonts(self) -> None:
         
         """
         Initialize fonts.
@@ -31,7 +32,7 @@ class TutorialManager:
         self.font_title = pygame.font.Font(None, 48)
         self.font_text = pygame.font.Font(None, 36)
         
-    def setup_colors(self):
+    def setup_colors(self) -> None:
         
         """
         Setup color scheme.
@@ -46,7 +47,7 @@ class TutorialManager:
             'button_text': (0, 0, 0)
         }
         
-    def setup_tutorial_content(self):
+    def setup_tutorial_content(self) -> None:
         
         """
         Setup tutorial pages content.
@@ -187,7 +188,7 @@ class TutorialManager:
         }
     ]
         
-    def setup_ui_elements(self):
+    def setup_ui_elements(self) -> None:
         
         """
         Setup UI elements.
@@ -201,7 +202,7 @@ class TutorialManager:
         
         self.setup_buttons()
         
-    def setup_buttons(self):
+    def setup_buttons(self) -> None:
         
         """
         Setup navigation buttons.
@@ -231,10 +232,16 @@ class TutorialManager:
             button_height
         )
         
-    def handle_event(self, event):
+    def handle_event(self, event) -> Optional[str]:
         
         """
         Handle tutorial events.
+
+        Args:
+            event (pygame.event.Event): Event to handle.
+
+        Returns:
+            Optional[str]: 'menu' if the menu was closed, None otherwise.
         """
 
         if not self.active:
@@ -257,7 +264,7 @@ class TutorialManager:
                 
         return None
         
-    def draw(self):
+    def draw(self) -> None:
         
         """
         Draw tutorial window.
@@ -270,7 +277,7 @@ class TutorialManager:
         self._draw_content()
         self._draw_navigation()
         
-    def _draw_background(self):
+    def _draw_background(self) -> None:
         
         """
         Draw tutorial background.
@@ -292,7 +299,7 @@ class TutorialManager:
             3
         )
         
-    def _draw_content(self):
+    def _draw_content(self) -> None:
         
         """
         Draw tutorial content.
@@ -312,7 +319,7 @@ class TutorialManager:
         
         self._draw_wrapped_text(page['content'], self.window_y + 100)
         
-    def _draw_navigation(self):
+    def _draw_navigation(self) -> None:
         
         """
         Draw navigation buttons.
@@ -336,7 +343,8 @@ class TutorialManager:
             next_text = self.font_text.render('>>', True, self.colors['button_text'])
             self.screen.blit(next_text, (self.next_button.centerx - 16, self.next_button.centery - 12))
 
-    def _draw_wrapped_text(self, content, start_y):
+    def _draw_wrapped_text(self, content, start_y) -> None:
+
         """
         Draw text with word wrapping.
 

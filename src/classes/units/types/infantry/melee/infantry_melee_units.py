@@ -9,7 +9,18 @@ from ....constants.paths import Paths
 from ....base.unit_combat import UnitCombatMixin
 
 class Hoplite(BaseUnit):
-    def __init__(self, initial_position, player, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard") -> None:
+
+        """
+        Initialize hoplite unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
+
         super().__init__(
             initial_position=initial_position,
             player=player,
@@ -45,18 +56,39 @@ class Hoplite(BaseUnit):
         self._update_stats()
         self._update_sprite()
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
+
+        """
+        Load sounds for hoplite.
+        """
+
         self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'hoplite_movement.wav'))
         self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'hoplite_attack.wav'))
 
-    def _update_stats(self):
+    def _update_stats(self) -> None:
+
+        """
+        Update stats for hoplite.
+        """
+
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
         self.max_hp = 100
         self.current_hp = self.max_hp
 
 class Legionary(BaseUnit):
-    def __init__(self, initial_position, player, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard") -> None:
+
+        """
+        Initialize legionary unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
+
         super().__init__(
             initial_position=initial_position,
             player=player,
@@ -92,18 +124,39 @@ class Legionary(BaseUnit):
         self._update_stats()
         self._update_sprite()
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
+
+        """
+        Load sounds for legionary.
+        """
+
         self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'legionary_movement.wav'))
         self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'legionary_attack.wav'))
 
-    def _update_stats(self):
+    def _update_stats(self) -> None:
+
+        """
+        Update stats for legionary.
+        """
+
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
         self.max_hp = 100
         self.current_hp = self.max_hp
 
 class Viking(BaseUnit):
-    def __init__(self, initial_position, player, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard") -> None:
+
+        """   
+        Initialize viking unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
+
         super().__init__(
             initial_position=initial_position,
             player=player,
@@ -143,18 +196,39 @@ class Viking(BaseUnit):
         self._update_stats()
         self._update_sprite()
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
+
+        """
+        Load sounds for viking.
+        """
+
         self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'viking_movement.wav'))
         self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'viking_attack.wav'))
 
-    def _update_stats(self):
+    def _update_stats(self) -> None:
+
+        """
+        Update stats for viking.
+        """
+
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
         self.max_hp = 100
         self.current_hp = self.max_hp
 
 class Hypaspist(BaseUnit):
-    def __init__(self, initial_position, player, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard") -> None:
+
+        """
+        Initialize hypaspist unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
+
         super().__init__(
             initial_position=initial_position,
             player=player,
@@ -186,18 +260,39 @@ class Hypaspist(BaseUnit):
         self._update_stats()
         self._update_sprite()
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
+
+        """
+        Load sounds for hypaspist.
+        """
+
         self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'hypaspist_movement.wav'))
         self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'hypaspist_attack.wav'))
 
-    def _update_stats(self):
+    def _update_stats(self) -> None:
+
+        """
+        Update stats for hypaspist.
+        """
+
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
         self.max_hp = 100
         self.current_hp = self.max_hp
 
 class MenAtArms(BaseUnit):
-    def __init__(self, initial_position, player, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard") -> None:
+
+        """
+        Initialize men at arms unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
+
         super().__init__(
             initial_position=initial_position,
             player=player,
@@ -237,11 +332,21 @@ class MenAtArms(BaseUnit):
         self._update_stats()
         self._update_sprite()
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
+
+        """
+        Load sounds for men at arms.
+        """
+
         self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'menatarms_movement.wav'))
         self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'menatarms_attack.wav'))
 
-    def _update_stats(self):
+    def _update_stats(self) -> None:
+
+        """
+        Update stats for men at arms.
+        """
+        
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
         self.max_hp = 100

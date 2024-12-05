@@ -28,7 +28,8 @@ class BoardGraph:
 
     def __init__(self, m: int, n: int, terrain: Dict, units: List[Dict]) -> None:
 
-        """Initializes the graph with the board dimensions and creates connections between squares.
+        """
+        Initializes the graph with the board dimensions and creates connections between squares.
 
         Args:
             m (int): number of rows on the board.
@@ -52,7 +53,8 @@ class BoardGraph:
     
     def _is_valid_position(self, row: int, col: int) -> bool:
 
-        """Checks if a position is within the board boundaries.
+        """
+        Checks if a position is within the board boundaries.
 
         Args:
             row (int): Row index of the position.
@@ -89,6 +91,7 @@ class BoardGraph:
                         self.graph[current_node][neighbor] = weight
     
     def _calculate_edge_weight(self, pos1: Tuple[int, int], pos2: Tuple[int, int]):
+
         """
         Calculates the edge weight between two positions based on the terrain
         Args:
@@ -120,13 +123,15 @@ class BoardGraph:
 
         return weight_map.get((terrain1, terrain2))
     
-    def update_units(self, units: list):
+    def update_units(self, units: list) -> None:
+
         """
         Updates the current unit positions on the board and rebuilds the graph
         
         Args:
             units (list): Current list of all units
         """
+        
         self.units = units
         self._build_graph()  # Rebuild graph with new unit positions
 

@@ -1,11 +1,10 @@
-"""
-Path definitions for game assets.
-"""
-
 import os
 
 class Paths:
-    """Paths to assets used for rendering units."""
+
+    """
+    Paths to assets used for rendering units.
+    """
     
     ASSETS_DIR = os.path.join('..', 'assets')
     SPRITES_DIR = os.path.join(ASSETS_DIR, 'sprites')

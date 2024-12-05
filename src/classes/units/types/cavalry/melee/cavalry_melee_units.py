@@ -8,7 +8,18 @@ import os
 from ....constants.paths import Paths
 
 class LightHorsemen(BaseUnit):
-    def __init__(self, initial_position, player, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard") -> None:
+
+        """
+        Initialize light cavalry unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
+
         super().__init__(
             initial_position=initial_position,
             player=player,
@@ -40,18 +51,39 @@ class LightHorsemen(BaseUnit):
         self._update_stats()
         self._update_sprite()
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
+
+        """
+        Load sounds for light cavalry.
+        """
+
         self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'lighthorsemen_movement.wav'))
         self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'lighthorsemen_attack.wav'))
 
-    def _update_stats(self):
+    def _update_stats(self) -> None:
+
+        """
+        Update stats for light cavalry.
+        """
+
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
         self.max_hp = 100
         self.current_hp = self.max_hp
 
 class HeavyCavalry(BaseUnit):
-    def __init__(self, initial_position, player, formation="Standard"):
+    def __init__(self, initial_position, player, formation="Standard") -> None:
+
+        """
+        Initialize heavy cavalry unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
+
         super().__init__(
             initial_position=initial_position,
             player=player,
@@ -83,11 +115,21 @@ class HeavyCavalry(BaseUnit):
         self._update_stats()
         self._update_sprite()
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
+        
+        """
+        Load sounds for heavy cavalry.
+        """
+
         self.move_sound = pygame.mixer.Sound(os.path.join(Paths.MOVE_SOUND_DIR, 'heavycavalry_movement.wav'))
         self.attack_sound = pygame.mixer.Sound(os.path.join(Paths.ATTACK_SOUND_DIR, 'heavycavalry_attack.wav'))
 
-    def _update_stats(self):
+    def _update_stats(self) -> None:
+        
+        """
+        Update stats for heavy cavalry.
+        """
+
         self.attack_points = self.base_attack
         self.defense_points = self.base_defense
         self.max_hp = 100

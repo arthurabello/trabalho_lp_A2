@@ -1,9 +1,9 @@
-"""
-Color definitions for UI and unit rendering.
-"""
-
 class Colors:
-    """Colors used for rendering units and board elements."""
+
+    """
+    Colors used for rendering units and board elements.
+    """
+
     PLAYER1_PRIMARY = (255, 0, 0)            # bright red for player 1 main units
     PLAYER2_PRIMARY = (0, 0, 255)            # bright blue for player 2 main units
     PLAYER1_PRIMARY_HOVER = (255, 0, 0, 40)  # red with opacity       

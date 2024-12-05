@@ -37,6 +37,19 @@ class Board:
 
 
     def __init__(self, m, n, initial_width, initial_height, units, map_choice=None) -> None:
+
+        """
+        Initializes a new instance of the Board class.
+
+        Args:
+            m (int): Number of rows on the board.
+            n (int): Number of columns on the board.
+            initial_width (int): Initial width of the game window.
+            initial_height (int): Initial height of the game window.
+            units (list): List of game units on the board.
+            map_choice (int, optional): Choice of terrain map. Defaults to None.
+        """
+
         if map_choice == 1:
             self.terrain_map = Maps.map1
         elif map_choice == 2:
@@ -75,6 +88,7 @@ class Board:
         self.attackable_squares = set()
 
     def _is_valid_position(self, row: int, col: int) -> bool:
+
         """
         Checks if a position is within the board boundaries.
         
@@ -85,9 +99,10 @@ class Board:
         Returns:
             bool: True if position is valid, False otherwise
         """
+
         return 0 <= row < self.m and 0 <= col < self.n
     
-    def update_attack_overlays(self, selected_unit, all_units):
+    def update_attack_overlays(self, selected_unit, all_units) -> None:
 
         """
         Updates the dangerous and attackable squares based on the selected unit
@@ -129,8 +144,19 @@ class Board:
                 self.attackable_squares.add(enemy_pos)
 
 
-    def get_square_from_click(self, mouse_pos, screen):
-        """Determines clicked square based on current board dimensions."""
+    def get_square_from_click(self, mouse_pos, screen) -> tuple[int, int] | None:
+
+        """
+        Determines clicked square based on current board dimensions.
+        
+        Args:
+            mouse_pos (tuple): Mouse position (x, y)
+            screen (pygame.Surface): Game window surface.
+        
+        Returns:
+            tuple[int, int] | None: Row and column of clicked square, or None if no square is clicked.
+        """
+
         x, y = mouse_pos
         
         if self.is_fullscreen:
@@ -159,6 +185,18 @@ class Board:
         return None
 
     def select_square(self, square, movement_points, units=None) -> None:
+
+        """
+        Selects a square on the board.
+
+        Args:
+            square (tuple): Row and column of the square to select.
+            movement_points (int): Remaining movement points for the unit.
+            units (list): List of all units in the game.
+        """
+
+        if not isinstance(movement_points, int):
+            raise TypeError("Movement points must be an integer in board/select_square")
         if movement_points < 0:
             raise ValueError("Negative movement points in board/select_square")
         
@@ -180,7 +218,7 @@ class Board:
             self.reachable_positions = set()
             self.movement_costs = {}
 
-    def initialize_terrain(self, terrain_map):
+    def initialize_terrain(self, terrain_map) -> dict:
 
         """
         Initializes the terrain map from a provided map string.
@@ -218,7 +256,7 @@ class Board:
         return terrain
         
 
-    def draw(self, screen, selected_square=None):
+    def draw(self, screen, selected_square=None) -> None:
 
         """
         Draws the board, with highlights for reachable and selected squares.
