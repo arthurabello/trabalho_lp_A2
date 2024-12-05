@@ -27,23 +27,28 @@ class WarBound:
     def run(self):
         """Main application loop."""
         try:
-            # Run menu
-            menu = MenuManager(self.screen)
-            menu_result = menu.run()
-            
-            # Start game if menu returns valid configuration
-            if menu_result and menu_result.get('start_game'):
-                game = GameManager(
-                    player1_general=menu_result.get('player1_general'),
-                    player2_general=menu_result.get('player2_general'),
-                    map_choice=menu_result.get('map_choice', 1)
-                )
-                game.run()
+            running = True
+            while running:
+                menu = MenuManager(self.screen)
+                menu_result = menu.run()
                 
+                if menu_result and menu_result.get('start_game'):
+                    game = GameManager(
+                        player1_general=menu_result.get('player1_general'),
+                        player2_general=menu_result.get('player2_general'),
+                        map_choice=menu_result.get('map_choice', 1)
+                    )
+                    game_result = game.run()
+                    
+                    if not game_result or not game_result.get('return_to_menu', False):
+                        running = False
+                else:
+                    running = False
+                        
         except Exception as e:
             print(f"Error running game: {str(e)}")
         finally:
-            pygame.quit()
+            pygame.quit()  
 
 def main():
     """Entry point of the application."""

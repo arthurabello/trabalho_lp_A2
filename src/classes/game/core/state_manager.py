@@ -30,6 +30,7 @@ class GameStateManager:
         self.player2_formation = None
         self.setup_formations()
         self.board = None
+        self.return_to_menu = False
         
     def setup_formations(self):
         """Setup player formations based on generals."""
