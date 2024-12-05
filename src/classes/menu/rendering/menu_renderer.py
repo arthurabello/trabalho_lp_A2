@@ -7,8 +7,8 @@ import os
 from .components import Button, ToggleButton, Slider, GeneralCard
 
 class MenuRenderer:
-    """Menu renderer class."""
-    def __init__(self, screen, menu_manager):
+    def __init__(self, screen, menu_manager) -> None:
+
         """
         Initialize menu renderer.
         
@@ -16,6 +16,7 @@ class MenuRenderer:
             screen (pygame.Surface): Game window surface.
             menu_manager (MenuManager): Menu manager instance.
         """
+
         self.screen = screen
         self.menu_manager = menu_manager
         self.state = menu_manager.state
@@ -23,7 +24,8 @@ class MenuRenderer:
         self.general_cards = []
         self.setup_ui_elements()
 
-    def setup_main_menu_buttons(self, screen_width, screen_height):
+    def setup_main_menu_buttons(self, screen_width, screen_height) -> None:
+
         """
         Setup main menu buttons.
         
@@ -31,6 +33,7 @@ class MenuRenderer:
             screen_width (int): Screen width.
             screen_height (int): Screen height.
         """
+
         button_width, button_height = 200, 50
         button_spacing = 20
         start_y = screen_height // 2 - (button_height + button_spacing) * 2
@@ -70,17 +73,21 @@ class MenuRenderer:
             )
         }
 
-    def setup_resources(self):
+    def setup_resources(self) -> None:
+
         """
         Setup visual resources.
         """
+
         self.load_images()
         self.setup_fonts()
         
-    def load_images(self):
+    def load_images(self) -> None:
+
         """
         Load menu images and sprites.
         """
+
         self.menu_image = pygame.image.load(os.path.join("..", "assets", "images", "menu_image.png"))
         self.menu_image = self._scale_image_to_screen()
         
@@ -93,10 +100,12 @@ class MenuRenderer:
             'leonidas': pygame.image.load("../assets/images/menu_generals/leonidas_menu.png")
         }
 
-    def setup_fonts(self):
+    def setup_fonts(self) -> None:
+
         """
         Initialize fonts.
         """
+
         self.fonts = {
             'title': pygame.font.Font(None, 100),
             'normal': pygame.font.Font(None, 74),
@@ -104,20 +113,24 @@ class MenuRenderer:
             'mini': pygame.font.Font(None, 20)
         }
 
-    def setup_ui_elements(self):
+    def setup_ui_elements(self) -> None:
+
         """
         Setup UI components.
         """
+
         screen_width, screen_height = self.screen.get_size()
         self.setup_main_menu_buttons(screen_width, screen_height)
         self.setup_options_elements(screen_width, screen_height)
         self.setup_general_cards()
 
 
-    def setup_options_elements(self, screen_width, screen_height):
+    def setup_options_elements(self, screen_width, screen_height) -> None:
+
         """
         Setup options menu elements.
         """
+
         panel_width, panel_height = 400, 450
         panel_x = (screen_width - panel_width) // 2
         panel_y = (screen_height - panel_height) // 2
@@ -170,10 +183,12 @@ class MenuRenderer:
             )
         }
 
-    def setup_general_cards(self):
+    def setup_general_cards(self) -> None:
+
         """
         Setup general selection cards.
         """
+
         self.general_cards = []
         screen_width = self.screen.get_width()
         card_width = min(screen_width // 3.5, 280)
@@ -206,10 +221,12 @@ class MenuRenderer:
             )
             self.general_cards.append(card)
 
-    def render(self):
+    def render(self) -> None:
+
         """
         Main render method.
         """
+
         self.screen.blit(self.menu_image, (0, 0))
         if self.state.current == "main":
             self._draw_main_menu()
@@ -222,10 +239,12 @@ class MenuRenderer:
 
         pygame.display.flip()
 
-    def _draw_main_menu(self):
+    def _draw_main_menu(self) -> None:
+
         """
         Draw main menu screen.
         """
+
         title = self.fonts['title'].render("WARBOUND", True, (255, 215, 0))
         title_rect = title.get_rect(centerx=self.screen.get_rect().centerx, top=50)
         
@@ -240,10 +259,12 @@ class MenuRenderer:
         for button in self.main_menu_buttons.values():
             button.draw(self.screen)
 
-    def _draw_options_menu(self):
+    def _draw_options_menu(self) -> None:
+
         """
         Draw options menu screen.
         """
+
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
         self.screen.blit(overlay, (0, 0))
@@ -264,10 +285,15 @@ class MenuRenderer:
             element.draw(self.screen)
 
 
-    def _scale_image_to_screen(self):
+    def _scale_image_to_screen(self) -> pygame.Surface:
+
         """
         Scale background image to fit screen.
+
+        Returns:
+            pygame.Surface: Scaled image.
         """
+
         screen_width, screen_height = self.screen.get_size()
         image_width, image_height = self.menu_image.get_size()
         
@@ -292,10 +318,12 @@ class MenuRenderer:
     
 
 
-    def _draw_general_selection(self):
+    def _draw_general_selection(self) -> None:
+
         """
         Draws the general selection screen with properly formatted cards and layout.
         """
+
         screen_width, screen_height = self.screen.get_size()
         
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
@@ -351,10 +379,12 @@ class MenuRenderer:
         
         self._draw_general_selection_buttons()
 
-    def _draw_general_selection_buttons(self):
+    def _draw_general_selection_buttons(self) -> None:
+
         """
         Draws the navigation buttons for the general selection screen.
         """
+
         screen_width, screen_height = self.screen.get_size()
         button_width = 200
         button_height = 40
@@ -390,13 +420,15 @@ class MenuRenderer:
             proceed_rect = proceed_text.get_rect(center=proceed_button.center)
             self.screen.blit(proceed_text, proceed_rect)
 
-    def handle_general_selection(self, pos):
+    def handle_general_selection(self, pos) -> None:
+
         """
         Handles mouse clicks in the general selection screen.
         
         Args:
             pos (tuple): Mouse position (x, y)
         """
+        
         screen_width = self.screen.get_width()
         screen_height = self.screen.get_height()
         button_width = 200
