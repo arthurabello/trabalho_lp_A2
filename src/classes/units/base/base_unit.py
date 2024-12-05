@@ -14,8 +14,17 @@ from .unit_direction import DirectionMixin
 from .unit_direction import Direction
 
 class BaseUnit(UnitCombatMixin, UnitMovementMixin, UnitRenderingMixin, UnitFormationMixin, DirectionMixin):
+    """Base class for all units in the game."""
     def __init__(self, initial_position, player, movement_range, formation="Standard"):
-        """Initialize base unit attributes."""
+        """
+        Initialize base unit attributes.
+
+        Args:
+            initial_position (tuple): Initial position of the unit as a tuple of (row, col).
+            player (int): Player number (1 or 2).
+            movement_range (int): Movement range of the unit.
+            formation (str, optional): Formation type. Default is "Standard".
+        """
         if not isinstance(initial_position, tuple) or len(initial_position) != 2:
             raise ValueError("Initial position must be a tuple of (row, col)")
         
@@ -53,7 +62,9 @@ class BaseUnit(UnitCombatMixin, UnitMovementMixin, UnitRenderingMixin, UnitForma
 
 
     def _init_colors(self):
-            """Initialize unit colors based on player."""
+            """
+            Initialize unit colors based on player.
+            """
             if self.player == 1:
                 self.colors = {
                     'primary': Colors.PLAYER1_PRIMARY,
@@ -68,7 +79,9 @@ class BaseUnit(UnitCombatMixin, UnitMovementMixin, UnitRenderingMixin, UnitForma
                 }
 
     def _init_systems(self):
-        """Initialize unit systems."""
+        """
+        Initialize unit systems.
+        """
         try:
             if pygame.mixer.get_init():
                 self.move_sound = None

@@ -10,6 +10,9 @@ from .unit_direction import Direction
 from ..constants.paths import Paths
 
 class UnitRenderingMixin:
+    """
+    Mixin class for unit rendering functionality.
+    """
     def draw(self, screen, board):
         """
         Draw unit on the screen.

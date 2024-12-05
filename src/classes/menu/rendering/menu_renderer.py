@@ -7,8 +7,15 @@ import os
 from .components import Button, ToggleButton, Slider, GeneralCard
 
 class MenuRenderer:
+    """Menu renderer class."""
     def __init__(self, screen, menu_manager):
-        """Initialize menu renderer."""
+        """
+        Initialize menu renderer.
+        
+        Args:
+            screen (pygame.Surface): Game window surface.
+            menu_manager (MenuManager): Menu manager instance.
+        """
         self.screen = screen
         self.menu_manager = menu_manager
         self.state = menu_manager.state
@@ -17,7 +24,13 @@ class MenuRenderer:
         self.setup_ui_elements()
 
     def setup_main_menu_buttons(self, screen_width, screen_height):
-        """Setup main menu buttons."""
+        """
+        Setup main menu buttons.
+        
+        Args:
+            screen_width (int): Screen width.
+            screen_height (int): Screen height.
+        """
         button_width, button_height = 200, 50
         button_spacing = 20
         start_y = screen_height // 2 - (button_height + button_spacing) * 2
@@ -58,12 +71,16 @@ class MenuRenderer:
         }
 
     def setup_resources(self):
-        """Setup visual resources."""
+        """
+        Setup visual resources.
+        """
         self.load_images()
         self.setup_fonts()
         
     def load_images(self):
-        """Load menu images and sprites."""
+        """
+        Load menu images and sprites.
+        """
         self.menu_image = pygame.image.load(os.path.join("..", "assets", "images", "menu_image.png"))
         self.menu_image = self._scale_image_to_screen()
         
@@ -77,7 +94,9 @@ class MenuRenderer:
         }
 
     def setup_fonts(self):
-        """Initialize fonts."""
+        """
+        Initialize fonts.
+        """
         self.fonts = {
             'title': pygame.font.Font(None, 100),
             'normal': pygame.font.Font(None, 74),
@@ -86,7 +105,9 @@ class MenuRenderer:
         }
 
     def setup_ui_elements(self):
-        """Setup UI components."""
+        """
+        Setup UI components.
+        """
         screen_width, screen_height = self.screen.get_size()
         self.setup_main_menu_buttons(screen_width, screen_height)
         self.setup_options_elements(screen_width, screen_height)
@@ -94,7 +115,9 @@ class MenuRenderer:
 
 
     def setup_options_elements(self, screen_width, screen_height):
-        """Setup options menu elements."""
+        """
+        Setup options menu elements.
+        """
         panel_width, panel_height = 400, 450
         panel_x = (screen_width - panel_width) // 2
         panel_y = (screen_height - panel_height) // 2
@@ -148,7 +171,9 @@ class MenuRenderer:
         }
 
     def setup_general_cards(self):
-        """Setup general selection cards."""
+        """
+        Setup general selection cards.
+        """
         self.general_cards = []
         screen_width = self.screen.get_width()
         card_width = min(screen_width // 3.5, 280)
@@ -182,7 +207,9 @@ class MenuRenderer:
             self.general_cards.append(card)
 
     def render(self):
-        """Main render method."""
+        """
+        Main render method.
+        """
         self.screen.blit(self.menu_image, (0, 0))
         if self.state.current == "main":
             self._draw_main_menu()
@@ -196,7 +223,9 @@ class MenuRenderer:
         pygame.display.flip()
 
     def _draw_main_menu(self):
-        """Draw main menu screen."""
+        """
+        Draw main menu screen.
+        """
         title = self.fonts['title'].render("WARBOUND", True, (255, 215, 0))
         title_rect = title.get_rect(centerx=self.screen.get_rect().centerx, top=50)
         
@@ -212,7 +241,9 @@ class MenuRenderer:
             button.draw(self.screen)
 
     def _draw_options_menu(self):
-        """Draw options menu screen."""
+        """
+        Draw options menu screen.
+        """
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
         self.screen.blit(overlay, (0, 0))
@@ -234,7 +265,9 @@ class MenuRenderer:
 
 
     def _scale_image_to_screen(self):
-        """Scale background image to fit screen."""
+        """
+        Scale background image to fit screen.
+        """
         screen_width, screen_height = self.screen.get_size()
         image_width, image_height = self.menu_image.get_size()
         

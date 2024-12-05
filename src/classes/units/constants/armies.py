@@ -1,6 +1,9 @@
 import os
 
 class Armies:
+    """
+    Constants for army formations.
+    """
     DEFAULT = [
         "##############################",
         "##############################",

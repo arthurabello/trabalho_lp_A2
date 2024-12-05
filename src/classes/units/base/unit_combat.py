@@ -6,6 +6,9 @@ import random
 from .unit_direction import Direction
 
 class UnitCombatMixin:
+    """
+    Combat-related functionality for units.
+    """
     def _get_damage_variation(self):
         """
         Returns the damage variation specific to a unit based on the general and unit type.
@@ -173,7 +176,9 @@ class UnitCombatMixin:
         return row_diff <= self.attack_range and col_diff <= self.attack_range
     
     def _play_attack_sound(self):
-        """Play attack sound effect."""
+        """
+        Play attack sound effect.
+        """
         try:
             if hasattr(self, 'attack_sound') and self.attack_sound:
                 self.attack_sound.play()
