@@ -5,8 +5,8 @@ UI components for the menu system.
 import pygame
 
 class Button:
-    """Button component for the menu system."""
-    def __init__(self, x, y, width, height, text, callback, border_radius=10, fontsize=36):
+    def __init__(self, x, y, width, height, text, callback, border_radius=10, fontsize=36) -> None:
+
         """
         Initialize button component. 
 
@@ -20,6 +20,7 @@ class Button:
             border_radius (int, optional): Border radius of the button. Defaults to 10.
             fontsize (int, optional): Font size of the text. Defaults to 36.
         """
+
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.callback = callback
@@ -33,8 +34,10 @@ class Button:
         }
         self.color_current = self.colors['default']
 
-    def draw(self, screen):
-        """Draw button on screen.
+    def draw(self, screen) -> None:
+
+        """
+        Draw button on screen.
         
         Args:
             screen (pygame.Surface): Surface to draw the button on.
@@ -46,7 +49,8 @@ class Button:
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
 
-    def handle_event(self, event):
+    def handle_event(self, event) -> bool:
+
         """
         Handle button events.
 
@@ -56,6 +60,7 @@ class Button:
         Returns:
             bool: True if the button was clicked, False otherwise.
         """
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.callback()
@@ -65,8 +70,8 @@ class Button:
         return False
 
 class ToggleButton:
-    """Toggle button component for the menu system."""
-    def __init__(self, x, y, size, initial_state, callback):
+    def __init__(self, x, y, size, initial_state, callback) -> None:
+
         """
         Initialize toggle button component.
 
@@ -77,6 +82,7 @@ class ToggleButton:
             initial_state (bool): Initial state of the button.
             callback (function): Callback function to be called when the button is clicked.
         """
+
         self.rect = pygame.Rect(x, y, size, size)
         self.callback = callback
         self.state = initial_state
@@ -88,13 +94,15 @@ class ToggleButton:
             'text': (255, 255, 255)
         }
 
-    def draw(self, screen):
+    def draw(self, screen) -> None:
+
         """
         Draw toggle button on screen.
         
         Args:
             screen (pygame.Surface): Surface to draw the button on.
         """
+
         color = self.colors['enabled'] if self.state else self.colors['disabled']
         pygame.draw.rect(screen, color, self.rect, border_radius=8)
         
@@ -103,7 +111,8 @@ class ToggleButton:
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
 
-    def handle_event(self, event):
+    def handle_event(self, event) -> bool:
+
         """
         Handle toggle button events.
         
@@ -113,6 +122,7 @@ class ToggleButton:
         Returns:
             bool: True if the button was clicked, False otherwise.
         """
+
         if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             self.state = not self.state
             self.callback(self.state)
@@ -120,8 +130,8 @@ class ToggleButton:
         return False
 
 class Slider:
-    """Slider component for the menu system."""
-    def __init__(self, x, y, width, height, initial_value, callback):
+    def __init__(self, x, y, width, height, initial_value, callback) -> None:
+
         """
         Initialize slider component.
 
@@ -133,6 +143,7 @@ class Slider:
             initial_value (float): Initial value of the slider.
             callback (function): Callback function to be called when the slider is moved.
         """
+
         self.rect = pygame.Rect(x, y, width, height)
         self.callback = callback
         self.value = initial_value
@@ -144,13 +155,15 @@ class Slider:
             'handle': (120, 120, 125)
         }
 
-    def draw(self, screen):
+    def draw(self, screen) -> None:
+
         """
         Draw slider on screen.
         
         Args:
             screen (pygame.Surface): Surface to draw the slider on.
         """
+
         pygame.draw.rect(screen, self.colors['background'], self.rect, border_radius=4)
         
         fill_rect = self.rect.copy()
@@ -161,7 +174,8 @@ class Slider:
         handle_rect = pygame.Rect(handle_pos - 8, self.rect.y - 6, 16, 20)
         pygame.draw.rect(screen, self.colors['handle'], handle_rect, border_radius=5)
 
-    def handle_event(self, event):
+    def handle_event(self, event) -> bool:
+
         """
         Handle slider events.
         
@@ -171,6 +185,7 @@ class Slider:
         Returns:
             bool: True if the slider was moved, False otherwise.
         """
+
         if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             self.dragging = True
         elif event.type == pygame.MOUSEBUTTONUP:
@@ -183,8 +198,8 @@ class Slider:
         return False
 
 class GeneralCard:
-    """General card component for the menu system.""" 
-    def __init__(self, general_id, info, x, y, width, height, fonts, sprite, selected=False):
+    def __init__(self, general_id, info, x, y, width, height, fonts, sprite, selected=False) -> None:
+
         """
         Initialize general card component.
 
@@ -199,6 +214,7 @@ class GeneralCard:
             sprite (pygame.Surface): Sprite of the general.
             selected (bool, optional): Whether the card is selected. Defaults to False.
         """
+
         self.general_id = general_id
         self.info = info
         self.rect = pygame.Rect(x, y, width, height)
@@ -214,13 +230,15 @@ class GeneralCard:
             'active': (255, 255, 150)
         }
 
-    def draw(self, screen):
+    def draw(self, screen) -> None:
+
         """
         Draw general card on screen.
         
         Args:
             screen (pygame.Surface): Surface to draw the card on.
         """
+
         card_surface = pygame.Surface((self.rect.width, self.rect.height))
         card_surface.fill(self.colors['background'])
         
@@ -268,7 +286,8 @@ class GeneralCard:
         
         screen.blit(card_surface, self.rect)
 
-    def _wrap_text(self, text, font, max_width):
+    def _wrap_text(self, text, font, max_width) -> list:
+
         """
         Wrap text to fit within a given width.
         
@@ -280,6 +299,7 @@ class GeneralCard:
         Returns:
             list: Wrapped text lines.
         """
+
         words = text.split()
         lines = []
         current_line = []
@@ -297,7 +317,8 @@ class GeneralCard:
             lines.append(' '.join(current_line))
         return lines
 
-    def _draw_separator(self, surface, x, y, width):
+    def _draw_separator(self, surface, x, y, width) -> None:
+
         """
         Draw a separator line on the surface.
         
@@ -307,6 +328,7 @@ class GeneralCard:
             y (int): Y position of the separator.
             width (int): Width of the separator.
         """
+
         points = []
         wave_height = 2
         segments = 12
@@ -318,7 +340,8 @@ class GeneralCard:
         if len(points) > 1:
             pygame.draw.lines(surface, (100, 100, 100), False, points, 1)
 
-    def handle_event(self, event):
+    def handle_event(self, event) -> bool:
+
         """
         Handle card events.
         
@@ -328,6 +351,7 @@ class GeneralCard:
         Returns:
             bool: True if the card was clicked, False otherwise.
         """
+        
         if event.type == pygame.MOUSEBUTTONDOWN:
             return self.rect.collidepoint(event.pos)
         return False
