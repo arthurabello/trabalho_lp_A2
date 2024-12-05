@@ -9,8 +9,24 @@ from .unit_direction import Direction
 from ..constants.colors import Colors
 
 class UnitFormationMixin:
+    """
+    Mixin class for handling unit formations and related functionality.
+    
+    This class provides methods for changing unit formations, updating sprites based on 
+    formation and direction, and calculating formation-based modifiers.
+    """
     def change_formation(self, formation_name):
-        """Change unit formation."""
+        """
+        Changes the unit's formation and updates the corresponding stats.
+        
+        This method updates the unit's attack and defense points based on the modifiers 
+        associated with the new formation. It also updates the unit's sprite based on the 
+        new formation and direction.
+        
+        Args:
+            formation_name (str): The name of the new formation to switch to.
+
+        """
         if formation_name in self.formations:
             self.formation = formation_name
             modifiers = self.formations[formation_name]
@@ -21,7 +37,12 @@ class UnitFormationMixin:
             self._update_sprite()
 
     def _update_sprite(self):
-        """Update unit sprite based on formation and direction."""
+        """
+        Updates the unit's sprite based on its formation and facing direction.
+        
+        This method constructs the appropriate path for the sprite based on the unit's type, 
+        current formation, and direction, then loads and colors the sprite accordingly.
+        """
         unit_type = self.__class__.__name__.lower()
         direction_str = Direction.to_string(self.facing_direction).lower()
         formation_name = self.formation.lower().replace(" ", "_")
@@ -30,7 +51,17 @@ class UnitFormationMixin:
         self._load_and_color_sprite(sprite_path)
 
     def _get_sprite_path(self, unit_type, formation_name, direction_str):
-        """Get path for unit sprite."""
+        """
+        Constructs the path to the unit's sprite based on its type, formation, and direction.
+        
+        Args:
+            unit_type (str): The type of the unit (e.g., "infantry", "cavalry").
+            formation_name (str): The name of the current formation (e.g., "spread", "phalanx").
+            direction_str (str): The string representation of the direction (e.g., "north", "east").
+        
+        Returns:
+            str: The file path to the unit's sprite image.
+        """
         current_file_path = os.path.dirname(os.path.abspath(__file__))
         assets_path = os.path.normpath(os.path.join(current_file_path, "..", "..", "..", "assets"))
         
@@ -43,7 +74,15 @@ class UnitFormationMixin:
         )
 
     def _load_and_color_sprite(self, sprite_path):
-        """Load and color sprite based on player."""
+        """
+        Loads and colors the unit's sprite based on the player's faction.
+        
+        The sprite is loaded from the given path, and a color overlay is applied based on 
+        the player's faction (Player 1 or Player 2).
+        
+        Args:
+            sprite_path (str): The file path to the unit's sprite image.
+        """
         sprite = self._load_sprite(sprite_path)
         
         if sprite:
@@ -59,7 +98,15 @@ class UnitFormationMixin:
 
     def _get_formation_modifier(self, attacker):
         """
-        Calculates the formation modifier based on the attacker's attack type and the unit's current formation.
+        Calculates the defense modifier based on the unit's current formation and the attacker's attack type.
+        
+        The modifier is influenced by both the unit's formation and the attacker's attack type (melee or ranged).
+        
+        Args:
+            attacker (BaseUnit): The unit attacking this unit, used to determine the attack type.
+        
+        Returns:
+            float: The defense modifier based on the formation and the attacker's attack type.
         """
         if not self.formation in self.formations:
             return 1.0
@@ -90,7 +137,18 @@ class UnitFormationMixin:
 
 
     def _get_terrain_modifier(self, terrain, attacker):
-        """Get defense modifier based on terrain."""
+        """
+        Returns the defense modifier based on the terrain type.
+        
+        The defense modifier varies depending on whether the terrain is a mountain, forest, or normal terrain.
+        
+        Args:
+            terrain (str): The type of terrain (e.g., "mountain", "forest").
+            attacker (BaseUnit): The attacking unit, used to determine the attack type.
+        
+        Returns:
+            float: The defense modifier based on the terrain type and attacker's attack type.
+        """
         if terrain == "mountain":
             if attacker.attack_type == "melee":
                 return 1.5
