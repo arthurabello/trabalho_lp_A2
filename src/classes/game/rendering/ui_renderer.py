@@ -6,21 +6,36 @@ import pygame
 from ...units.base.unit_direction import Direction
 
 class UIRenderer:
-    def __init__(self, screen):
-        """Initialize UI renderer."""
+    def __init__(self, screen) -> None:
+
+        """
+        Initialize the UI renderer.
+
+        Args:
+            screen (pygame.Surface): The game screen.
+        """
+
         self.screen = screen
         self.status_surface = pygame.Surface((300, screen.get_height()), pygame.SRCALPHA)
         self.init_fonts()
         self.setup_colors()
 
-    def init_fonts(self):
-        """Initialize fonts for UI elements."""
+    def init_fonts(self) -> None:
+
+        """
+        Initialize fonts for UI rendering.
+        """
+
         self.title_font = pygame.font.Font(None, 48)
         self.small_font = pygame.font.Font(None, 36)
         self.mini_font = pygame.font.Font(None, 24)
 
-    def setup_colors(self):
-        """Setup color schemes for UI."""
+    def setup_colors(self) -> None:
+        
+        """
+        Setup colors for UI rendering.
+        """
+
         self.colors = {
             'background_top': (31, 41, 55),
             'background_bottom': (17, 24, 39),
@@ -37,8 +52,15 @@ class UIRenderer:
             'section_title': (156, 163, 175)
         }
 
-    def render(self, state_manager):
-        """Render all UI elements."""
+    def render(self, state_manager) -> None:
+
+        """
+        Render the UI status panel.
+
+        Args:
+            state_manager (StateManager): The state manager.
+        """
+
         PANEL_WIDTH = 300
         SECTION_PADDING = 15
         height = self.screen.get_height()
@@ -87,8 +109,18 @@ class UIRenderer:
         status_x = self.screen.get_width() - 300
         self.screen.blit(self.status_surface, (status_x, 0))
 
-    def _draw_unit_section(self, unit, state_manager, y_offset, PANEL_WIDTH):
-        """Draw unit information sections."""
+    def _draw_unit_section(self, unit, state_manager, y_offset, PANEL_WIDTH) -> None:
+
+        """
+        Draw a section of the UI status panel for a unit.
+
+        Args:
+            unit (Unit): The unit to draw the section for.
+            state_manager (StateManager): The state manager.
+            y_offset (int): The y-coordinate of the top of the section.
+            PANEL_WIDTH (int): The width of the panel.
+        """
+
         section_bg = pygame.Surface((PANEL_WIDTH - 40, 80), pygame.SRCALPHA)
         section_bg.fill(self.colors['section_bg'])
         self.status_surface.blit(section_bg, (20, y_offset))
@@ -159,8 +191,17 @@ class UIRenderer:
 
         self._draw_active_modifiers(unit, y_offset, PANEL_WIDTH)
 
-    def _draw_active_modifiers(self, unit, y_offset, PANEL_WIDTH):
-        """Draw active modifiers and direction compass."""
+    def _draw_active_modifiers(self, unit, y_offset, PANEL_WIDTH) -> None:
+
+        """
+        Draw the active modifiers section of the UI status panel.
+
+        Args:
+            unit (Unit): The unit to draw the modifiers for.
+            y_offset (int): The y-coordinate of the top of the section.
+            PANEL_WIDTH (int): The width of the panel.
+        """
+
         section_bg = pygame.Surface((PANEL_WIDTH - 40, 180), pygame.SRCALPHA)  # Increased height
         section_bg.fill(self.colors['section_bg'])
         self.status_surface.blit(section_bg, (20, y_offset))
@@ -241,8 +282,17 @@ class UIRenderer:
 
         self._draw_compass(unit, y_offset + 200, PANEL_WIDTH)
 
-    def _draw_compass(self, unit, y_offset, PANEL_WIDTH):
-        """Draw direction compass."""
+    def _draw_compass(self, unit, y_offset, PANEL_WIDTH) -> None:
+
+        """
+        Draw the compass on the UI status panel.
+
+        Args:
+            unit (Unit): The unit to draw the compass for.
+            y_offset (int): The y-coordinate of the top of the compass.
+            PANEL_WIDTH (int): The width of the panel.
+        """
+        
         center_x = PANEL_WIDTH // 2
         compass_size = 70
 

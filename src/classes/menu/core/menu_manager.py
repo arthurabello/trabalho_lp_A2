@@ -11,20 +11,24 @@ from ..tutorial.tutorial_manager import TutorialManager
 from ...game.core.game_manager import GameManager
 
 class MenuManager:
-    def __init__(self, screen):
+    def __init__(self, screen) -> None:
+
         """
         Initialize menu system.
 
         Args:
             screen (pygame.Surface): Game window surface.
         """
+
         self.screen = screen
         self.setup_systems()
 
-    def setup_systems(self):
+    def setup_systems(self) -> None:
+
         """
         Initialize all menu subsystems.
         """
+
         self.state = MenuState()
         self.tutorial = TutorialManager(self.screen)  
         self.renderer = MenuRenderer(self.screen, self)
@@ -47,20 +51,24 @@ class MenuManager:
         except Exception as e:
             print(f"Failed to load music: {str(e)}")
             
-    def update_sound_state(self):
+    def update_sound_state(self) -> None:
+
         """
         Update sound system state based on menu settings.
         """
+
         if hasattr(self, 'background_music_channel'):    
             if self.state.music_enabled:
                 self.background_music_channel.set_volume(self.state.music_volume)
             else:
                 self.background_music_channel.set_volume(0)
 
-    def run(self):
+    def run(self) -> dict:
+
         """
         Main menu loop.
         """
+
         while self.state.running:
             self.handle_events()
             self.update()
@@ -76,10 +84,12 @@ class MenuManager:
 
         return None
 
-    def handle_events(self):
+    def handle_events(self) -> None:
+
         """
         Handle all events.
         """
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.state.running = False
@@ -92,16 +102,20 @@ class MenuManager:
             else:
                 self.input_handler.handle_event(event)
 
-    def update(self):
+    def update(self) -> None:
+
         """
         Update game state.
         """
+
         pass 
 
     def render(self):
+
         """
         Render current frame.
         """
+
         if self.tutorial.active:
             self.tutorial.draw()
         else:
@@ -109,27 +123,34 @@ class MenuManager:
             
         pygame.display.flip()
 
-    def start_tutorial(self):
+    def start_tutorial(self) -> None:
+
         """
         Activate tutorial mode.
         """
+
         self.tutorial.active = True
         self.tutorial.current_page = 0
 
-    def start_game(self):
+    def start_game(self) -> None:
+
         """
         Prepare to start the game.
         """
+
         if self.state.player1_general and self.state.player2_general:
             self.state.should_start_game = True
 
-    def toggle_fullscreen(self):
+    def toggle_fullscreen(self) -> None:
+
         """
         Toggle fullscreen mode.
         """
+
         self.renderer.toggle_fullscreen()
 
-    def change_state(self, new_state):
+    def change_state(self, new_state) -> str:
+
         """
         Change menu state.
         
@@ -139,6 +160,7 @@ class MenuManager:
         Returns:
             str: New state
         """
+
         self.state.current = new_state
 
         if new_state == "general_selection":

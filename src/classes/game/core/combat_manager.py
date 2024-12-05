@@ -8,7 +8,18 @@ class CombatManager:
         self.state_manager = state_manager
 
     def handle_combat(self, attacker, defender):
-        """Handle combat between units."""
+        
+        """
+        Handle combat between attacker and defender.
+
+        Args:
+            attacker (BaseUnit): The unit that is attacking.
+            defender (BaseUnit): The unit that is defending.
+
+        Returns:
+            bool: True if combat is successful, False otherwise.
+        """
+
         if not self._validate_combat(attacker, defender):
             return False
 
@@ -24,7 +35,18 @@ class CombatManager:
         return True
 
     def _validate_combat(self, attacker, defender):
-        """Validate if combat is legal."""
+        
+        """
+        Check if combat is valid.
+
+        Args:
+            attacker (BaseUnit): The unit that is attacking.
+            defender (BaseUnit): The unit that is defending.
+
+        Returns:
+            bool: True if combat is valid, False otherwise.
+        """
+
         if not attacker.is_alive or not defender.is_alive:
             return False
             
@@ -37,7 +59,11 @@ class CombatManager:
         return True
 
     def check_game_over(self):
-        """Check if game is over due to general death."""
+        
+        """
+        Check if the game is over.
+        """
+
         for player_units in [self.state_manager.units1, self.state_manager.units2]:
             has_general = False
             for unit in player_units:
@@ -48,3 +74,4 @@ class CombatManager:
                 self.state_manager.game_over = True
                 self.state_manager.winner = 2 if player_units == self.state_manager.units1 else 1
                 break
+            

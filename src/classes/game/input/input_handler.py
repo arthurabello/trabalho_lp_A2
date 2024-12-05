@@ -6,14 +6,22 @@ import pygame
 from .command_handler import CommandHandler
 
 class InputHandler:
-    def __init__(self, game_manager):
-        """Initialize input handler."""
+    def __init__(self, game_manager) -> None:
+
+        """
+        Initialize the input handler.
+        """
+
         self.game_manager = game_manager
         self.command_handler = CommandHandler(game_manager)
         self.state_manager = game_manager.state_manager
 
-    def handle_events(self):
-        """Process all game events."""
+    def handle_events(self) -> None:
+        
+        """
+        Handle game events.
+        """
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.state_manager.running = False
@@ -33,8 +41,12 @@ class InputHandler:
             elif event.type == pygame.MOUSEBUTTONDOWN:  
                 self._handle_mouse_click(event)
 
-    def _handle_keydown(self, event):
-        """Handle keyboard input."""
+    def _handle_keydown(self, event) -> None:
+        
+        """
+        Handle keydown events.
+        """
+
         if event.key == pygame.K_F11:
             self.game_manager.toggle_fullscreen()
         elif event.key == pygame.K_m and self.state_manager.game_over: # m for main menu
@@ -43,8 +55,14 @@ class InputHandler:
         else:
             self.command_handler.handle_key_command(event.key)
         
-    def _handle_mouse_click(self, event):
-        """Handle mouse input."""
+    def _handle_mouse_click(self, event) -> None:
+
+        """
+        Handle mouse click events.
+
+        Args:
+            event (pygame.event.Event): Mouse click event.
+        """
         mouse_pos = pygame.mouse.get_pos()
         
         if self.game_manager.is_fullscreen:

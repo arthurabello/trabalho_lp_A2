@@ -6,23 +6,27 @@ import pygame
 from ..core.menu_state import MenuState
 
 class MenuInputHandler:
-    def __init__(self, menu_manager):
+    def __init__(self, menu_manager) -> None:
+
         """
         Initialize menu input handler.
         
         Args:
             menu_manager (MenuManager): Menu manager instance.
         """
+
         self.menu_manager = menu_manager
         self.state = menu_manager.state
 
-    def handle_event(self, event):
+    def handle_event(self, event) -> None:
+
         """
         Process menu events.
         
         Args:
             event (pygame.event.Event): Menu event.
         """
+
         if self.state.current == "main":
             self._handle_main_menu_event(event)
         elif self.state.current == "options":
@@ -30,35 +34,41 @@ class MenuInputHandler:
         elif self.state.current == "general_selection":
             self._handle_general_selection_event(event)
 
-    def _handle_main_menu_event(self, event):
+    def _handle_main_menu_event(self, event) -> None:
+
         """
         Handle main menu events.
 
         Args:
             event (pygame.event.Event): Menu event.
         """
+
         for button in self.menu_manager.renderer.main_menu_buttons.values():
             if button.handle_event(event):
                 break
 
-    def _handle_options_event(self, event):
+    def _handle_options_event(self, event) -> None:
+
         """
         Handle options menu events.
 
         Args:
             event (pygame.event.Event): Menu event.
         """
+
         for element in self.menu_manager.renderer.options_elements.values():
             if element.handle_event(event):
                 break
 
-    def _handle_general_selection_event(self, event):
+    def _handle_general_selection_event(self, event) -> None:
+
         """
         Handle general selection events.
         
         Args:
             event (pygame.event.Event): Menu event.
         """
+
         if event.type != pygame.MOUSEBUTTONDOWN:
             return
 
@@ -103,13 +113,15 @@ class MenuInputHandler:
 
         self._handle_general_card_selection(event.pos)
 
-    def _handle_general_card_selection(self, pos):
+    def _handle_general_card_selection(self, pos) -> None:
+
         """
         Handle general card selection.
         
         Args:
             pos (tuple): Mouse position (x, y)
         """
+
         for card in self.menu_manager.renderer.general_cards:
             if card.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN, {'pos': pos})):
                 if self.state.current_selecting_player == 1:
