@@ -6,9 +6,11 @@ sys.path.append('../src')
 from classes.graph import BoardGraph
 
 class TestBoardGraph(unittest.TestCase):
-    
+    """
+    Tests for the BoardGraph class
+    """
     def setUp(self):
-        # Default configuration for testing
+        """Default configuration for testing"""
         terrain = {
             (0, 0): 'plains', (0, 1): 'mountain', (0, 2): 'forest',
             (1, 0): 'plains', (1, 1): 'mountain', (1, 2): 'forest',
